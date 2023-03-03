@@ -227,7 +227,7 @@
         <configuration>
           <allowInsecureRegistries>true</allowInsecureRegistries>
           <from>
-            <image>docker.io/wangyongjun/wbasejavaimage:17-alpine</image>
+            <image>docker.io/jpforevers/myjavabase:17-alpine</image>
           </from>
           <to>
             <image>wangyongjun/${project.artifactId}</image>
