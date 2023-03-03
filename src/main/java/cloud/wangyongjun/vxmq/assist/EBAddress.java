@@ -4,7 +4,6 @@ public class EBAddress {
 
   public static final String SERVICE_NOTHING_SERVICE = "service.NothingService";
   public static final String SERVICE_SUB_SERVICE = "service.SubService";
-  public static final String SERVICE_CLIENT_LOCK_SERVICE = "service.ClientLockService";
 
   public static final String EVENT_NOTHING = "event.nothing";
   public static final String EVENT_MQTT_CONNECTED_EVENT = "event.mqtt.connected";
