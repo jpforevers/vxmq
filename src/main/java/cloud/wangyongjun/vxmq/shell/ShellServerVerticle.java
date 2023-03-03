@@ -1,7 +1,11 @@
 package cloud.wangyongjun.vxmq.shell;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.assist.ServiceAssist;
+import cloud.wangyongjun.vxmq.assist.ServiceFactory;
+import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
+import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
+import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
+import cloud.wangyongjun.vxmq.mqtt.will.WillService;
 import cloud.wangyongjun.vxmq.shell.cmd.*;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
@@ -20,6 +24,11 @@ public class ShellServerVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
+    SessionService sessionService = ServiceFactory.sessionService(vertx);
+    WillService willService = ServiceFactory.willService(vertx);
+    SubService subService = ServiceFactory.subService(vertx);
+    MsgService msgService = ServiceFactory.msgService(vertx, config());
+
     CommandRegistry commandRegistry = CommandRegistry.getShared(vertx);
     String banner = vertx.fileSystem().readFileBlocking("banner.txt").toString(StandardCharsets.UTF_8);
     TelnetTermOptions telnetTermOptions = new TelnetTermOptions().setPort(Config.getShellServerPort(config()));
@@ -28,15 +37,15 @@ public class ShellServerVerticle extends AbstractVerticle {
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LoggerCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LogsCmdBuilder.build(vertx, config())))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(SessionCmdBuilder.build(vertx, ServiceAssist.sessionService(vertx))))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(WillCmdBuilder.build(vertx, ServiceAssist.willService(vertx))))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(SubCmdBuilder.build(vertx, ServiceAssist.subService(vertx))))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(SessionCmdBuilder.build(vertx, sessionService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(WillCmdBuilder.build(vertx, willService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(SubCmdBuilder.build(vertx, subService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(ClientVerticleCmdBuilder.build(vertx)))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(InboundQos2PubCmdBuilder.build(vertx, ServiceAssist.msgService(vertx, config()))))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos1PubCmdBuilder.build(vertx, ServiceAssist.msgService(vertx, config()))))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos2PubCmdBuilder.build(vertx, ServiceAssist.msgService(vertx, config()))))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos2RelCmdBuilder.build(vertx, ServiceAssist.msgService(vertx, config()))))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(OfflineMsgCmdBuilder.build(vertx, ServiceAssist.msgService(vertx, config()), ServiceAssist.sessionService(vertx))))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(InboundQos2PubCmdBuilder.build(vertx, msgService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos1PubCmdBuilder.build(vertx, msgService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos2PubCmdBuilder.build(vertx, msgService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos2RelCmdBuilder.build(vertx, msgService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(OfflineMsgCmdBuilder.build(vertx, msgService, sessionService)))
       .onItem().transformToUni(v -> shellService.start())
       .replaceWithVoid();
   }

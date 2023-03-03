@@ -16,7 +16,7 @@ public class DefaultEventService implements EventService {
 
   private static volatile DefaultEventService defaultEventService;
 
-  public static DefaultEventService getInstance(Vertx vertx) {
+  public static DefaultEventService getSingleton(Vertx vertx) {
     if (defaultEventService == null) {
       synchronized (DefaultEventService.class) {
         if (defaultEventService == null) {

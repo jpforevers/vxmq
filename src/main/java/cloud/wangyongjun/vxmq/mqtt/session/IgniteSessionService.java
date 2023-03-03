@@ -22,7 +22,7 @@ public class IgniteSessionService implements SessionService {
 
   private static volatile IgniteSessionService igniteSessionService;
 
-  public static IgniteSessionService getInstance(Vertx vertx) {
+  public static IgniteSessionService getSingleton(Vertx vertx) {
     if (igniteSessionService == null) {
       synchronized (IgniteSessionService.class) {
         if (igniteSessionService == null) {

@@ -5,7 +5,6 @@ import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttConnectedEvent;
 import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
-import cloud.wangyongjun.vxmq.mqtt.IgniteUtil;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.mqtt.StringPair;
 import cloud.wangyongjun.vxmq.mqtt.client.ClientService;
@@ -14,8 +13,10 @@ import cloud.wangyongjun.vxmq.mqtt.client.DisconnectRequest;
 import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
 import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
+import cloud.wangyongjun.vxmq.mqtt.retain.RetainService;
 import cloud.wangyongjun.vxmq.mqtt.session.Session;
 import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
+import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
 import cloud.wangyongjun.vxmq.mqtt.will.Will;
 import cloud.wangyongjun.vxmq.mqtt.will.WillService;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
@@ -57,6 +58,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final MsgService msgService;
   private final WillService willService;
   private final ClientService clientService;
+  private final SubService subService;
+  private final RetainService retainService;
   private final CompositeService compositeService;
   private final EventService eventService;
 
@@ -65,6 +68,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              MsgService msgService,
                              WillService willService,
                              ClientService clientService,
+                             SubService subService,
+                             RetainService retainService,
                              CompositeService compositeService,
                              EventService eventService) {
     this.vertx = vertx;
@@ -73,6 +78,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.msgService = msgService;
     this.willService = willService;
     this.clientService = clientService;
+    this.subService = subService;
+    this.retainService = retainService;
     this.compositeService = compositeService;
     this.eventService = eventService;
   }
@@ -215,39 +222,16 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    */
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
     mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, sessionService, willService, eventService));
-
-    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx,
-      ServiceAssist.clientService(vertx), ServiceAssist.compositeService(vertx, config),
-      ServiceAssist.sessionService(vertx), ServiceAssist.willService(vertx), ServiceAssist.eventService(vertx)));
-
-    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, ServiceAssist.sessionService(vertx)));
-
+    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
+    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, sessionService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));
-
-    mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint,
-      ServiceAssist.subService(vertx), ServiceAssist.sessionService(vertx),
-      ServiceAssist.retainService(vertx), ServiceAssist.compositeService(vertx, config)));
-
-    mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.subService(vertx)));
-
-    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint,
-      ServiceAssist.msgService(vertx, config), ServiceAssist.sessionService(vertx),
-      ServiceAssist.retainService(vertx), ServiceAssist.compositeService(vertx, config)));
-
-    mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config),
-      ServiceAssist.compositeService(vertx, config)));
-
-    mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config)));
-
-    mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config)));
-
-    mqttEndpoint.publishCompletionMessageHandler(new MqttPublishCompletionMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config)));
-
+    mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, subService, sessionService, retainService, compositeService));
+    mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, sessionService, subService));
+    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, msgService, sessionService, retainService, compositeService));
+    mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint, sessionService, msgService, compositeService));
+    mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint, sessionService, msgService));
+    mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint, sessionService, msgService));
+    mqttEndpoint.publishCompletionMessageHandler(new MqttPublishCompletionMessageHandler(mqttEndpoint, sessionService, msgService));
     return Uni.createFrom().voidItem();
   }
 
@@ -285,7 +269,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Client verticle deployment id;
    */
   private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint) {
-    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config));
+    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService);
     return vertx.deployVerticle(clientVerticle, new DeploymentOptions().setConfig(config));
   }
 

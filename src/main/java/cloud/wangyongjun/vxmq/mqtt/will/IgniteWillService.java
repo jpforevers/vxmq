@@ -16,7 +16,7 @@ public class IgniteWillService implements WillService {
 
   private static volatile IgniteWillService igniteWillService;
 
-  public static IgniteWillService getInstance(Vertx vertx) {
+  public static IgniteWillService getSingleton(Vertx vertx) {
     if (igniteWillService == null) {
       synchronized (IgniteWillService.class) {
         if (igniteWillService == null) {
