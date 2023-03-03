@@ -47,7 +47,7 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
       .onItem().call(session -> processSessionExpiryInterval(mqttDisconnectMessage, session))
       // Publish EVENT_MQTT_DISCONNECTED_EVENT
       .onItem().call(session -> eventService.publishEvent(new MqttDisconnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_DISCONNECTED_EVENT,
-        mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttDisconnectMessage.code())))
+        mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttDisconnectMessage.code()), false))
       .subscribe().with(v -> LOGGER.debug("Mqtt client {} disconnected", mqttEndpoint.clientIdentifier()),
         t -> LOGGER.error("Error occurred when processing DISCONNECT from " + mqttEndpoint.clientIdentifier(), t));
   }

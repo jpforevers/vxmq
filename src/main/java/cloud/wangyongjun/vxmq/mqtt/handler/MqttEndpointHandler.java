@@ -111,7 +111,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
       .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_CONNECTED_EVENT,
-        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
+        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion()), false))
       .attachContext()
       .subscribe().with(context, voidItemWithContext -> {
         boolean sessionPresent = getSessionPresentFromContext(voidItemWithContext.context());
@@ -203,7 +203,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                   uniEmitter.complete(null);
                 }
                 messageConsumer.get().unregisterAndForget();
-              }))
+              }, false))
             .onItem().invoke(messageConsumer::set)
             .onItem().transformToUni(v -> {
               if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
