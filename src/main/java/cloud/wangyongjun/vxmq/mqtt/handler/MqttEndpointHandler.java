@@ -32,6 +32,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRelReasonCode;
 import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.eventbus.MessageConsumer;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -190,6 +192,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           LOGGER.warn("Kick off existing connection for: {}", mqttEndpoint.clientIdentifier());
           // Whether the above code can receive EVENT_MQTT_ENDPOINT_CLOSED_EVENT, always continue to run forward after a period of time.
           long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
+          AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
           return Uni.createFrom().voidItem()
             .onItem().transformToUni(v -> eventService
               .consumerEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED_EVENT, data -> {
@@ -199,7 +202,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                   vertx.cancelTimer(timerId);
                   uniEmitter.complete(null);
                 }
+                messageConsumer.get().unregisterAndForget();
               }))
+            .onItem().invoke(messageConsumer::set)
             .onItem().transformToUni(v -> {
               if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
                 return clientService.closeMqttEndpoint(session.getVerticleId());
