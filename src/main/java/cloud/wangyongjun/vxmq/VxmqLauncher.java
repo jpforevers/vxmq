@@ -164,7 +164,7 @@ public class VxmqLauncher {
   }
 
   /**
-   * Start Vertx
+   * Start Vertx.
    *
    * @return Vertx
    */
