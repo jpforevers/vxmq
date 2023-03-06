@@ -110,7 +110,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
-      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_CONNECTED_EVENT,
+      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_CONNECTED_EVENT, VertxUtil.getNodeId(vertx),
         mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion()), false))
       .attachContext()
       .subscribe().with(context, voidItemWithContext -> {
@@ -226,7 +226,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Void
    */
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
-    mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, sessionService, willService, eventService));
+    mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
     mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
     mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, sessionService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));

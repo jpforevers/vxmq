@@ -6,15 +6,17 @@ public class MqttConnectedEvent implements MqttEvent {
 
   private long time;
   private EventType eventType;
+  private String nodeId;
   private String clientId;
   private int protocolVersion;
 
   public MqttConnectedEvent() {
   }
 
-  public MqttConnectedEvent(long time, EventType eventType, String clientId, int protocolVersion) {
+  public MqttConnectedEvent(long time, EventType eventType, String nodeId, String clientId, int protocolVersion) {
     this.time = time;
     this.eventType = eventType;
+    this.nodeId = nodeId;
     this.clientId = clientId;
     this.protocolVersion = protocolVersion;
   }
@@ -45,6 +47,11 @@ public class MqttConnectedEvent implements MqttEvent {
     this.eventType = EventType.valueOf(jsonObject.getString("eventType"));
     this.clientId = jsonObject.getString("clientId");
     return this;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
   }
 
   @Override

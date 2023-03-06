@@ -1,5 +1,6 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.EventType;
@@ -12,6 +13,7 @@ import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
+import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import io.vertx.mutiny.mqtt.messages.MqttDisconnectMessage;
 import org.slf4j.Logger;
@@ -28,12 +30,14 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
   private final static Logger LOGGER = LoggerFactory.getLogger(MqttDisconnectMessageHandler.class);
 
   private final MqttEndpoint mqttEndpoint;
+  private final Vertx vertx;
   private final SessionService sessionService;
   private final WillService willService;
   private final EventService eventService;
 
-  public MqttDisconnectMessageHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, WillService willService, EventService eventService) {
+  public MqttDisconnectMessageHandler(MqttEndpoint mqttEndpoint, Vertx vertx, SessionService sessionService, WillService willService, EventService eventService) {
     this.mqttEndpoint = mqttEndpoint;
+    this.vertx = vertx;
     this.sessionService = sessionService;
     this.willService = willService;
     this.eventService = eventService;
@@ -46,7 +50,7 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
       .onItem().call(session -> handleWill(session.getProtocolLevel(), session.getSessionId(), mqttDisconnectMessage.code()))
       .onItem().call(session -> processSessionExpiryInterval(mqttDisconnectMessage, session))
       // Publish EVENT_MQTT_DISCONNECTED_EVENT
-      .onItem().call(session -> eventService.publishEvent(new MqttDisconnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_DISCONNECTED_EVENT,
+      .onItem().call(session -> eventService.publishEvent(new MqttDisconnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_DISCONNECTED_EVENT, VertxUtil.getNodeId(vertx),
         mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttDisconnectMessage.code()), false))
       .subscribe().with(v -> LOGGER.debug("Mqtt client {} disconnected", mqttEndpoint.clientIdentifier()),
         t -> LOGGER.error("Error occurred when processing DISCONNECT from " + mqttEndpoint.clientIdentifier(), t));

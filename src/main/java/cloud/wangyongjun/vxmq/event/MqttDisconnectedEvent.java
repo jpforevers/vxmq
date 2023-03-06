@@ -7,6 +7,7 @@ public class MqttDisconnectedEvent implements MqttEvent {
 
   private long time;
   private EventType eventType;
+  private String nodeId;
   private String clientId;
   private String sessionId;
   private MqttDisconnectReasonCode code;
@@ -14,9 +15,10 @@ public class MqttDisconnectedEvent implements MqttEvent {
   public MqttDisconnectedEvent() {
   }
 
-  public MqttDisconnectedEvent(long time, EventType eventType, String clientId, String sessionId, MqttDisconnectReasonCode code) {
+  public MqttDisconnectedEvent(long time, EventType eventType, String nodeId, String clientId, String sessionId, MqttDisconnectReasonCode code) {
     this.time = time;
     this.eventType = eventType;
+    this.nodeId = nodeId;
     this.clientId = clientId;
     this.sessionId = sessionId;
     this.code = code;
@@ -63,4 +65,10 @@ public class MqttDisconnectedEvent implements MqttEvent {
   public MqttDisconnectReasonCode getCode() {
     return code;
   }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
+  }
+
 }

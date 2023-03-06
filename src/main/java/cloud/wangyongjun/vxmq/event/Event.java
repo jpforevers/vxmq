@@ -12,4 +12,6 @@ public interface Event {
 
   Event fromJson(JsonObject jsonObject);
 
+  String getNodeId();
+
 }

@@ -6,15 +6,17 @@ public class MqttEndpointClosedEvent implements MqttEvent{
 
   private long time;
   private EventType eventType;
+  private String nodeId;
   private String clientId;
   private String sessionId;
 
   public MqttEndpointClosedEvent() {
   }
 
-  public MqttEndpointClosedEvent(long time, EventType eventType, String clientId, String sessionId) {
+  public MqttEndpointClosedEvent(long time, EventType eventType, String nodeId, String clientId, String sessionId) {
     this.time = time;
     this.eventType = eventType;
+    this.nodeId = nodeId;
     this.clientId = clientId;
     this.sessionId = sessionId;
   }
@@ -46,6 +48,11 @@ public class MqttEndpointClosedEvent implements MqttEvent{
     this.clientId = jsonObject.getString("clientId");
     this.sessionId = jsonObject.getString("sessionId");
     return this;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
   }
 
   @Override
