@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 public interface EventService {
 
-  Uni<Void> publishEvent(Event event, boolean local);
+  Uni<Void> publishEvent(Event event);
 
   Uni<MessageConsumer<JsonObject>> consumerEvent(EventType eventType, Consumer<JsonObject> consumer, boolean local);
 

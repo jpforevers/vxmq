@@ -1,10 +1,7 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
-import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
-import cloud.wangyongjun.vxmq.event.MqttConnectedEvent;
-import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.event.*;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.mqtt.StringPair;
 import cloud.wangyongjun.vxmq.mqtt.client.ClientService;
@@ -110,8 +107,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
-      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_CONNECTED_EVENT, VertxUtil.getNodeId(vertx),
-        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion()), false))
+      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.MQTT_CONNECTED_EVENT,
+        VertxUtil.getNodeId(vertx), true, mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
       .attachContext()
       .subscribe().with(context, voidItemWithContext -> {
         boolean sessionPresent = getSessionPresentFromContext(voidItemWithContext.context());
@@ -195,7 +192,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
           return Uni.createFrom().voidItem()
             .onItem().transformToUni(v -> eventService
-              .consumerEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED_EVENT, data -> {
+              .consumerEvent(EventType.MQTT_ENDPOINT_CLOSED_EVENT, data -> {
                 MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
                 if (session.getSessionId().equals(mqttEndpointClosedEvent.getSessionId())) {
                   // When EVENT_MQTT_ENDPOINT_CLOSED_EVENT received and sessionId is same, cancel timer and run forward.
@@ -230,8 +227,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
     mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, sessionService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));
-    mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, subService, sessionService, retainService, compositeService));
-    mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, sessionService, subService));
+    mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
+    mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));
     mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, msgService, sessionService, retainService, compositeService));
     mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint, sessionService, msgService, compositeService));
     mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint, sessionService, msgService));

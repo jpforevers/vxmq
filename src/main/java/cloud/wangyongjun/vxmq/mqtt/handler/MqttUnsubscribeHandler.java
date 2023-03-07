@@ -1,6 +1,10 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.event.EventType;
+import cloud.wangyongjun.vxmq.event.MqttUnsubscribedEvent;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttUnsubscribeException;
@@ -11,6 +15,7 @@ import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttUnsubAckReasonCode;
+import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import io.vertx.mutiny.mqtt.messages.MqttUnsubscribeMessage;
 import org.slf4j.Logger;
@@ -29,13 +34,17 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
   private static final Logger LOGGER = LoggerFactory.getLogger(MqttUnsubscribeHandler.class);
 
   private final MqttEndpoint mqttEndpoint;
+  private final Vertx vertx;
   private final SessionService sessionService;
   private final SubService subService;
+  private final EventService eventService;
 
-  public MqttUnsubscribeHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, SubService subService) {
+  public MqttUnsubscribeHandler(MqttEndpoint mqttEndpoint, Vertx vertx, SessionService sessionService, SubService subService, EventService eventService) {
     this.mqttEndpoint = mqttEndpoint;
+    this.vertx = vertx;
     this.sessionService = sessionService;
     this.subService = subService;
+    this.eventService = eventService;
   }
 
   @Override
@@ -75,6 +84,8 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
           }
           LOGGER.debug("UNSUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicUnSub);
         })
+        .onItem().invoke(() -> eventService.publishEvent(new MqttUnsubscribedEvent(Instant.now().toEpochMilli(), EventType.MQTT_UNSUBSCRIBED_EVENT,
+          VertxUtil.getNodeId(vertx), true, mqttEndpoint.clientIdentifier(), topicUnSub)))
         .onFailure().invoke(t -> {
           LOGGER.error("Error occurred when processing UNSUBSCRIBE from {} to {}", mqttEndpoint.clientIdentifier(), topicUnSub, t);
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

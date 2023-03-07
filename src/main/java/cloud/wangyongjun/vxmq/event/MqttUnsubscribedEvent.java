@@ -2,25 +2,25 @@ package cloud.wangyongjun.vxmq.event;
 
 import io.vertx.core.json.JsonObject;
 
-public class MqttConnectedEvent implements MqttEvent {
+public class MqttUnsubscribedEvent implements MqttEvent{
 
   private long time;
   private EventType eventType;
   private String nodeId;
   private boolean local;
   private String clientId;
-  private int protocolVersion;
+  private String topic;
 
-  public MqttConnectedEvent() {
+  public MqttUnsubscribedEvent() {
   }
 
-  public MqttConnectedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, int protocolVersion) {
+  public MqttUnsubscribedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, String topic) {
     this.time = time;
     this.eventType = eventType;
     this.nodeId = nodeId;
     this.local = local;
     this.clientId = clientId;
-    this.protocolVersion = protocolVersion;
+    this.topic = topic;
   }
 
   @Override
@@ -41,18 +41,18 @@ public class MqttConnectedEvent implements MqttEvent {
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", local);
     jsonObject.put("clientId", clientId);
-    jsonObject.put("protocolVersion", protocolVersion);
+    jsonObject.put("topic", topic);
     return jsonObject;
   }
 
   @Override
-  public MqttConnectedEvent fromJson(JsonObject jsonObject) {
+  public Event fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.eventType = EventType.valueOf(jsonObject.getString("eventType"));
     this.nodeId = jsonObject.getString("nodeId");
     this.local = jsonObject.getBoolean("local");
     this.clientId = jsonObject.getString("clientId");
-    this.protocolVersion = jsonObject.getInteger("protocolVersion");
+    this.topic = jsonObject.getString("topic");
     return this;
   }
 
@@ -71,8 +71,8 @@ public class MqttConnectedEvent implements MqttEvent {
     return clientId;
   }
 
-  public int getProtocolVersion() {
-    return protocolVersion;
+  public String getTopic() {
+    return topic;
   }
 
 }
