@@ -16,7 +16,7 @@ public class DefaultEventService implements EventService {
 
   private static volatile DefaultEventService defaultEventService;
 
-  public static DefaultEventService getInstance(Vertx vertx) {
+  public static DefaultEventService getSingleton(Vertx vertx) {
     if (defaultEventService == null) {
       synchronized (DefaultEventService.class) {
         if (defaultEventService == null) {
@@ -41,13 +41,25 @@ public class DefaultEventService implements EventService {
 
   @Override
   public Uni<Void> publishEvent(Event event) {
-    vertx.eventBus().publish(event.getEventType().getEbAddress(), event.toJson(), new DeliveryOptions());
+    DeliveryOptions deliveryOptions = new DeliveryOptions();
+    deliveryOptions.setLocalOnly(event.isLocal());
+    vertx.eventBus().publish(event.getEventType().getEbAddress(), event.toJson(), deliveryOptions);
+    LOGGER.debug("Event published: {}, ", event.toJson());
     return Uni.createFrom().voidItem();
   }
 
   @Override
-  public Uni<MessageConsumer<JsonObject>> consumerEvent(EventType eventType, Consumer<JsonObject> consumer) {
-    MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().consumer(eventType.getEbAddress(), message -> consumer.accept(message.body()));
+  public Uni<MessageConsumer<JsonObject>> consumerEvent(EventType eventType, Consumer<JsonObject> consumer, boolean local) {
+    Consumer<JsonObject> dataConsumer = data -> {
+      LOGGER.debug("Event received: {}", data);
+      consumer.accept(data);
+    };
+    MessageConsumer<JsonObject> messageConsumer;
+    if (local){
+      messageConsumer = vertx.eventBus().localConsumer(eventType.getEbAddress(), message -> dataConsumer.accept(message.body()));
+    }else {
+      messageConsumer = vertx.eventBus().consumer(eventType.getEbAddress(), message -> dataConsumer.accept(message.body()));
+    }
     return messageConsumer.completionHandler().replaceWith(messageConsumer);
   }
 

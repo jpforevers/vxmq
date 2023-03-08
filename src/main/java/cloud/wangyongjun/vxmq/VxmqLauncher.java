@@ -138,7 +138,7 @@ public class VxmqLauncher {
     sizeAndTimeBasedRollingPolicy.setContext(loggerContext);
     sizeAndTimeBasedRollingPolicy.setParent(rollingFileAppender);
     sizeAndTimeBasedRollingPolicy.setFileNamePattern(logDir + "/archived/vxmq.%d{yyyy-MM-dd}.%i.log.gz");
-    sizeAndTimeBasedRollingPolicy.setMaxFileSize(FileSize.valueOf("10MB"));
+    sizeAndTimeBasedRollingPolicy.setMaxFileSize(FileSize.valueOf("100MB"));
     sizeAndTimeBasedRollingPolicy.setTotalSizeCap(FileSize.valueOf("100GB"));
     sizeAndTimeBasedRollingPolicy.setMaxHistory(30);
     sizeAndTimeBasedRollingPolicy.start();

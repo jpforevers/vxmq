@@ -1,6 +1,10 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.event.EventType;
+import cloud.wangyongjun.vxmq.event.MqttSubscribedEvent;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
 import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
@@ -18,6 +22,7 @@ import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttSubAckReasonCode;
+import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import io.vertx.mutiny.mqtt.MqttTopicSubscription;
 import io.vertx.mutiny.mqtt.messages.MqttSubscribeMessage;
@@ -38,17 +43,22 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
   private static final Logger LOGGER = LoggerFactory.getLogger(MqttSubscribeHandler.class);
 
   private final MqttEndpoint mqttEndpoint;
+  private final Vertx vertx;
   private final SubService subService;
   private final SessionService sessionService;
   private final RetainService retainService;
   private final CompositeService compositeService;
+  private final EventService eventService;
 
-  public MqttSubscribeHandler(MqttEndpoint mqttEndpoint, SubService subService, SessionService sessionService, RetainService retainService, CompositeService compositeService) {
+  public MqttSubscribeHandler(MqttEndpoint mqttEndpoint, Vertx vertx, SubService subService, SessionService sessionService,
+                              RetainService retainService, CompositeService compositeService, EventService eventService) {
     this.mqttEndpoint = mqttEndpoint;
+    this.vertx = vertx;
     this.subService = subService;
     this.sessionService = sessionService;
     this.retainService = retainService;
     this.compositeService = compositeService;
+    this.eventService = eventService;
   }
 
   @Override
@@ -90,6 +100,8 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
           }
           LOGGER.debug("SUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicSubscription.topicName());
         })
+        .onItem().invoke(() -> eventService.publishEvent(new MqttSubscribedEvent(Instant.now().toEpochMilli(), EventType.MQTT_SUBSCRIBED_EVENT,
+          VertxUtil.getNodeId(vertx), true, mqttEndpoint.clientIdentifier(), topicSubscription.topicName(), topicSubscription.qualityOfService().value())))
         .onFailure().invoke(t -> {
           LOGGER.error("Error occurred when processing SUBSCRIBE from " + mqttEndpoint.clientIdentifier() + " to " + topicSubscription.topicName(), t);
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

@@ -18,10 +18,10 @@ import cloud.wangyongjun.vxmq.mqtt.will.WillService;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 
-public class ServiceAssist {
+public class ServiceFactory {
 
   public static SessionService sessionService(Vertx vertx) {
-    return IgniteSessionService.getInstance(vertx);
+    return IgniteSessionService.getSingleton(vertx);
   }
 
   public static SubService subService(Vertx vertx) {
@@ -29,27 +29,27 @@ public class ServiceAssist {
   }
 
   public static ClientService clientService(Vertx vertx) {
-    return DefaultClientService.getInstance(vertx);
+    return DefaultClientService.getSingleton(vertx);
   }
 
   public static MsgService msgService(Vertx vertx, JsonObject config) {
-    return IgniteMsgService.getInstance(vertx, config);
+    return IgniteMsgService.getSingleton(vertx, config);
   }
 
   public static RetainService retainService(Vertx vertx) {
-    return IgniteRetainService.getInstance(vertx);
+    return IgniteRetainService.getSingleton(vertx);
   }
 
   public static WillService willService(Vertx vertx) {
-    return IgniteWillService.getInstance(vertx);
+    return IgniteWillService.getSingleton(vertx);
   }
 
   public static CompositeService compositeService(Vertx vertx, JsonObject config) {
-    return DefaultCompositeService.getInstance(vertx, config, sessionService(vertx), subService(vertx), willService(vertx), msgService(vertx, config), retainService(vertx), clientService(vertx));
+    return DefaultCompositeService.getSingleton(vertx, config, sessionService(vertx), subService(vertx), willService(vertx), msgService(vertx, config), retainService(vertx), clientService(vertx));
   }
 
   public static EventService eventService(Vertx vertx){
-    return DefaultEventService.getInstance(vertx);
+    return DefaultEventService.getSingleton(vertx);
   }
 
 }

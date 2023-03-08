@@ -76,16 +76,16 @@ public class IgniteAndSubTreeSubService implements SubService {
 
   @Override
   public Future<Void> clearSubs(String sessionId) {
-    QueryCursor<SubscriptionKey> exactSubscriptionCursor = exactSubscriptionCache
+    clearSubs(sessionId, exactSubscriptionCache);
+    clearSubs(sessionId, wildcardSubscriptionCache);
+    return Future.succeededFuture();
+  }
+
+  private void clearSubs(String sessionId, IgniteCache<SubscriptionKey, Subscription> subscriptionCache) {
+    QueryCursor<SubscriptionKey> exactSubscriptionCursor = subscriptionCache
       .<Cache.Entry<SubscriptionKey, Subscription>, SubscriptionKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey);
     Set<SubscriptionKey> exactKeys = exactSubscriptionCursor.getAll().stream().collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-    exactSubscriptionCache.removeAll(exactKeys);
-
-    QueryCursor<SubscriptionKey> wildcardCursor = wildcardSubscriptionCache
-      .<Cache.Entry<SubscriptionKey, Subscription>, SubscriptionKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey);
-    Set<SubscriptionKey> wildcardKeys = wildcardCursor.getAll().stream().collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-    wildcardSubscriptionCache.removeAll(wildcardKeys);
-    return Future.succeededFuture();
+    subscriptionCache.removeAll(exactKeys);
   }
 
   @Override

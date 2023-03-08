@@ -11,7 +11,7 @@ public class DefaultClientService implements ClientService {
 
   private static volatile DefaultClientService defaultClientService;
 
-  public static DefaultClientService getInstance(Vertx vertx) {
+  public static DefaultClientService getSingleton(Vertx vertx) {
     if (defaultClientService == null) {
       synchronized (DefaultClientService.class) {
         if (defaultClientService == null) {

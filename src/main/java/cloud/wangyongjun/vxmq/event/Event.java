@@ -8,6 +8,10 @@ public interface Event {
 
   EventType getEventType();
 
+  String getNodeId();
+
+  boolean isLocal();
+
   JsonObject toJson();
 
   Event fromJson(JsonObject jsonObject);

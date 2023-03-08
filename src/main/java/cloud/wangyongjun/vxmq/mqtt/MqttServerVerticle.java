@@ -1,7 +1,7 @@
 package cloud.wangyongjun.vxmq.mqtt;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.assist.ServiceAssist;
+import cloud.wangyongjun.vxmq.assist.ServiceFactory;
 import cloud.wangyongjun.vxmq.mqtt.handler.MqttEndpointHandler;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
@@ -19,12 +19,14 @@ public class MqttServerVerticle extends AbstractVerticle {
     MqttServerOptions mqttServerOptions = new MqttServerOptions().setAutoClientId(false).setPort(Config.getMqttServerPort(config()));
     MqttServer mqttServer = MqttServer.create(vertx, mqttServerOptions);
     mqttServer.endpointHandler(new MqttEndpointHandler(vertx, config(),
-      ServiceAssist.sessionService(vertx),
-      ServiceAssist.msgService(vertx, config()),
-      ServiceAssist.willService(vertx),
-      ServiceAssist.clientService(vertx),
-      ServiceAssist.compositeService(vertx, config()),
-      ServiceAssist.eventService(vertx))
+      ServiceFactory.sessionService(vertx),
+      ServiceFactory.msgService(vertx, config()),
+      ServiceFactory.willService(vertx),
+      ServiceFactory.clientService(vertx),
+      ServiceFactory.subService(vertx),
+      ServiceFactory.retainService(vertx),
+      ServiceFactory.compositeService(vertx, config()),
+      ServiceFactory.eventService(vertx))
     );
     mqttServer.exceptionHandler(t -> LOGGER.error("Error occurred at mqtt server layer", t));
     return mqttServer.listen().replaceWithVoid();

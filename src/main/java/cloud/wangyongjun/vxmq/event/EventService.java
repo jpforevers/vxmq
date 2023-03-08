@@ -10,6 +10,6 @@ public interface EventService {
 
   Uni<Void> publishEvent(Event event);
 
-  Uni<MessageConsumer<JsonObject>> consumerEvent(EventType eventType, Consumer<JsonObject> consumer);
+  Uni<MessageConsumer<JsonObject>> consumerEvent(EventType eventType, Consumer<JsonObject> consumer, boolean local);
 
 }

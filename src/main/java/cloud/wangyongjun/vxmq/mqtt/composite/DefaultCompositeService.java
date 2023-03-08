@@ -27,8 +27,8 @@ public class DefaultCompositeService implements CompositeService {
 
   private static volatile DefaultCompositeService defaultCompositeService;
 
-  public static DefaultCompositeService getInstance(Vertx vertx, JsonObject config, SessionService sessionService, SubService subService, WillService willService,
-                                                    MsgService msgService, RetainService retainService, ClientService clientService) {
+  public static DefaultCompositeService getSingleton(Vertx vertx, JsonObject config, SessionService sessionService, SubService subService, WillService willService,
+                                                     MsgService msgService, RetainService retainService, ClientService clientService) {
     if (defaultCompositeService == null) {
       synchronized (DefaultCompositeService.class) {
         if (defaultCompositeService == null) {

@@ -17,7 +17,7 @@ public class IgniteRetainService implements RetainService {
 
   private static volatile IgniteRetainService igniteRetainService;
 
-  public static IgniteRetainService getInstance(Vertx vertx) {
+  public static IgniteRetainService getSingleton(Vertx vertx) {
     if (igniteRetainService == null) {
       synchronized (IgniteRetainService.class) {
         if (igniteRetainService == null) {

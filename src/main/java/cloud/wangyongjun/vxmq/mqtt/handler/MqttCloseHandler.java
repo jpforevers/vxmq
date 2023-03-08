@@ -1,6 +1,7 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
@@ -56,7 +57,8 @@ public class MqttCloseHandler implements Runnable {
         .onItem().transformToUni(v -> undeployClientVerticle(session))
         .onItem().transformToUni(v -> handleSession(session))
         // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
-        .onItem().call(v -> eventService.publishEvent(new MqttEndpointClosedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_ENDPOINT_CLOSED_EVENT, mqttEndpoint.clientIdentifier(), session.getSessionId()))))
+        .onItem().call(v -> eventService.publishEvent(new MqttEndpointClosedEvent(Instant.now().toEpochMilli(), EventType.MQTT_ENDPOINT_CLOSED_EVENT,
+          VertxUtil.getNodeId(vertx), false, mqttEndpoint.clientIdentifier(), session.getSessionId()))))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
   }
 

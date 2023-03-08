@@ -21,7 +21,7 @@ public class IgniteMsgService implements MsgService {
 
   private static volatile IgniteMsgService igniteMsgService;
 
-  public static IgniteMsgService getInstance(Vertx vertx, JsonObject config) {
+  public static IgniteMsgService getSingleton(Vertx vertx, JsonObject config) {
     if (igniteMsgService == null) {
       synchronized (IgniteMsgService.class) {
         if (igniteMsgService == null) {

@@ -1,11 +1,7 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
-import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
-import cloud.wangyongjun.vxmq.event.MqttConnectedEvent;
-import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
-import cloud.wangyongjun.vxmq.mqtt.IgniteUtil;
+import cloud.wangyongjun.vxmq.event.*;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.mqtt.StringPair;
 import cloud.wangyongjun.vxmq.mqtt.client.ClientService;
@@ -14,8 +10,10 @@ import cloud.wangyongjun.vxmq.mqtt.client.DisconnectRequest;
 import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
 import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
+import cloud.wangyongjun.vxmq.mqtt.retain.RetainService;
 import cloud.wangyongjun.vxmq.mqtt.session.Session;
 import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
+import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
 import cloud.wangyongjun.vxmq.mqtt.will.Will;
 import cloud.wangyongjun.vxmq.mqtt.will.WillService;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
@@ -31,6 +29,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRelReasonCode;
 import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.eventbus.MessageConsumer;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -57,6 +57,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final MsgService msgService;
   private final WillService willService;
   private final ClientService clientService;
+  private final SubService subService;
+  private final RetainService retainService;
   private final CompositeService compositeService;
   private final EventService eventService;
 
@@ -65,6 +67,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              MsgService msgService,
                              WillService willService,
                              ClientService clientService,
+                             SubService subService,
+                             RetainService retainService,
                              CompositeService compositeService,
                              EventService eventService) {
     this.vertx = vertx;
@@ -73,6 +77,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.msgService = msgService;
     this.willService = willService;
     this.clientService = clientService;
+    this.subService = subService;
+    this.retainService = retainService;
     this.compositeService = compositeService;
     this.eventService = eventService;
   }
@@ -101,8 +107,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
-      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.EVENT_MQTT_CONNECTED_EVENT,
-        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
+      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.MQTT_CONNECTED_EVENT,
+        VertxUtil.getNodeId(vertx), true, mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
       .attachContext()
       .subscribe().with(context, voidItemWithContext -> {
         boolean sessionPresent = getSessionPresentFromContext(voidItemWithContext.context());
@@ -183,16 +189,19 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           LOGGER.warn("Kick off existing connection for: {}", mqttEndpoint.clientIdentifier());
           // Whether the above code can receive EVENT_MQTT_ENDPOINT_CLOSED_EVENT, always continue to run forward after a period of time.
           long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
+          AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
           return Uni.createFrom().voidItem()
             .onItem().transformToUni(v -> eventService
-              .consumerEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED_EVENT, data -> {
+              .consumerEvent(EventType.MQTT_ENDPOINT_CLOSED_EVENT, data -> {
                 MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
                 if (session.getSessionId().equals(mqttEndpointClosedEvent.getSessionId())) {
                   // When EVENT_MQTT_ENDPOINT_CLOSED_EVENT received and sessionId is same, cancel timer and run forward.
                   vertx.cancelTimer(timerId);
                   uniEmitter.complete(null);
                 }
-              }))
+                messageConsumer.get().unregisterAndForget();
+              }, false))
+            .onItem().invoke(messageConsumer::set)
             .onItem().transformToUni(v -> {
               if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
                 return clientService.closeMqttEndpoint(session.getVerticleId());
@@ -214,40 +223,17 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Void
    */
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
-    mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, sessionService, willService, eventService));
-
-    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx,
-      ServiceAssist.clientService(vertx), ServiceAssist.compositeService(vertx, config),
-      ServiceAssist.sessionService(vertx), ServiceAssist.willService(vertx), ServiceAssist.eventService(vertx)));
-
-    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, ServiceAssist.sessionService(vertx)));
-
+    mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
+    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
+    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, sessionService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));
-
-    mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint,
-      ServiceAssist.subService(vertx), ServiceAssist.sessionService(vertx),
-      ServiceAssist.retainService(vertx), ServiceAssist.compositeService(vertx, config)));
-
-    mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.subService(vertx)));
-
-    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint,
-      ServiceAssist.msgService(vertx, config), ServiceAssist.sessionService(vertx),
-      ServiceAssist.retainService(vertx), ServiceAssist.compositeService(vertx, config)));
-
-    mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config),
-      ServiceAssist.compositeService(vertx, config)));
-
-    mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config)));
-
-    mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config)));
-
-    mqttEndpoint.publishCompletionMessageHandler(new MqttPublishCompletionMessageHandler(mqttEndpoint,
-      ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config)));
-
+    mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
+    mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));
+    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, msgService, sessionService, retainService, compositeService));
+    mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint, sessionService, msgService, compositeService));
+    mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint, sessionService, msgService));
+    mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint, sessionService, msgService));
+    mqttEndpoint.publishCompletionMessageHandler(new MqttPublishCompletionMessageHandler(mqttEndpoint, sessionService, msgService));
     return Uni.createFrom().voidItem();
   }
 
@@ -285,7 +271,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Client verticle deployment id;
    */
   private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint) {
-    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, ServiceAssist.sessionService(vertx), ServiceAssist.msgService(vertx, config));
+    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService);
     return vertx.deployVerticle(clientVerticle, new DeploymentOptions().setConfig(config));
   }
 

@@ -6,15 +6,19 @@ public class MqttEndpointClosedEvent implements MqttEvent{
 
   private long time;
   private EventType eventType;
+  private String nodeId;
+  private boolean local;
   private String clientId;
   private String sessionId;
 
   public MqttEndpointClosedEvent() {
   }
 
-  public MqttEndpointClosedEvent(long time, EventType eventType, String clientId, String sessionId) {
+  public MqttEndpointClosedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, String sessionId) {
     this.time = time;
     this.eventType = eventType;
+    this.nodeId = nodeId;
+    this.local = local;
     this.clientId = clientId;
     this.sessionId = sessionId;
   }
@@ -34,6 +38,8 @@ public class MqttEndpointClosedEvent implements MqttEvent{
     JsonObject jsonObject = new JsonObject();
     jsonObject.put("time", time);
     jsonObject.put("eventType", eventType.name());
+    jsonObject.put("nodeId", nodeId);
+    jsonObject.put("local", local);
     jsonObject.put("clientId", clientId);
     jsonObject.put("sessionId", sessionId);
     return jsonObject;
@@ -44,8 +50,20 @@ public class MqttEndpointClosedEvent implements MqttEvent{
     this.time = jsonObject.getLong("time");
     this.eventType = EventType.valueOf(jsonObject.getString("eventType"));
     this.clientId = jsonObject.getString("clientId");
+    this.nodeId = jsonObject.getString("nodeId");
+    this.local = jsonObject.getBoolean("local");
     this.sessionId = jsonObject.getString("sessionId");
     return this;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
+  }
+
+  @Override
+  public boolean isLocal() {
+    return local;
   }
 
   @Override

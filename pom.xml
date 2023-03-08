@@ -6,7 +6,7 @@
 
   <groupId>cloud.wangyongjun</groupId>
   <artifactId>vxmq</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.999-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -227,7 +227,7 @@
         <configuration>
           <allowInsecureRegistries>true</allowInsecureRegistries>
           <from>
-            <image>docker.io/wangyongjun/wbasejavaimage:17-alpine</image>
+            <image>docker.io/jpforevers/myjavabase:17-alpine</image>
           </from>
           <to>
             <image>wangyongjun/${project.artifactId}</image>

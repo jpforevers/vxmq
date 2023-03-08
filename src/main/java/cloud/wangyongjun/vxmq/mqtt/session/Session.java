@@ -2,7 +2,6 @@ package cloud.wangyongjun.vxmq.mqtt.session;
 
 import cloud.wangyongjun.vxmq.assist.Nullable;
 import io.vertx.core.json.JsonObject;
-import org.apache.ignite.cache.affinity.AffinityKeyMapped;
 
 import java.time.Instant;
 
@@ -12,7 +11,6 @@ public class Session {
   private String clientId;
   private boolean online;
   private String verticleId;
-  @AffinityKeyMapped
   private String nodeId;
   private boolean cleanSession;
   private int protocolLevel;
