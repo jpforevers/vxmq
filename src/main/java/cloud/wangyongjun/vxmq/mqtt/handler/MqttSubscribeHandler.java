@@ -101,7 +101,7 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
           LOGGER.debug("SUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicSubscription.topicName());
         })
         .onItem().invoke(() -> eventService.publishEvent(new MqttSubscribedEvent(Instant.now().toEpochMilli(), EventType.MQTT_SUBSCRIBED_EVENT,
-          VertxUtil.getNodeId(vertx), true, mqttEndpoint.clientIdentifier(), topicSubscription.topicName(), topicSubscription.qualityOfService().value())))
+          VertxUtil.getNodeId(vertx), false, mqttEndpoint.clientIdentifier(), topicSubscription.topicName(), topicSubscription.qualityOfService().value())))
         .onFailure().invoke(t -> {
           LOGGER.error("Error occurred when processing SUBSCRIBE from " + mqttEndpoint.clientIdentifier() + " to " + topicSubscription.topicName(), t);
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

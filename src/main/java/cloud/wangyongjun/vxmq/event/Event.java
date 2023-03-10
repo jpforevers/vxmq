@@ -10,7 +10,9 @@ public interface Event {
 
   String getNodeId();
 
-  boolean isLocal();
+  default boolean isLocal(){
+    return false;
+  }
 
   JsonObject toJson();
 

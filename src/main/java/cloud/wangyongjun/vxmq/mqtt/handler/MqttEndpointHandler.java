@@ -108,7 +108,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
       .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.MQTT_CONNECTED_EVENT,
-        VertxUtil.getNodeId(vertx), true, mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
+        VertxUtil.getNodeId(vertx), false, mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
       .attachContext()
       .subscribe().with(context, voidItemWithContext -> {
         boolean sessionPresent = getSessionPresentFromContext(voidItemWithContext.context());
