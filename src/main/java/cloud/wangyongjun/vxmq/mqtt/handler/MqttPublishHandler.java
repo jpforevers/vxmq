@@ -1,6 +1,7 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttPublishInboundAcceptedEvent;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
@@ -19,6 +20,7 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttPubAckReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRecReasonCode;
+import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import io.vertx.mutiny.mqtt.messages.MqttPublishMessage;
 import org.slf4j.Logger;
@@ -32,15 +34,17 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
   private static final Logger LOGGER = LoggerFactory.getLogger(MqttPublishHandler.class);
 
   private final MqttEndpoint mqttEndpoint;
+  private final Vertx vertx;
   private final MsgService msgService;
   private final SessionService sessionService;
   private final RetainService retainService;
   private final CompositeService compositeService;
   private final EventService eventService;
 
-  public MqttPublishHandler(MqttEndpoint mqttEndpoint, MsgService msgService, SessionService sessionService,
+  public MqttPublishHandler(MqttEndpoint mqttEndpoint, Vertx vertx, MsgService msgService, SessionService sessionService,
                             RetainService retainService, CompositeService compositeService, EventService eventService) {
     this.mqttEndpoint = mqttEndpoint;
+    this.vertx = vertx;
     this.msgService = msgService;
     this.sessionService = sessionService;
     this.retainService = retainService;
@@ -62,7 +66,9 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
       .onItem().transformToUni(v -> authorize(mqttPublishMessage))
       .onItem().transformToUni(v -> handleQos(mqttPublishMessage))
       .onItem().call(v -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-        .onItem().transformToUni(session -> eventService.publishEvent(new MqttPublishInboundAcceptedEvent())))
+        .onItem().transformToUni(session -> eventService.publishEvent(new MqttPublishInboundAcceptedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+          mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
+          mqttPublishMessage.messageId(), mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain()))))
       .subscribe().with(v -> {
         LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
