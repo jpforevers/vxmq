@@ -49,9 +49,9 @@ public class DefaultEventService implements EventService {
   }
 
   @Override
-  public Uni<MessageConsumer<JsonObject>> consumerEvent(EventType eventType, Consumer<JsonObject> consumer, boolean local) {
+  public Uni<MessageConsumer<JsonObject>> consumeEvent(EventType eventType, Consumer<JsonObject> consumer, boolean local) {
     Consumer<JsonObject> dataConsumer = data -> {
-      LOGGER.debug("Event received: {}", data);
+      LOGGER.debug("Event consumed: {}", data);
       consumer.accept(data);
     };
     MessageConsumer<JsonObject> messageConsumer;

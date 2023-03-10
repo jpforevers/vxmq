@@ -192,7 +192,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
           return Uni.createFrom().voidItem()
             .onItem().transformToUni(v -> eventService
-              .consumerEvent(EventType.MQTT_ENDPOINT_CLOSED_EVENT, data -> {
+              .consumeEvent(EventType.MQTT_ENDPOINT_CLOSED_EVENT, data -> {
                 MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
                 if (session.getSessionId().equals(mqttEndpointClosedEvent.getSessionId())) {
                   // When EVENT_MQTT_ENDPOINT_CLOSED_EVENT received and sessionId is same, cancel timer and run forward.

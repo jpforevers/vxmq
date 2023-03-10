@@ -113,6 +113,13 @@
       <version>${smallrye-mutiny-vertx.version}</version>
     </dependency>
 
+    <!-- Kafka -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-kafka-client</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
     <!-- Devops -->
     <dependency>
       <groupId>io.smallrye.reactive</groupId>

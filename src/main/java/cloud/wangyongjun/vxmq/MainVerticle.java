@@ -3,6 +3,7 @@ package cloud.wangyongjun.vxmq;
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.sub.SubVerticle;
+import cloud.wangyongjun.vxmq.rule.RuleVerticle;
 import cloud.wangyongjun.vxmq.shell.ShellServerVerticle;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
@@ -53,6 +54,9 @@ public class MainVerticle extends AbstractVerticle {
 
       .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle.class.getName(), new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", ShellServerVerticle.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(RuleVerticle.class.getName(), new DeploymentOptions().setConfig(config())))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", RuleVerticle.class.getSimpleName()))
 
       .onItem().transformToUni(s -> vertx.deployVerticle(SubVerticle.class.getName(), new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", SubVerticle.class.getSimpleName()))
