@@ -1,6 +1,8 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
+import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.event.MqttPublishInboundAcceptedEvent;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
 import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
@@ -34,14 +36,16 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
   private final SessionService sessionService;
   private final RetainService retainService;
   private final CompositeService compositeService;
+  private final EventService eventService;
 
   public MqttPublishHandler(MqttEndpoint mqttEndpoint, MsgService msgService, SessionService sessionService,
-                            RetainService retainService, CompositeService compositeService) {
+                            RetainService retainService, CompositeService compositeService, EventService eventService) {
     this.mqttEndpoint = mqttEndpoint;
     this.msgService = msgService;
     this.sessionService = sessionService;
     this.retainService = retainService;
     this.compositeService = compositeService;
+    this.eventService = eventService;
   }
 
   @Override
@@ -57,6 +61,8 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
       .onItem().transformToUni(v -> checkTopic(mqttPublishMessage))
       .onItem().transformToUni(v -> authorize(mqttPublishMessage))
       .onItem().transformToUni(v -> handleQos(mqttPublishMessage))
+      .onItem().call(v -> sessionService.getSession(mqttEndpoint.clientIdentifier())
+        .onItem().transformToUni(session -> eventService.publishEvent(new MqttPublishInboundAcceptedEvent())))
       .subscribe().with(v -> {
         LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

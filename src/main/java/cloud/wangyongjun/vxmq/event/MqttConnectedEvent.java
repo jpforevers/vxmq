@@ -5,20 +5,16 @@ import io.vertx.core.json.JsonObject;
 public class MqttConnectedEvent implements MqttEvent {
 
   private long time;
-  private EventType eventType;
   private String nodeId;
-  private boolean local;
   private String clientId;
   private int protocolVersion;
 
   public MqttConnectedEvent() {
   }
 
-  public MqttConnectedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, int protocolVersion) {
+  public MqttConnectedEvent(long time, String nodeId, String clientId, int protocolVersion) {
     this.time = time;
-    this.eventType = eventType;
     this.nodeId = nodeId;
-    this.local = local;
     this.clientId = clientId;
     this.protocolVersion = protocolVersion;
   }
@@ -30,16 +26,16 @@ public class MqttConnectedEvent implements MqttEvent {
 
   @Override
   public EventType getEventType() {
-    return eventType;
+    return EventType.MQTT_CONNECTED_EVENT;
   }
 
   @Override
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put("time", time);
-    jsonObject.put("eventType", eventType.name());
+    jsonObject.put("eventType", getEventType().name());
     jsonObject.put("nodeId", nodeId);
-    jsonObject.put("local", local);
+    jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
     jsonObject.put("protocolVersion", protocolVersion);
     return jsonObject;
@@ -48,9 +44,7 @@ public class MqttConnectedEvent implements MqttEvent {
   @Override
   public MqttConnectedEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
-    this.eventType = EventType.valueOf(jsonObject.getString("eventType"));
     this.nodeId = jsonObject.getString("nodeId");
-    this.local = jsonObject.getBoolean("local");
     this.clientId = jsonObject.getString("clientId");
     this.protocolVersion = jsonObject.getInteger("protocolVersion");
     return this;
@@ -59,11 +53,6 @@ public class MqttConnectedEvent implements MqttEvent {
   @Override
   public String getNodeId() {
     return nodeId;
-  }
-
-  @Override
-  public boolean isLocal() {
-    return local;
   }
 
   @Override
