@@ -9,17 +9,19 @@ public class MqttUnsubscribedEvent implements MqttEvent{
   private String nodeId;
   private boolean local;
   private String clientId;
+  private String sessionId;
   private String topic;
 
   public MqttUnsubscribedEvent() {
   }
 
-  public MqttUnsubscribedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, String topic) {
+  public MqttUnsubscribedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, String sessionId, String topic) {
     this.time = time;
     this.eventType = eventType;
     this.nodeId = nodeId;
     this.local = local;
     this.clientId = clientId;
+    this.sessionId = sessionId;
     this.topic = topic;
   }
 
@@ -41,6 +43,7 @@ public class MqttUnsubscribedEvent implements MqttEvent{
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", local);
     jsonObject.put("clientId", clientId);
+    jsonObject.put("sessionId", sessionId);
     jsonObject.put("topic", topic);
     return jsonObject;
   }
@@ -52,6 +55,7 @@ public class MqttUnsubscribedEvent implements MqttEvent{
     this.nodeId = jsonObject.getString("nodeId");
     this.local = jsonObject.getBoolean("local");
     this.clientId = jsonObject.getString("clientId");
+    this.sessionId = jsonObject.getString("sessionId");
     this.topic = jsonObject.getString("topic");
     return this;
   }
@@ -75,4 +79,7 @@ public class MqttUnsubscribedEvent implements MqttEvent{
     return topic;
   }
 
+  public String getSessionId() {
+    return sessionId;
+  }
 }

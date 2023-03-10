@@ -84,8 +84,9 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
           }
           LOGGER.debug("UNSUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicUnSub);
         })
-        .onItem().invoke(() -> eventService.publishEvent(new MqttUnsubscribedEvent(Instant.now().toEpochMilli(), EventType.MQTT_UNSUBSCRIBED_EVENT,
-          VertxUtil.getNodeId(vertx), false, mqttEndpoint.clientIdentifier(), topicUnSub)))
+        .onItem().call(() -> sessionService.getSession(mqttEndpoint.clientIdentifier())
+          .onItem().transformToUni(session -> eventService.publishEvent(new MqttUnsubscribedEvent(Instant.now().toEpochMilli(), EventType.MQTT_UNSUBSCRIBED_EVENT,
+            VertxUtil.getNodeId(vertx), false, mqttEndpoint.clientIdentifier(), session.getSessionId(), topicUnSub))))
         .onFailure().invoke(t -> {
           LOGGER.error("Error occurred when processing UNSUBSCRIBE from {} to {}", mqttEndpoint.clientIdentifier(), topicUnSub, t);
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

@@ -9,18 +9,20 @@ public class MqttSubscribedEvent implements MqttEvent{
   private String nodeId;
   private boolean local;
   private String clientId;
+  private String sessionId;
   private String topic;
   private int qos;
 
   public MqttSubscribedEvent() {
   }
 
-  public MqttSubscribedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, String topic, int qos) {
+  public MqttSubscribedEvent(long time, EventType eventType, String nodeId, boolean local, String clientId, String sessionId, String topic, int qos) {
     this.time = time;
     this.eventType = eventType;
     this.nodeId = nodeId;
     this.local = local;
     this.clientId = clientId;
+    this.sessionId = sessionId;
     this.topic = topic;
     this.qos = qos;
   }
@@ -43,6 +45,7 @@ public class MqttSubscribedEvent implements MqttEvent{
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", local);
     jsonObject.put("clientId", clientId);
+    jsonObject.put("sessionId", sessionId);
     jsonObject.put("topic", topic);
     jsonObject.put("qos", qos);
     return jsonObject;
@@ -55,6 +58,7 @@ public class MqttSubscribedEvent implements MqttEvent{
     this.nodeId = jsonObject.getString("nodeId");
     this.local = jsonObject.getBoolean("local");
     this.clientId = jsonObject.getString("clientId");
+    this.sessionId = jsonObject.getString("sessionId");
     this.topic = jsonObject.getString("topic");
     this.qos = jsonObject.getInteger("qos");
     return this;
@@ -81,5 +85,9 @@ public class MqttSubscribedEvent implements MqttEvent{
 
   public int getQos() {
     return qos;
+  }
+
+  public String getSessionId() {
+    return sessionId;
   }
 }
