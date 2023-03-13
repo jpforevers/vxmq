@@ -25,6 +25,15 @@ public class Config {
   public static final String KEY_VXMQ_IGNITE_WORK_DIR = "vxmq.ignite.work-dir";
   public static final String DEFAULT_VXMQ_IGNITE_WORK_DIR = "/vxmq/ignite";
 
+  public static final String KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE = "vxmq.rule.static.AllMqttEventToOneKafkaTopic.enable";
+  public static final boolean DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE = false;
+
+  public static final String KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS = "vxmq.rule.static.AllMqttEventToOneKafkaTopic.kafka.servers";
+  public static final String DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS = "localhost:9094";
+
+  public static final String KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC = "vxmq.rule.static.AllMqttEventToOneKafkaTopic.kafka.topic";
+  public static final String DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC = "vxmq.mqtt.event";
+
   public static String getNothing(JsonObject config){
     return config.getString(KEY_NOTHING, DEFAULT_NOTHING);
   }
@@ -59,6 +68,18 @@ public class Config {
 
   public static String getLogFile(JsonObject config){
     return getLogsDir(config) + "/vxmq.log";
+  }
+
+  public static boolean getRuleStaticAllMqttEventToOneKafkaTopicEnable(JsonObject config){
+    return config.getBoolean(KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE, DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE);
+  }
+
+  public static String getRuleStaticAllMqttEventToOneKafkaTopicKafkaServers(JsonObject config){
+    return config.getString(KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS, DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS);
+  }
+
+  public static String getRuleStaticAllMqttEventToOneKafkaTopicKafkaTopic(JsonObject config){
+    return config.getString(KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC, DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC);
   }
 
 }

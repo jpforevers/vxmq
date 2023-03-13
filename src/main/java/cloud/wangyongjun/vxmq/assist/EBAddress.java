@@ -11,5 +11,6 @@ public class EBAddress {
   public static final String EVENT_MQTT_DISCONNECTED = "event.mqtt.disconnected";
   public static final String EVENT_MQTT_SUBSCRIBED = "event.mqtt.subscribed";
   public static final String EVENT_MQTT_UNSUBSCRIBED = "event.mqtt.unsubscribed";
+  public static final String EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED = "event.mqtt.publish.inbound.accepted";
 
 }

@@ -1,8 +1,9 @@
 package cloud.wangyongjun.vxmq.event;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-public class MqttSubscribedEvent implements MqttEvent{
+public class MqttPublishInboundAcceptedEvent implements MqttEvent{
 
   private long time;
   private String nodeId;
@@ -10,17 +11,25 @@ public class MqttSubscribedEvent implements MqttEvent{
   private String sessionId;
   private String topic;
   private int qos;
+  private int messageId;
+  private Buffer payload;
+  private boolean dup;
+  private boolean retain;
 
-  public MqttSubscribedEvent() {
+  public MqttPublishInboundAcceptedEvent() {
   }
 
-  public MqttSubscribedEvent(long time, String nodeId, String clientId, String sessionId, String topic, int qos) {
+  public MqttPublishInboundAcceptedEvent(long time, String nodeId, String clientId, String sessionId, String topic, int qos, int messageId, Buffer payload, boolean dup, boolean retain) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
     this.sessionId = sessionId;
     this.topic = topic;
     this.qos = qos;
+    this.messageId = messageId;
+    this.payload = payload;
+    this.dup = dup;
+    this.retain = retain;
   }
 
   @Override
@@ -30,7 +39,12 @@ public class MqttSubscribedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_SUBSCRIBED_EVENT;
+    return EventType.MQTT_PUBLISH_INBOUND_ACCEPTED_EVENT;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
   }
 
   @Override
@@ -44,6 +58,10 @@ public class MqttSubscribedEvent implements MqttEvent{
     jsonObject.put("sessionId", sessionId);
     jsonObject.put("topic", topic);
     jsonObject.put("qos", qos);
+    jsonObject.put("messageId", messageId);
+    jsonObject.put("payload", payload);
+    jsonObject.put("dup", dup);
+    jsonObject.put("retain", retain);
     return jsonObject;
   }
 
@@ -55,17 +73,20 @@ public class MqttSubscribedEvent implements MqttEvent{
     this.sessionId = jsonObject.getString("sessionId");
     this.topic = jsonObject.getString("topic");
     this.qos = jsonObject.getInteger("qos");
+    this.messageId = jsonObject.getInteger("messageId");
+    this.payload = jsonObject.getBuffer("payload");
+    this.dup = jsonObject.getBoolean("dup");
+    this.retain = jsonObject.getBoolean("retain");
     return this;
-  }
-
-  @Override
-  public String getNodeId() {
-    return nodeId;
   }
 
   @Override
   public String getClientId() {
     return clientId;
+  }
+
+  public String getSessionId() {
+    return sessionId;
   }
 
   public String getTopic() {
@@ -76,8 +97,19 @@ public class MqttSubscribedEvent implements MqttEvent{
     return qos;
   }
 
-  public String getSessionId() {
-    return sessionId;
+  public int getMessageId() {
+    return messageId;
   }
 
+  public Buffer getPayload() {
+    return payload;
+  }
+
+  public boolean isDup() {
+    return dup;
+  }
+
+  public boolean isRetain() {
+    return retain;
+  }
 }

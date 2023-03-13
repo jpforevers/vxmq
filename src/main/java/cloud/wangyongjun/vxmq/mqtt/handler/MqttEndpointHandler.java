@@ -107,8 +107,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
-      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), EventType.MQTT_CONNECTED_EVENT,
-        VertxUtil.getNodeId(vertx), true, mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
+      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
       .attachContext()
       .subscribe().with(context, voidItemWithContext -> {
         boolean sessionPresent = getSessionPresentFromContext(voidItemWithContext.context());
@@ -192,7 +192,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
           return Uni.createFrom().voidItem()
             .onItem().transformToUni(v -> eventService
-              .consumerEvent(EventType.MQTT_ENDPOINT_CLOSED_EVENT, data -> {
+              .consumeEvent(EventType.MQTT_ENDPOINT_CLOSED_EVENT, data -> {
                 MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
                 if (session.getSessionId().equals(mqttEndpointClosedEvent.getSessionId())) {
                   // When EVENT_MQTT_ENDPOINT_CLOSED_EVENT received and sessionId is same, cancel timer and run forward.
@@ -229,7 +229,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
     mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));
-    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, msgService, sessionService, retainService, compositeService));
+    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, vertx, msgService, sessionService, retainService, compositeService, eventService));
     mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint, sessionService, msgService, compositeService));
     mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint, sessionService, msgService));
     mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint, sessionService, msgService));
