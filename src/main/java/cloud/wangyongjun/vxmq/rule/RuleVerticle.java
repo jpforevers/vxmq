@@ -14,10 +14,9 @@ public class RuleVerticle extends AbstractVerticle {
   @Override
   public Uni<Void> asyncStart() {
     if (Config.getRuleStaticAllMqttEventToOneKafkaTopicEnable(config())) {
-      return vertx.deployVerticle(AllMqttEventToOneKafkaTopicStaticRule.class.getName(), new DeploymentOptions().setConfig(config())).replaceWithVoid();
-    } else {
-      return Uni.createFrom().voidItem();
+      vertx.setTimer(2000, l -> vertx.deployVerticleAndForget(AllMqttEventToOneKafkaTopicStaticRule.class.getName(), new DeploymentOptions().setConfig(config())));
     }
+    return Uni.createFrom().voidItem();
   }
 
   @Override

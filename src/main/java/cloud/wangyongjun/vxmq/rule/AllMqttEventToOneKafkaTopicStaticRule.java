@@ -13,6 +13,7 @@ import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.kafka.client.producer.KafkaProducer;
 import io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +31,10 @@ public class AllMqttEventToOneKafkaTopicStaticRule extends AbstractVerticle {
   public Uni<Void> asyncStart() {
     EventService eventService = ServiceFactory.eventService(vertx);
     Map<String, String> kafkaConfig = new HashMap<>();
-    kafkaConfig.put("bootstrap.servers", Config.getRuleStaticAllMqttEventToOneKafkaTopicKafkaServers(config()));
-    kafkaConfig.put("key.serializer", StringSerializer.class.getName());
-    kafkaConfig.put("value.serializer", JsonObjectSerializer.class.getName());
-    kafkaConfig.put("acks", "1");
+    kafkaConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, Config.getRuleStaticAllMqttEventToOneKafkaTopicKafkaServers(config()));
+    kafkaConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+    kafkaConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonObjectSerializer.class.getName());
+    kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "1");
     KafkaProducer<String, JsonObject> kafkaProducer = KafkaProducer.create(vertx, kafkaConfig);
     List<Uni<Void>> consumeEventUnis = new ArrayList<>();
     for (EventType value : EventType.values()) {

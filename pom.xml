@@ -237,7 +237,7 @@
             <image>docker.io/jpforevers/myjavabase:17-alpine</image>
           </from>
           <to>
-            <image>wangyongjun/${project.artifactId}</image>
+            <image>jpforevers/${project.artifactId}</image>
             <tags>
               <tag>${project.version}</tag>
             </tags>
