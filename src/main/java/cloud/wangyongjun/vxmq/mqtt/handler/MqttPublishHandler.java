@@ -228,7 +228,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     switch (mqttPublishMessage.qosLevel()) {
       case AT_MOST_ONCE:
       case AT_LEAST_ONCE:
-        MsgToTopic msgToTopic = new MsgToTopic().setSourceClientId(mqttEndpoint.clientIdentifier()).setTopic(mqttPublishMessage.topicName())
+        MsgToTopic msgToTopic = new MsgToTopic().setClientId(mqttEndpoint.clientIdentifier()).setTopic(mqttPublishMessage.topicName())
           .setQos(mqttPublishMessage.qosLevel().value()).setPayload(mqttPublishMessage.payload().getDelegate())
           .setRetain(mqttPublishMessage.isRetain());
         return compositeService.forward(msgToTopic);

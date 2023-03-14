@@ -16,6 +16,9 @@ public class RuleVerticle extends AbstractVerticle {
     if (Config.getRuleStaticWriteMqttEventToKafkaEnable(config())) {
       vertx.setTimer(2000, l -> vertx.deployVerticleAndForget(WriteMqttEventToKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config())));
     }
+    if (Config.getRuleStaticReadMqttPublishFromKafkaEnable(config())) {
+      vertx.setTimer(2000, l -> vertx.deployVerticleAndForget(ReadMqttPublishFromKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config())));
+    }
     return Uni.createFrom().voidItem();
   }
 

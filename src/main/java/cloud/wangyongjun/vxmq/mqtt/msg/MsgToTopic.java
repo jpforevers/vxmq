@@ -5,7 +5,7 @@ import io.vertx.core.json.JsonObject;
 
 public class MsgToTopic {
 
-  private String sourceClientId;
+  private String clientId;
   private String topic;
   private int qos;
   private Buffer payload;
@@ -15,7 +15,7 @@ public class MsgToTopic {
   }
 
   public MsgToTopic(JsonObject jsonObject) {
-    this.sourceClientId = jsonObject.getString("sourceClientId");
+    this.clientId = jsonObject.getString("clientId");
     this.topic = jsonObject.getString("topic");
     this.qos = jsonObject.getInteger("qos");
     this.payload = jsonObject.getBuffer("payload");
@@ -24,7 +24,7 @@ public class MsgToTopic {
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sourceClientId", this.sourceClientId);
+    jsonObject.put("clientId", this.clientId);
     jsonObject.put("topic", this.topic);
     jsonObject.put("qos", this.qos);
     jsonObject.put("payload", this.payload);
@@ -37,12 +37,12 @@ public class MsgToTopic {
     return toJson().toString();
   }
 
-  public String getSourceClientId() {
-    return sourceClientId;
+  public String getClientId() {
+    return clientId;
   }
 
-  public MsgToTopic setSourceClientId(String sourceClientId) {
-    this.sourceClientId = sourceClientId;
+  public MsgToTopic setClientId(String clientId) {
+    this.clientId = clientId;
     return this;
   }
 
