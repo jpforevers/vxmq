@@ -23,14 +23,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class AllMqttEventToOneKafkaTopicStaticRule extends AbstractVerticle {
+public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AllMqttEventToOneKafkaTopicStaticRule.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WriteMqttEventToKafkaStaticRule.class);
 
   @Override
   public Uni<Void> asyncStart() {
-    String servers = Config.getRuleStaticAllMqttEventToOneKafkaTopicKafkaServers(config());
-    String kafkaTopic = Config.getRuleStaticAllMqttEventToOneKafkaTopicKafkaTopic(config());
+    String servers = Config.getRuleStaticWriteMqttEventToKafkaKafkaServers(config());
+    String kafkaTopic = Config.getRuleStaticWriteMqttEventToKafkaKafkaTopic(config());
 
     Map<String, String> adminConfig = new HashMap<>();
     adminConfig.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
