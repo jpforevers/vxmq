@@ -76,7 +76,7 @@ public class DefaultCompositeService implements CompositeService {
       .onItem().transformToUni(v -> willService.getWill(sessionId))
       .onItem().transformToUni(will -> {
         if (will != null) {
-          MsgToTopic msgToTopic = new MsgToTopic().setSourceClientId(will.getClientId()).setTopic(will.getWillTopicName())
+          MsgToTopic msgToTopic = new MsgToTopic().setClientId(will.getClientId()).setTopic(will.getWillTopicName())
             .setQos(will.getWillQos()).setPayload(will.getWillMessage()).setRetain(will.isWillRetain());
           return forward(msgToTopic)
             .onItem().transformToUni(v -> willService.removeWill(sessionId))
@@ -125,7 +125,7 @@ public class DefaultCompositeService implements CompositeService {
 //      subService.allMatchSubs(msgToTopic.getTopic(), true)
 //        .onItem().transformToMulti(subscriptions -> Multi.createFrom().items(subscriptions.stream()))
 //        .onItem().call(subscription -> {
-//          if (subscription.getNoLocal() != null && subscription.getNoLocal() && subscription.getClientId().equals(msgToTopic.getSourceClientId())) {
+//          if (subscription.getNoLocal() != null && subscription.getNoLocal() && subscription.getClientId().equals(msgToTopic.getClientId())) {
 //            return Uni.createFrom().voidItem();
 //          }else {
 //            return sessionService.getSession(subscription.getClientId())
@@ -154,7 +154,7 @@ public class DefaultCompositeService implements CompositeService {
       .onItem().transformToUni(subscriptions -> {
         List<Uni<Void>> unis = new ArrayList<>();
         for (Subscription subscription : subscriptions) {
-          if (subscription.getNoLocal() != null && subscription.getNoLocal() && subscription.getClientId().equals(msgToTopic.getSourceClientId())) {
+          if (subscription.getNoLocal() != null && subscription.getNoLocal() && subscription.getClientId().equals(msgToTopic.getClientId())) {
             // Bit 2 of the Subscription Options represents the No Local option. If the value is 1, Application Messages MUST NOT be forwarded to a connection with a ClientID equal to the ClientID of the publishing connection [MQTT-3.8.3-3].
             break;
           } else {

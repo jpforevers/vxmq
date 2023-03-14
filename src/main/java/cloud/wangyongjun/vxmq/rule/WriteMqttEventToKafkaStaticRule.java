@@ -2,7 +2,6 @@ package cloud.wangyongjun.vxmq.rule;
 
 import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
-import cloud.wangyongjun.vxmq.assist.JsonObjectSerializer;
 import cloud.wangyongjun.vxmq.assist.ServiceFactory;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
@@ -12,6 +11,7 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.kafka.admin.NewTopic;
+import io.vertx.kafka.client.serialization.JsonObjectSerializer;
 import io.vertx.mutiny.kafka.admin.KafkaAdminClient;
 import io.vertx.mutiny.kafka.client.producer.KafkaProducer;
 import io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord;
@@ -55,6 +55,7 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
       }, true).replaceWithVoid();
       consumeEventUnis.add(consumeEventUni);
     }
+
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> kafkaAdminClient.listTopics())
       .onItem().transformToUni(topics -> topics.contains(kafkaTopic) ? Uni.createFrom().voidItem() : kafkaAdminClient.createTopics(Collections.singletonList(new NewTopic(kafkaTopic, 1, (short) 1))))
