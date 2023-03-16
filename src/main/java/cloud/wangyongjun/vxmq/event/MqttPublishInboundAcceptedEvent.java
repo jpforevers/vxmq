@@ -66,7 +66,7 @@ public class MqttPublishInboundAcceptedEvent implements MqttEvent{
   }
 
   @Override
-  public Event fromJson(JsonObject jsonObject) {
+  public MqttPublishInboundAcceptedEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");

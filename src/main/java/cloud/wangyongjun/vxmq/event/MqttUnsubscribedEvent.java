@@ -45,7 +45,7 @@ public class MqttUnsubscribedEvent implements MqttEvent{
   }
 
   @Override
-  public Event fromJson(JsonObject jsonObject) {
+  public MqttUnsubscribedEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
