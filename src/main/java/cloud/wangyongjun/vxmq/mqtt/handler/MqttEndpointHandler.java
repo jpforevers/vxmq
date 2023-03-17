@@ -225,7 +225,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
     mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
     mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
-    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, sessionService));
+    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, vertx, sessionService, eventService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
     mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));
