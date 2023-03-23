@@ -8,15 +8,19 @@ public class MqttConnectedEvent implements MqttEvent {
   private String nodeId;
   private String clientId;
   private int protocolVersion;
+  private String username;
+  private String password;
 
   public MqttConnectedEvent() {
   }
 
-  public MqttConnectedEvent(long time, String nodeId, String clientId, int protocolVersion) {
+  public MqttConnectedEvent(long time, String nodeId, String clientId, int protocolVersion, String username, String password) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
     this.protocolVersion = protocolVersion;
+    this.username = username;
+    this.password = password;
   }
 
   @Override
@@ -38,6 +42,8 @@ public class MqttConnectedEvent implements MqttEvent {
     jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
     jsonObject.put("protocolVersion", protocolVersion);
+    jsonObject.put("username", username);
+    jsonObject.put("password", password);
     return jsonObject;
   }
 
@@ -47,6 +53,8 @@ public class MqttConnectedEvent implements MqttEvent {
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
     this.protocolVersion = jsonObject.getInteger("protocolVersion");
+    this.username = jsonObject.getString("username");
+    this.password = jsonObject.getString("password");
     return this;
   }
 
@@ -62,6 +70,14 @@ public class MqttConnectedEvent implements MqttEvent {
 
   public int getProtocolVersion() {
     return protocolVersion;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getPassword() {
+    return password;
   }
 
 }
