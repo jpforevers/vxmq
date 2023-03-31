@@ -27,6 +27,9 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WriteMqttEventToKafkaStaticRule.class);
 
+  private EventService eventService;
+  private KafkaProducer<String, JsonObject> kafkaProducer;
+
   @Override
   public Uni<Void> asyncStart() {
     String servers = Config.getRuleStaticWriteMqttEventToKafkaKafkaServers(config());
@@ -36,13 +39,13 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
     adminConfig.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
     KafkaAdminClient kafkaAdminClient = KafkaAdminClient.create(vertx, adminConfig);
 
-    EventService eventService = ServiceFactory.eventService(vertx);
+    eventService = ServiceFactory.eventService(vertx);
     Map<String, String> kafkaConfig = new HashMap<>();
     kafkaConfig.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
     kafkaConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
     kafkaConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonObjectSerializer.class.getName());
     kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "1");
-    KafkaProducer<String, JsonObject> kafkaProducer = KafkaProducer.create(vertx, kafkaConfig);
+    kafkaProducer = KafkaProducer.createShared(vertx, "vxmq.rule.static.WriteMqttEventToKafka", kafkaConfig);
 
     List<Uni<Void>> consumeEventUnis = new ArrayList<>();
     for (EventType value : EventType.values()) {
@@ -59,6 +62,7 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> kafkaAdminClient.listTopics())
       .onItem().transformToUni(topics -> topics.contains(kafkaTopic) ? Uni.createFrom().voidItem() : kafkaAdminClient.createTopics(Collections.singletonList(new NewTopic(kafkaTopic, 1, (short) 1))))
+      .onItem().transformToUni(v -> kafkaAdminClient.close())
       .onItem().transformToUni(v -> Uni.combine().all().unis(consumeEventUnis).discardItems());
   }
 

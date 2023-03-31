@@ -153,8 +153,11 @@ public class VxmqLauncher {
     rollingFileAppender.setTriggeringPolicy(sizeAndTimeBasedRollingPolicy);
     rollingFileAppender.start();
 
-    ch.qos.logback.classic.Logger customLogger = loggerContext.getLogger("org.apache.ignite");
-    customLogger.setLevel(Level.WARN);
+    ch.qos.logback.classic.Logger igniteLogger = loggerContext.getLogger("org.apache.ignite");
+    igniteLogger.setLevel(Level.WARN);
+
+    ch.qos.logback.classic.Logger kafkaLogger = loggerContext.getLogger("org.apache.kafka");
+    kafkaLogger.setLevel(Level.WARN);
 
     ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
     rootLogger.setLevel(Level.INFO);
