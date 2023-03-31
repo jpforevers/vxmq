@@ -177,6 +177,7 @@ public class VxmqLauncher {
     IgniteConfiguration igniteCfg = new IgniteConfiguration();
     igniteCfg.setGridLogger(new Slf4jLogger());
     igniteCfg.setWorkDirectory(Config.getIgniteWorkDirectory(config));
+    igniteCfg.setMetricsLogFrequency(0);
     ClusterManager clusterManager = new IgniteClusterManager(igniteCfg);
 
     VertxOptions vertxOptions = new VertxOptions();
