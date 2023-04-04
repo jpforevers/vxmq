@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.http;
+package cloud.wangyongjun.vxmq.http.api.ping;
 
-public class ApiConstants {
+import cloud.wangyongjun.vxmq.http.api.AbstractApiJsonResultHandler;
+import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
+import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.ext.web.RoutingContext;
 
-  public static final String API_URL_PREFIX_API = "/api";
-  public static final String API_URL_PREFIX_VERSION_V1 = "/v1";
-  public static final String API_URL_PREFIX_V1 = API_URL_PREFIX_API + API_URL_PREFIX_VERSION_V1;
+public class PingHandler extends AbstractApiJsonResultHandler {
 
-  public static final String API_PREFIX_TEST = "/test";
-  public static final String API_PREFIX_PING = "/ping";
-  public static final String API_PREFIX_HEALTH = "/health";
+  public PingHandler(Vertx vertx) {
+    super(vertx);
+  }
+
+  @Override
+  public Uni<Object> computeJsonResult(RoutingContext routingContext) {
+
+    return Uni.createFrom().item(new JsonObject().put("result", "ok"));
+  }
 
 }
