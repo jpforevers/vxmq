@@ -19,7 +19,6 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttSubscribedEvent;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
@@ -54,6 +53,7 @@ import java.util.stream.Collectors;
 /**
  * This handler is called when a SUBSCRIBE message is received.
  */
+@SuppressWarnings("ALL")
 public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MqttSubscribeHandler.class);

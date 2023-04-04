@@ -19,7 +19,6 @@ package cloud.wangyongjun.vxmq.mqtt;
 import cloud.wangyongjun.vxmq.mqtt.exception.InvalidTopicException;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

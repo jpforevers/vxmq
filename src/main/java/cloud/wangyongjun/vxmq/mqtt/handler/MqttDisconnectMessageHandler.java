@@ -19,7 +19,6 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttDisconnectedEvent;
 import cloud.wangyongjun.vxmq.mqtt.session.Session;
 import cloud.wangyongjun.vxmq.mqtt.session.SessionService;

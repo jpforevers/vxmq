@@ -19,7 +19,6 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.mqtt.client.ClientService;
 import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;

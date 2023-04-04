@@ -102,7 +102,6 @@ public class ClientVerticle extends AbstractVerticle {
       .onItem().transformToUni(session -> {
         MqttQoS mqttQoS = MqttQoS.valueOf(msgToClient.getQos());
         return switch (mqttQoS) {
-          case AT_MOST_ONCE -> Uni.createFrom().voidItem();
           case AT_LEAST_ONCE ->
             msgService.saveOutboundQos1Pub(new OutboundQos1Pub(session.getSessionId(), session.getClientId(), messageId, msgToClient.getTopic(), msgToClient.getQos(), msgToClient.getPayload(), msgToClient.isDup(), msgToClient.isRetain(), Instant.now().toEpochMilli()));
           case EXACTLY_ONCE ->
