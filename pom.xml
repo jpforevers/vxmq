@@ -79,6 +79,13 @@
       <version>${smallrye-mutiny-vertx.version}</version>
     </dependency>
 
+    <!-- Health check -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-health-check</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
     <!-- Service proxies -->
     <dependency>
       <groupId>io.vertx</groupId>
