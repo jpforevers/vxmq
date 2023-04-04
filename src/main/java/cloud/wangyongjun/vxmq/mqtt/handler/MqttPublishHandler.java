@@ -242,16 +242,18 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
    */
   private Uni<Void> handleMessage(MqttPublishMessage mqttPublishMessage) {
     switch (mqttPublishMessage.qosLevel()) {
-      case AT_MOST_ONCE:
-      case AT_LEAST_ONCE:
+      case AT_MOST_ONCE, AT_LEAST_ONCE -> {
         MsgToTopic msgToTopic = new MsgToTopic().setClientId(mqttEndpoint.clientIdentifier()).setTopic(mqttPublishMessage.topicName())
           .setQos(mqttPublishMessage.qosLevel().value()).setPayload(mqttPublishMessage.payload().getDelegate())
           .setRetain(mqttPublishMessage.isRetain());
         return compositeService.forward(msgToTopic);
-      case EXACTLY_ONCE:
+      }
+      case EXACTLY_ONCE -> {
         return Uni.createFrom().voidItem();
-      default:
+      }
+      default -> {
         return Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
+      }
     }
   }
 

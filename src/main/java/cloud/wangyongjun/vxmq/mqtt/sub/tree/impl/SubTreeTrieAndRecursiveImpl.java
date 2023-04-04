@@ -52,10 +52,10 @@ public class SubTreeTrieAndRecursiveImpl implements SubTree {
 
   /**
    * 递归寻找匹配的所有节点
-   * @param node
-   * @param tokens
-   * @param tokenIndex
-   * @param consumer
+   * @param node node
+   * @param tokens tokens
+   * @param tokenIndex tokenIndex
+   * @param consumer consumer
    */
   private void findAllMatchNodesRecursive(Node node, String[] tokens, int tokenIndex, Consumer<Node> consumer) {
     if (node == null) {
@@ -92,10 +92,10 @@ public class SubTreeTrieAndRecursiveImpl implements SubTree {
 
   /**
    * 递归寻找相等的那个节点
-   * @param node
-   * @param tokens
-   * @param tokenIndex
-   * @param consumer
+   * @param node node
+   * @param tokens tokens
+   * @param tokenIndex tokenIndex
+   * @param consumer consumer
    */
   private void findTheEqualNodeRecursive(Node node, String[] tokens, int tokenIndex, Consumer<Node> consumer) {
     if (node == null) {

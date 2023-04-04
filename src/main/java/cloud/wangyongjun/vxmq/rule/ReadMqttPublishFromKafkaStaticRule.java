@@ -61,9 +61,7 @@ public class ReadMqttPublishFromKafkaStaticRule extends AbstractVerticle {
     kafkaConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
     kafkaConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "vxmq.rule.static.ReadMqttPublishFromKafka");
     kafkaConsumer = KafkaConsumer.create(vertx, kafkaConfig);
-    kafkaConsumer.handler(record -> {
-      compositeService.forward(new MsgToTopic(record.value())).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when forward msg from kafka", t));
-    });
+    kafkaConsumer.handler(record -> compositeService.forward(new MsgToTopic(record.value())).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when forward msg from kafka", t)));
 
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> kafkaAdminClient.listTopics())
