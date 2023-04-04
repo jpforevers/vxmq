@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-present 王用军
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cloud.wangyongjun.vxmq;
 
 import ch.qos.logback.classic.Level;
@@ -153,8 +169,11 @@ public class VxmqLauncher {
     rollingFileAppender.setTriggeringPolicy(sizeAndTimeBasedRollingPolicy);
     rollingFileAppender.start();
 
-    ch.qos.logback.classic.Logger customLogger = loggerContext.getLogger("org.apache.ignite");
-    customLogger.setLevel(Level.WARN);
+    ch.qos.logback.classic.Logger igniteLogger = loggerContext.getLogger("org.apache.ignite");
+    igniteLogger.setLevel(Level.WARN);
+
+    ch.qos.logback.classic.Logger kafkaLogger = loggerContext.getLogger("org.apache.kafka");
+    kafkaLogger.setLevel(Level.WARN);
 
     ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
     rootLogger.setLevel(Level.INFO);
@@ -177,6 +196,7 @@ public class VxmqLauncher {
     IgniteConfiguration igniteCfg = new IgniteConfiguration();
     igniteCfg.setGridLogger(new Slf4jLogger());
     igniteCfg.setWorkDirectory(Config.getIgniteWorkDirectory(config));
+    igniteCfg.setMetricsLogFrequency(0);
     ClusterManager clusterManager = new IgniteClusterManager(igniteCfg);
 
     VertxOptions vertxOptions = new VertxOptions();

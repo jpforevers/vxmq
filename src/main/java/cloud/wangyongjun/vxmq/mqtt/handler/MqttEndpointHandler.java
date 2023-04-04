@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-present 王用军
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
@@ -108,7 +124,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
       .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion())))
+        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
+        mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",
+        mqttEndpoint.auth() != null ? mqttEndpoint.auth().getPassword() : "")))
       .attachContext()
       .subscribe().with(context, voidItemWithContext -> {
         boolean sessionPresent = getSessionPresentFromContext(voidItemWithContext.context());
@@ -225,7 +243,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
     mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
     mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
-    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, sessionService));
+    mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, vertx, sessionService, eventService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
     mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));

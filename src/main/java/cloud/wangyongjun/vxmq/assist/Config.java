@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-present 王用军
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cloud.wangyongjun.vxmq.assist;
 
 import io.vertx.core.json.JsonObject;
@@ -25,14 +41,23 @@ public class Config {
   public static final String KEY_VXMQ_IGNITE_WORK_DIR = "vxmq.ignite.work-dir";
   public static final String DEFAULT_VXMQ_IGNITE_WORK_DIR = "/vxmq/ignite";
 
-  public static final String KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE = "vxmq.rule.static.AllMqttEventToOneKafkaTopic.enable";
-  public static final boolean DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE = false;
+  public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE = "vxmq.rule.static.WriteMqttEventToKafka.enable";
+  public static final boolean DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE = false;
 
-  public static final String KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS = "vxmq.rule.static.AllMqttEventToOneKafkaTopic.kafka.servers";
-  public static final String DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS = "localhost:9094";
+  public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS = "vxmq.rule.static.WriteMqttEventToKafka.kafka.servers";
+  public static final String DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS = "localhost:9094";
 
-  public static final String KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC = "vxmq.rule.static.AllMqttEventToOneKafkaTopic.kafka.topic";
-  public static final String DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC = "vxmq.mqtt.event";
+  public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_TOPIC = "vxmq.rule.static.WriteMqttEventToKafka.kafka.topic";
+  public static final String DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_TOPIC = "vxmq.mqtt.event";
+
+  public static final String KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE = "vxmq.rule.static.ReadMqttPublishFromKafka.enable";
+  public static final boolean DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE = false;
+
+  public static final String KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS = "vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers";
+  public static final String DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS = "localhost:9094";
+
+  public static final String KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_TOPIC = "vxmq.rule.static.ReadMqttPublishFromKafka.kafka.topic";
+  public static final String DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_TOPIC = "vxmq.mqtt.publish";
 
   public static String getNothing(JsonObject config){
     return config.getString(KEY_NOTHING, DEFAULT_NOTHING);
@@ -70,16 +95,28 @@ public class Config {
     return getLogsDir(config) + "/vxmq.log";
   }
 
-  public static boolean getRuleStaticAllMqttEventToOneKafkaTopicEnable(JsonObject config){
-    return config.getBoolean(KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE, DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_ENABLE);
+  public static boolean getRuleStaticWriteMqttEventToKafkaEnable(JsonObject config){
+    return config.getBoolean(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE, DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE);
   }
 
-  public static String getRuleStaticAllMqttEventToOneKafkaTopicKafkaServers(JsonObject config){
-    return config.getString(KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS, DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_SERVERS);
+  public static String getRuleStaticWriteMqttEventToKafkaKafkaServers(JsonObject config){
+    return config.getString(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS, DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS);
   }
 
-  public static String getRuleStaticAllMqttEventToOneKafkaTopicKafkaTopic(JsonObject config){
-    return config.getString(KEY_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC, DEFAULT_VXMQ_RULE_STATIC_ALL_MQTT_EVENT_TO_ONE_KAFKA_TOPIC_KAFKA_TOPIC);
+  public static String getRuleStaticWriteMqttEventToKafkaKafkaTopic(JsonObject config){
+    return config.getString(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_TOPIC, DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_TOPIC);
+  }
+
+  public static boolean getRuleStaticReadMqttPublishFromKafkaEnable(JsonObject config){
+    return config.getBoolean(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE, DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE);
+  }
+
+  public static String getRuleStaticReadMqttPublishFromKafkaKafkaServers(JsonObject config){
+    return config.getString(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS, DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS);
+  }
+
+  public static String getRuleStaticReadMqttPublishFromKafkaKafkaTopic(JsonObject config){
+    return config.getString(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_TOPIC, DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_TOPIC);
   }
 
 }

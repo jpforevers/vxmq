@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-present 王用军
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cloud.wangyongjun.vxmq.event;
 
 import cloud.wangyongjun.vxmq.assist.EBAddress;
@@ -9,6 +25,7 @@ public enum EventType {
   MQTT_CONNECTED_EVENT(EBAddress.EVENT_MQTT_CONNECTED),
   MQTT_ENDPOINT_CLOSED_EVENT(EBAddress.EVENT_MQTT_ENDPOINT_CLOSED),
   MQTT_DISCONNECTED_EVENT(EBAddress.EVENT_MQTT_DISCONNECTED),
+  MQTT_PING_EVENT(EBAddress.EVENT_MQTT_PING),
   MQTT_SUBSCRIBED_EVENT(EBAddress.EVENT_MQTT_SUBSCRIBED),
   MQTT_UNSUBSCRIBED_EVENT(EBAddress.EVENT_MQTT_UNSUBSCRIBED),
   MQTT_PUBLISH_INBOUND_ACCEPTED_EVENT(EBAddress.EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED)
@@ -30,6 +47,7 @@ public enum EventType {
       case MQTT_CONNECTED_EVENT -> new MqttConnectedEvent().fromJson(data);
       case MQTT_ENDPOINT_CLOSED_EVENT -> new MqttEndpointClosedEvent().fromJson(data);
       case MQTT_DISCONNECTED_EVENT -> new MqttDisconnectedEvent().fromJson(data);
+      case MQTT_PING_EVENT -> new MqttPingEvent().fromJson(data);
       case MQTT_SUBSCRIBED_EVENT -> new MqttSubscribedEvent().fromJson(data);
       case MQTT_UNSUBSCRIBED_EVENT -> new MqttUnsubscribedEvent().fromJson(data);
       case MQTT_PUBLISH_INBOUND_ACCEPTED_EVENT -> new MqttPublishInboundAcceptedEvent().fromJson(data);

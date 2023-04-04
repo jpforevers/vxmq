@@ -18,25 +18,19 @@ package cloud.wangyongjun.vxmq.event;
 
 import io.vertx.core.json.JsonObject;
 
-public class MqttConnectedEvent implements MqttEvent {
+public class MqttPingEvent implements MqttEvent {
 
   private long time;
   private String nodeId;
   private String clientId;
-  private int protocolVersion;
-  private String username;
-  private String password;
 
-  public MqttConnectedEvent() {
+  public MqttPingEvent() {
   }
 
-  public MqttConnectedEvent(long time, String nodeId, String clientId, int protocolVersion, String username, String password) {
+  public MqttPingEvent(long time, String nodeId, String clientId) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
-    this.protocolVersion = protocolVersion;
-    this.username = username;
-    this.password = password;
   }
 
   @Override
@@ -46,7 +40,12 @@ public class MqttConnectedEvent implements MqttEvent {
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_CONNECTED_EVENT;
+    return EventType.MQTT_PING_EVENT;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
   }
 
   @Override
@@ -57,43 +56,20 @@ public class MqttConnectedEvent implements MqttEvent {
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
-    jsonObject.put("protocolVersion", protocolVersion);
-    jsonObject.put("username", username);
-    jsonObject.put("password", password);
     return jsonObject;
   }
 
   @Override
-  public MqttConnectedEvent fromJson(JsonObject jsonObject) {
+  public MqttPingEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
-    this.protocolVersion = jsonObject.getInteger("protocolVersion");
-    this.username = jsonObject.getString("username");
-    this.password = jsonObject.getString("password");
     return this;
-  }
-
-  @Override
-  public String getNodeId() {
-    return nodeId;
   }
 
   @Override
   public String getClientId() {
     return clientId;
-  }
-
-  public int getProtocolVersion() {
-    return protocolVersion;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public String getPassword() {
-    return password;
   }
 
 }
