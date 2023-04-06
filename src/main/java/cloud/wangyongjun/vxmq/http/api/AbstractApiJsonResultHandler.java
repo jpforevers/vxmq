@@ -29,7 +29,7 @@ public abstract class AbstractApiJsonResultHandler extends AbstractApiHandler {
   @Override
   public Uni<Void> handleApiRequest(RoutingContext routingContext) {
     return computeJsonResult(routingContext)
-      .onItem().transformToUni(routingContext::json);
+      .onItem().transformToUni(o -> o == null ? routingContext.end() : routingContext.json(o));
   }
 
   public abstract Uni<Object> computeJsonResult(RoutingContext routingContext);
