@@ -31,7 +31,7 @@ public class PingHandler extends AbstractApiJsonResultHandler {
   @Override
   public Uni<Object> computeJsonResult(RoutingContext routingContext) {
 
-    return Uni.createFrom().item(new JsonObject().put("result", "ok"));
+    return Uni.createFrom().nullItem();
   }
 
 }
