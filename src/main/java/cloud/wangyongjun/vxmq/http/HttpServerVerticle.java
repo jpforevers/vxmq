@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.http;
 
 import cloud.wangyongjun.vxmq.assist.Config;
+import cloud.wangyongjun.vxmq.http.api.ApiConstants;
 import cloud.wangyongjun.vxmq.http.api.ApiFailureHandler;
 import cloud.wangyongjun.vxmq.http.api.ping.PingHandler;
 import cloud.wangyongjun.vxmq.http.api.test.TestHandler;

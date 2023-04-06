@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.http;
+package cloud.wangyongjun.vxmq.http.api;
 
 public class ApiConstants {
 

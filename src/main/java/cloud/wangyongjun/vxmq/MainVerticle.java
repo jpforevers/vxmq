@@ -17,7 +17,7 @@
 package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.http.ApiConstants;
+import cloud.wangyongjun.vxmq.http.api.ApiConstants;
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.sub.SubVerticle;
