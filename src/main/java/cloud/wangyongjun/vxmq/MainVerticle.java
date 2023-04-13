@@ -94,16 +94,20 @@ public class MainVerticle extends AbstractVerticle {
 
   private HealthChecks configHealthChecks() {
     HealthChecks hc = HealthChecks.create(vertx);
-    MqttClient mqttClient = MqttClient.create(vertx, new MqttClientOptions().setClientId("health-check-client"));
-    WebClient webClient = WebClient.create(vertx, new WebClientOptions());
-
     hc.register("mqtt-server", 3000, Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> mqttClient.connect(Config.getMqttServerPort(config()), "127.0.0.1")
-        .onItem().transform(mqttConnAckMessage -> mqttConnAckMessage.code().equals(MqttConnectReturnCode.CONNECTION_ACCEPTED) ? Status.OK() : Status.KO())
-        .eventually(mqttClient::disconnectAndForget)));
+      .onItem().transformToUni(v -> {
+        MqttClient mqttClient = MqttClient.create(vertx, new MqttClientOptions().setClientId("health-check-client"));
+        return mqttClient.connect(Config.getMqttServerPort(config()), "127.0.0.1")
+          .onItem().transform(mqttConnAckMessage -> mqttConnAckMessage.code().equals(MqttConnectReturnCode.CONNECTION_ACCEPTED) ? Status.OK() : Status.KO())
+          .eventually(mqttClient::disconnectAndForget);
+      }));
     hc.register("http-server", 3000, Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> webClient.get(Config.getHttpServerPort(config()), "127.0.0.1", ApiConstants.API_URL_PREFIX_V1 + ApiConstants.API_PREFIX_PING).send()
-        .onItem().transform(bufferHttpResponse -> bufferHttpResponse.statusCode() == HttpResponseStatus.OK.code() ? Status.OK() : Status.KO())));
+      .onItem().transformToUni(v -> {
+        WebClient webClient = WebClient.create(vertx, new WebClientOptions());
+        return webClient.get(Config.getHttpServerPort(config()), "127.0.0.1", ApiConstants.API_URL_PREFIX_V1 + ApiConstants.API_PREFIX_PING).send()
+          .onItem().transform(bufferHttpResponse -> bufferHttpResponse.statusCode() == HttpResponseStatus.OK.code() ? Status.OK() : Status.KO())
+          .eventually(webClient::close);
+      }));
     return hc;
   }
 
