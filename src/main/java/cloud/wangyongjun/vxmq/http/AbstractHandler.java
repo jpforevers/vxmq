@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.http;
 
+import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.RoutingContext;
@@ -37,8 +38,7 @@ public abstract class AbstractHandler implements Consumer<RoutingContext> {
   @Override
   public void accept(RoutingContext routingContext) {
     logger.debug("Request from {} to {}", routingContext.request().remoteAddress(), routingContext.request().uri());
-    handleRequest(routingContext).subscribe().with(v -> {
-    }, routingContext::fail);
+    handleRequest(routingContext).subscribe().with(ConsumerUtil.nothingToDo(), routingContext::fail);
   }
 
   public abstract Uni<Void> handleRequest(RoutingContext routingContext);
