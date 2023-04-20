@@ -25,5 +25,6 @@ public class ApiConstants {
   public static final String API_PREFIX_HEALTH = "/health";
   public static final String API_PREFIX_PING = "/ping";
   public static final String API_PREFIX_TEST = "/test";
+  public static final String API_PREFIX_SESSION = "/session";
 
 }
