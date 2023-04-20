@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.will;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.Nullable;
 import cloud.wangyongjun.vxmq.assist.StringPair;
 import io.vertx.core.buffer.Buffer;
@@ -50,38 +51,38 @@ public class Will {
   }
 
   public Will(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.clientId = jsonObject.getString("clientId");
-    this.willTopicName = jsonObject.getString("willTopicName");
-    this.willMessage = jsonObject.getBuffer("willMessage");
-    this.willQos = jsonObject.getInteger("willQos");
-    this.willRetain = jsonObject.getBoolean("willRetain");
-    this.willDelayInterval = jsonObject.getInteger("willDelayInterval");
-    this.payloadFormatIndicator = jsonObject.getInteger("payloadFormatIndicator");
-    this.messageExpiryInterval = jsonObject.getInteger("messageExpiryInterval");
-    this.contentType = jsonObject.getString("contentType");
-    this.responseTopic = jsonObject.getString("responseTopic");
-    this.correlationData = jsonObject.getBuffer("correlationData");
-    this.userProperties = jsonObject.getJsonArray("userProperties") == null ? new ArrayList<>() : jsonObject.getJsonArray("userProperties").stream().map(o -> (JsonObject) o).map(StringPair::new).collect(Collectors.toList());
-    this.createdTime = Instant.parse(jsonObject.getString("createdTime")).toEpochMilli();
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
+    this.willTopicName = jsonObject.getString(ModelConstants.FIELD_NAME_WILL_TOPIC_NAME);
+    this.willMessage = jsonObject.getBuffer(ModelConstants.FIELD_NAME_WILL_MESSAGE);
+    this.willQos = jsonObject.getInteger(ModelConstants.FIELD_NAME_WILL_QOS);
+    this.willRetain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_WILL_RETAIN);
+    this.willDelayInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_WILL_DELAY_INTERVAL);
+    this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
+    this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
+    this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
+    this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
+    this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
+    this.userProperties = jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES) == null ? new ArrayList<>() : jsonObject.getJsonArray("userProperties").stream().map(o -> (JsonObject) o).map(StringPair::new).collect(Collectors.toList());
+    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", this.sessionId);
-    jsonObject.put("clientId", this.clientId);
-    jsonObject.put("willTopicName", this.willTopicName);
-    jsonObject.put("willMessage", this.willMessage);
-    jsonObject.put("willQos", this.willQos);
-    jsonObject.put("willRetain", this.willRetain);
-    jsonObject.put("willDelayInterval", this.willDelayInterval);
-    jsonObject.put("payloadFormatIndicator", this.payloadFormatIndicator);
-    jsonObject.put("messageExpiryInterval", this.messageExpiryInterval);
-    jsonObject.put("contentType", this.contentType);
-    jsonObject.put("responseTopic", this.responseTopic);
-    jsonObject.put("correlationData", this.correlationData);
-    jsonObject.put("userProperties", this.userProperties == null ? null : this.userProperties.stream().map(StringPair::toJson).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
-    jsonObject.put("createdTime", Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
+    jsonObject.put(ModelConstants.FIELD_NAME_WILL_TOPIC_NAME, this.willTopicName);
+    jsonObject.put(ModelConstants.FIELD_NAME_WILL_MESSAGE, this.willMessage);
+    jsonObject.put(ModelConstants.FIELD_NAME_WILL_QOS, this.willQos);
+    jsonObject.put(ModelConstants.FIELD_NAME_WILL_RETAIN, this.willRetain);
+    jsonObject.put(ModelConstants.FIELD_NAME_WILL_DELAY_INTERVAL, this.willDelayInterval);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, this.payloadFormatIndicator);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
+    jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
+    jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
+    jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
+    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, this.userProperties == null ? null : this.userProperties.stream().map(StringPair::toJson).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
     return jsonObject;
   }
 

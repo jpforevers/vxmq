@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.msg;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.json.JsonObject;
 
 import java.time.Instant;
@@ -38,18 +39,18 @@ public class OutboundQos2Rel {
   }
 
   public OutboundQos2Rel(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.clientId = jsonObject.getString("clientId");
-    this.messageId = jsonObject.getInteger("messageId");
-    this.createdTime = Instant.parse(jsonObject.getString("createdTime")).toEpochMilli();
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
+    this.messageId = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_ID);
+    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", this.sessionId);
-    jsonObject.put("clientId", this.clientId);
-    jsonObject.put("messageId", this.messageId);
-    jsonObject.put("createdTime", Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_ID, this.messageId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
     return jsonObject;
   }
 

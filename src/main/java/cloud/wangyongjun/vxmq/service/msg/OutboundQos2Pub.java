@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.msg;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
@@ -49,28 +50,28 @@ public class OutboundQos2Pub {
   }
 
   public OutboundQos2Pub(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.clientId = jsonObject.getString("clientId");
-    this.messageId = jsonObject.getInteger("messageId");
-    this.topic = jsonObject.getString("topic");
-    this.qos = jsonObject.getInteger("qos");
-    this.payload = jsonObject.getBuffer("payload");
-    this.dup = jsonObject.getBoolean("dup");
-    this.retain = jsonObject.getBoolean("retain");
-    this.createdTime = Instant.parse(jsonObject.getString("createdTime")).toEpochMilli();
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
+    this.messageId = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_ID);
+    this.topic = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC);
+    this.qos = jsonObject.getInteger(ModelConstants.FIELD_NAME_QOS);
+    this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
+    this.dup = jsonObject.getBoolean(ModelConstants.FIELD_NAME_DUP);
+    this.retain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_RETAIN);
+    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", this.sessionId);
-    jsonObject.put("clientId", this.clientId);
-    jsonObject.put("messageId", this.messageId);
-    jsonObject.put("topic", this.topic);
-    jsonObject.put("qos", this.qos);
-    jsonObject.put("payload", this.payload);
-    jsonObject.put("dup", this.dup);
-    jsonObject.put("retain", this.retain);
-    jsonObject.put("createdTime", Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_ID, this.messageId);
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC, this.topic);
+    jsonObject.put(ModelConstants.FIELD_NAME_QOS, this.qos);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
+    jsonObject.put(ModelConstants.FIELD_NAME_DUP, this.dup);
+    jsonObject.put(ModelConstants.FIELD_NAME_RETAIN, this.retain);
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
     return jsonObject;
   }
 

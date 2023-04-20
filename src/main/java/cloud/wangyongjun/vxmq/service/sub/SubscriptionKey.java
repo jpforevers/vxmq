@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.sub;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import org.apache.ignite.cache.affinity.AffinityKeyMapped;
@@ -39,14 +40,14 @@ public class SubscriptionKey implements Comparable<SubscriptionKey> {
   }
 
   public SubscriptionKey(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.topicFilter = jsonObject.getString("topicFilter");
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.topicFilter = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC_FILTER);
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", this.sessionId);
-    jsonObject.put("topicFilter", this.topicFilter);
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC_FILTER, this.topicFilter);
     return jsonObject;
   }
 

@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.shell.cmd;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.vertx.core.cli.Option;
@@ -54,7 +55,10 @@ public class SessionCmdBuilder {
       } else if (commandLine.isFlagEnabled(listOption.getName())) {
         sessionService.allSessions()
           .subscribe().with(sessions -> {
-            List<String> headers = List.of("sessionId", "clientId", "online", "verticleId", "nodeId", "cleanSession", "protocolLevel", "sessionExpiryInterval", "createdTime", "updatedTime");
+            List<String> headers = List.of(ModelConstants.FIELD_NAME_SESSION_ID, ModelConstants.FIELD_NAME_CLIENT_ID, ModelConstants.FIELD_NAME_ONLINE,
+              ModelConstants.FIELD_NAME_VERTICLE_ID, ModelConstants.FIELD_NAME_NODE_ID, ModelConstants.FIELD_NAME_CLEAN_SESSION,
+              ModelConstants.FIELD_NAME_PROTOCOL_LEVEL, ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL,
+              ModelConstants.FIELD_NAME_CREATED_TIME, ModelConstants.FIELD_NAME_UPDATED_TIME);
             List<List<String>> rows = sessions.stream().map(session -> {
               List<String> list = new ArrayList<>();
               list.add(session.getSessionId());

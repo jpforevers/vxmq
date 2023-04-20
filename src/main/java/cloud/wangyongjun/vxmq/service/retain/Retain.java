@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.retain;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
@@ -36,18 +37,18 @@ public class Retain {
   }
 
   public Retain(JsonObject jsonObject) {
-    this.topicName = jsonObject.getString("topicName");
-    this.qos = jsonObject.getInteger("qos");
-    this.payload = jsonObject.getBuffer("payload");
-    this.createdTime = Instant.parse(jsonObject.getString("createdTime")).toEpochMilli();
+    this.topicName = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC_NAME);
+    this.qos = jsonObject.getInteger(ModelConstants.FIELD_NAME_QOS);
+    this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
+    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("topicName", this.topicName);
-    jsonObject.put("qos", this.qos);
-    jsonObject.put("payload", this.payload);
-    jsonObject.put("createdTime", Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC_NAME, this.topicName);
+    jsonObject.put(ModelConstants.FIELD_NAME_QOS, this.qos);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
     return jsonObject;
   }
 

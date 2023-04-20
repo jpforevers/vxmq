@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.sub;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.Nullable;
 import cloud.wangyongjun.vxmq.assist.StringPair;
 import io.vertx.codegen.annotations.DataObject;
@@ -50,32 +51,32 @@ public class Subscription {
   }
 
   public Subscription(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.clientId = jsonObject.getString("clientId");
-    this.topicFilter = jsonObject.getString("topicFilter");
-    this.qos = jsonObject.getInteger("qos");
-    this.isNoLocal = jsonObject.getBoolean("isNoLocal");
-    this.isRetainAsPublished = jsonObject.getBoolean("isRetainAsPublished");
-    this.retainHandling = jsonObject.getInteger("retainHandling");
-    this.subscriptionIdentifier = jsonObject.getInteger("subscriptionIdentifier");
-    this.userProperties = jsonObject.getJsonArray("userProperties") == null ? new ArrayList<>() : jsonObject.getJsonArray("userProperties").stream().map(o -> (JsonObject) o).map(StringPair::new).collect(Collectors.toList());
-    this.shareName = jsonObject.getString("shareName");
-    this.createdTime = Instant.parse(jsonObject.getString("createdTime")).toEpochMilli();
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
+    this.topicFilter = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC_FILTER);
+    this.qos = jsonObject.getInteger(ModelConstants.FIELD_NAME_QOS);
+    this.isNoLocal = jsonObject.getBoolean(ModelConstants.FIELD_NAME_IS_NO_LOCAL);
+    this.isRetainAsPublished = jsonObject.getBoolean(ModelConstants.FIELD_NAME_IS_RETAIN_AS_PUBLISHED);
+    this.retainHandling = jsonObject.getInteger(ModelConstants.FIELD_NAME_RETAIN_HANDLING);
+    this.subscriptionIdentifier = jsonObject.getInteger(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER);
+    this.userProperties = jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES) == null ? new ArrayList<>() : jsonObject.getJsonArray("userProperties").stream().map(o -> (JsonObject) o).map(StringPair::new).collect(Collectors.toList());
+    this.shareName = jsonObject.getString(ModelConstants.FIELD_NAME_SHARE_NAME);
+    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", this.sessionId);
-    jsonObject.put("clientId", this.clientId);
-    jsonObject.put("topicFilter", this.topicFilter);
-    jsonObject.put("qos", this.qos);
-    jsonObject.put("isNoLocal", this.isNoLocal);
-    jsonObject.put("isRetainAsPublished", this.isRetainAsPublished);
-    jsonObject.put("retainHandling", this.retainHandling);
-    jsonObject.put("subscriptionIdentifier", this.subscriptionIdentifier);
-    jsonObject.put("userProperties", this.userProperties == null ? new JsonArray() : this.userProperties.stream().map(StringPair::toJson).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
-    jsonObject.put("shareName", this.shareName);
-    jsonObject.put("createdTime", Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC_FILTER, this.topicFilter);
+    jsonObject.put(ModelConstants.FIELD_NAME_QOS, this.qos);
+    jsonObject.put(ModelConstants.FIELD_NAME_IS_NO_LOCAL, this.isNoLocal);
+    jsonObject.put(ModelConstants.FIELD_NAME_IS_RETAIN_AS_PUBLISHED, this.isRetainAsPublished);
+    jsonObject.put(ModelConstants.FIELD_NAME_RETAIN_HANDLING, this.retainHandling);
+    jsonObject.put(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER, this.subscriptionIdentifier);
+    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, this.userProperties == null ? new JsonArray() : this.userProperties.stream().map(StringPair::toJson).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+    jsonObject.put(ModelConstants.FIELD_NAME_SHARE_NAME, this.shareName);
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
     return jsonObject;
   }
 

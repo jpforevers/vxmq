@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.shell.cmd;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
 import cloud.wangyongjun.vxmq.assist.TopicUtil;
 import cloud.wangyongjun.vxmq.service.sub.Subscription;
@@ -125,7 +126,8 @@ public class SubCmdBuilder {
   }
 
   private static String format(List<Subscription> subscriptions) {
-    List<String> headers = List.of("sessionId", "clientId", "topicFilter", "qos", "createdTime");
+    List<String> headers = List.of(ModelConstants.FIELD_NAME_SESSION_ID, ModelConstants.FIELD_NAME_CLIENT_ID,
+      ModelConstants.FIELD_NAME_TOPIC_FILTER, ModelConstants.FIELD_NAME_QOS, ModelConstants.FIELD_NAME_CREATED_TIME);
     List<List<String>> rows = subscriptions.stream().map(subscription -> {
       List<String> list = new ArrayList<>();
       list.add(subscription.getSessionId());
