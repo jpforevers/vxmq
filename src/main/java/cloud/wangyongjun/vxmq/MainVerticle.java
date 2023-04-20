@@ -18,7 +18,7 @@ package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
-import cloud.wangyongjun.vxmq.mqtt.sub.SubVerticle;
+import cloud.wangyongjun.vxmq.service.sub.SubVerticle;
 import cloud.wangyongjun.vxmq.rule.RuleVerticle;
 import cloud.wangyongjun.vxmq.shell.ShellServerVerticle;
 import io.smallrye.mutiny.Uni;

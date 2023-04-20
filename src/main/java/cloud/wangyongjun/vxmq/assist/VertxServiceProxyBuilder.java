@@ -16,7 +16,7 @@
 
 package cloud.wangyongjun.vxmq.assist;
 
-import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
+import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.mutiny.core.Vertx;
 
@@ -26,7 +26,7 @@ public class VertxServiceProxyBuilder {
     io.vertx.serviceproxy.ServiceProxyBuilder builder = new io.vertx.serviceproxy.ServiceProxyBuilder(vertx.getDelegate())
       .setAddress(EBServices.SUB_SERVICE.getEbAddress())
       .setOptions(new DeliveryOptions().setLocalOnly(true));
-    cloud.wangyongjun.vxmq.mqtt.sub.SubService subService = builder.build(cloud.wangyongjun.vxmq.mqtt.sub.SubService.class);
+    cloud.wangyongjun.vxmq.service.sub.SubService subService = builder.build(cloud.wangyongjun.vxmq.service.sub.SubService.class);
     return SubService.newInstance(subService);
   }
 
