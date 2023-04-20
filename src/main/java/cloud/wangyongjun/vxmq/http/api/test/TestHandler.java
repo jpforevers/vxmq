@@ -33,7 +33,7 @@ public class TestHandler extends AbstractApiJsonResultHandler {
   public Uni<Object> computeJsonResult(RoutingContext routingContext) {
 //    int x = 1 / 0;
 //    return Uni.createFrom().item(new JsonObject().put("x", "哈哈哈"));
-    throw new ApiException(ApiErrorCode.FORBIDDEN, "没有权限");
+    throw new ApiException(ApiErrorCode.COMMON_FORBIDDEN, "没有权限");
   }
 
 }

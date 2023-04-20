@@ -19,14 +19,10 @@ package cloud.wangyongjun.vxmq.http;
 import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.http.api.ApiConstants;
 import cloud.wangyongjun.vxmq.http.api.ApiFailureHandler;
-import cloud.wangyongjun.vxmq.http.api.ping.PingHandler;
-import cloud.wangyongjun.vxmq.http.api.test.TestHandler;
+import cloud.wangyongjun.vxmq.http.api.ApiRouterFactory;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.AllowForwardHeaders;
-import io.vertx.mutiny.ext.healthchecks.HealthCheckHandler;
-import io.vertx.mutiny.ext.healthchecks.HealthChecks;
 import io.vertx.mutiny.ext.web.Router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,23 +31,14 @@ public class HttpServerVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
 
-  private final HealthChecks healthChecks;
-
-  public HttpServerVerticle(HealthChecks healthChecks) {
-    this.healthChecks = healthChecks;
-  }
-
   @Override
   public Uni<Void> asyncStart() {
     Router rootRouter = Router.router(vertx);
     rootRouter.allowForward(AllowForwardHeaders.ALL);
 
-    Router apiRouter = Router.router(vertx);
-    registerApiRoute(apiRouter);
-
     rootRouter.route(ApiConstants.API_URL_PREFIX_V1 + "/*")
       .failureHandler(new ApiFailureHandler())
-      .subRouter(apiRouter);
+      .subRouter(ApiRouterFactory.router(vertx, config()));
 
     return vertx.createHttpServer().requestHandler(rootRouter)
       .listen(Config.getHttpServerPort(config()))
@@ -61,17 +48,6 @@ public class HttpServerVerticle extends AbstractVerticle {
   @Override
   public Uni<Void> asyncStop() {
     return Uni.createFrom().voidItem();
-  }
-
-  /**
-   * Register api route
-   *
-   * @param apiRouter api {@link io.vertx.ext.web.Router}
-   */
-  private void registerApiRoute(Router apiRouter) {
-    apiRouter.route().method(HttpMethod.GET).path(ApiConstants.API_PREFIX_TEST).handler(new TestHandler(vertx));
-    apiRouter.route().method(HttpMethod.GET).path(ApiConstants.API_PREFIX_PING).handler(new PingHandler(vertx));
-    apiRouter.route().method(HttpMethod.GET).path(ApiConstants.API_PREFIX_HEALTH).handler(HealthCheckHandler.createWithHealthChecks(healthChecks));
   }
 
 }
