@@ -17,9 +17,9 @@
 package cloud.wangyongjun.vxmq.shell.cmd;
 
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
-import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
-import cloud.wangyongjun.vxmq.mqtt.sub.Subscription;
-import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
+import cloud.wangyongjun.vxmq.assist.TopicUtil;
+import cloud.wangyongjun.vxmq.service.sub.Subscription;
+import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import io.vertx.core.cli.Option;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.cli.CLI;

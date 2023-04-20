@@ -17,12 +17,12 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttDisconnectedEvent;
-import cloud.wangyongjun.vxmq.mqtt.session.Session;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
-import cloud.wangyongjun.vxmq.mqtt.will.WillService;
+import cloud.wangyongjun.vxmq.service.session.Session;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
+import cloud.wangyongjun.vxmq.service.will.WillService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;

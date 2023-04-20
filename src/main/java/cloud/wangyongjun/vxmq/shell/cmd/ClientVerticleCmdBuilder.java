@@ -17,7 +17,7 @@
 package cloud.wangyongjun.vxmq.shell.cmd;
 
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
-import cloud.wangyongjun.vxmq.mqtt.client.ClientVerticle;
+import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
 import io.vertx.core.cli.Option;
 import io.vertx.core.impl.Deployment;
 import io.vertx.core.impl.VertxInternal;
