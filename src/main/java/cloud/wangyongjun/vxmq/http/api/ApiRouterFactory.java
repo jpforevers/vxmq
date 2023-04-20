@@ -17,12 +17,14 @@
 package cloud.wangyongjun.vxmq.http.api;
 
 import cloud.wangyongjun.vxmq.assist.Config;
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.assist.ServiceFactory;
 import cloud.wangyongjun.vxmq.http.api.ping.PingHandler;
+import cloud.wangyongjun.vxmq.http.api.session.DeleteSessionByClientIdHandler;
 import cloud.wangyongjun.vxmq.http.api.test.TestHandler;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.healthchecks.Status;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -38,10 +40,11 @@ public class ApiRouterFactory {
 
   public static Router router(Vertx vertx, JsonObject config) {
     Router apiRouter = Router.router(vertx);
-    apiRouter.route().method(HttpMethod.GET).path(ApiConstants.API_PREFIX_HEALTH).handler(HealthCheckHandler.createWithHealthChecks(configHealthChecks(vertx, config)));
+    apiRouter.get(ApiConstants.API_PREFIX_HEALTH).handler(HealthCheckHandler.createWithHealthChecks(configHealthChecks(vertx, config)));
 
     apiRouter.route(ApiConstants.API_PREFIX_TEST + "/*").subRouter(testRouter(vertx));
     apiRouter.route(ApiConstants.API_PREFIX_PING + "/*").subRouter(pingRouter(vertx));
+    apiRouter.route(ApiConstants.API_PREFIX_SESSION + "/*").subRouter(sessionRouter(vertx));
     return apiRouter;
   }
 
@@ -73,6 +76,14 @@ public class ApiRouterFactory {
   private static Router pingRouter(Vertx vertx) {
     Router router = Router.router(vertx);
     router.get().handler(new PingHandler(vertx));
+    return router;
+  }
+
+  private static Router sessionRouter(Vertx vertx) {
+    Router router = Router.router(vertx);
+    router
+      .delete("/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
+      .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.sessionService(vertx), ServiceFactory.clientService(vertx)));
     return router;
   }
 
