@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.session;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.Nullable;
 import io.vertx.core.json.JsonObject;
 
@@ -40,30 +41,30 @@ public class Session {
   }
 
   public Session(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.clientId = jsonObject.getString("clientId");
-    this.online = jsonObject.getBoolean("online");
-    this.verticleId = jsonObject.getString("verticleId");
-    this.nodeId = jsonObject.getString("nodeId");
-    this.cleanSession = jsonObject.getBoolean("cleanSession");
-    this.protocolLevel = jsonObject.getInteger("protocolLevel");
-    this.sessionExpiryInterval = jsonObject.getInteger("sessionExpiryInterval");
-    this.createdTime = Instant.parse(jsonObject.getString("createdTime")).toEpochMilli();
-    this.updatedTime = Instant.parse(jsonObject.getString("updatedTime")).toEpochMilli();
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
+    this.online = jsonObject.getBoolean(ModelConstants.FIELD_NAME_ONLINE);
+    this.verticleId = jsonObject.getString(ModelConstants.FIELD_NAME_VERTICLE_ID);
+    this.nodeId = jsonObject.getString(ModelConstants.FIELD_NAME_NODE_ID);
+    this.cleanSession = jsonObject.getBoolean(ModelConstants.FIELD_NAME_CLEAN_SESSION);
+    this.protocolLevel = jsonObject.getInteger(ModelConstants.FIELD_NAME_PROTOCOL_LEVEL);
+    this.sessionExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL);
+    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
+    this.updatedTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_UPDATED_TIME)).toEpochMilli();
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", this.sessionId);
-    jsonObject.put("clientId", this.clientId);
-    jsonObject.put("online", this.online);
-    jsonObject.put("verticleId", this.verticleId);
-    jsonObject.put("nodeId", this.nodeId);
-    jsonObject.put("cleanSession", this.cleanSession);
-    jsonObject.put("protocolLevel", this.protocolLevel);
-    jsonObject.put("sessionExpiryInterval", this.sessionExpiryInterval);
-    jsonObject.put("createdTime", Instant.ofEpochMilli(this.createdTime).toString());
-    jsonObject.put("updatedTime", Instant.ofEpochMilli(this.updatedTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
+    jsonObject.put(ModelConstants.FIELD_NAME_ONLINE, this.online);
+    jsonObject.put(ModelConstants.FIELD_NAME_VERTICLE_ID, this.verticleId);
+    jsonObject.put(ModelConstants.FIELD_NAME_NODE_ID, this.nodeId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLEAN_SESSION, this.cleanSession);
+    jsonObject.put(ModelConstants.FIELD_NAME_PROTOCOL_LEVEL, this.protocolLevel);
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL, this.sessionExpiryInterval);
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_UPDATED_TIME, Instant.ofEpochMilli(this.updatedTime).toString());
     return jsonObject;
   }
 

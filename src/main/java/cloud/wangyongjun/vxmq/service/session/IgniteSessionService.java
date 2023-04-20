@@ -73,7 +73,7 @@ public class IgniteSessionService implements SessionService {
           @Override
           public Object process(MutableEntry<String, BinaryObject> entry, Object... arguments) throws EntryProcessorException {
             BinaryObjectBuilder binaryObjectBuilder = entry.getValue().toBuilder();
-            binaryObjectBuilder.setField(ModelConstants.FIELD_UPDATED_TIME, time);
+            binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_UPDATED_TIME, time);
             entry.setValue(binaryObjectBuilder.build());
             return null;
           }

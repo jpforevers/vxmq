@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.msg;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
@@ -31,20 +32,20 @@ public class MsgToTopic {
   }
 
   public MsgToTopic(JsonObject jsonObject) {
-    this.clientId = jsonObject.getString("clientId");
-    this.topic = jsonObject.getString("topic");
-    this.qos = jsonObject.getInteger("qos");
-    this.payload = jsonObject.getBuffer("payload");
-    this.retain = jsonObject.getBoolean("retain");
+    this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
+    this.topic = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC);
+    this.qos = jsonObject.getInteger(ModelConstants.FIELD_NAME_QOS);
+    this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
+    this.retain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_RETAIN);
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("clientId", this.clientId);
-    jsonObject.put("topic", this.topic);
-    jsonObject.put("qos", this.qos);
-    jsonObject.put("payload", this.payload);
-    jsonObject.put("retain", this.retain);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC, this.topic);
+    jsonObject.put(ModelConstants.FIELD_NAME_QOS, this.qos);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
+    jsonObject.put(ModelConstants.FIELD_NAME_RETAIN, this.retain);
     return jsonObject;
   }
 

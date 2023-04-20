@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.msg;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.json.JsonObject;
 import org.apache.ignite.cache.affinity.AffinityKeyMapped;
 import org.jetbrains.annotations.NotNull;
@@ -36,14 +37,14 @@ public class OutboundQos1PubKey implements Comparable<OutboundQos1PubKey> {
   }
 
   public OutboundQos1PubKey(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.messageId = jsonObject.getInteger("messageId");
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.messageId = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_ID);
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", sessionId);
-    jsonObject.put("messageId", messageId);
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_ID, messageId);
     return jsonObject;
   }
 
