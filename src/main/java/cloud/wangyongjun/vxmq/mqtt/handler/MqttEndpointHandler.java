@@ -321,7 +321,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
             }
           }).onItem().transformToUni(v -> {
             Session newSession = new Session().setSessionId(UUIDUtil.timeBasedUuid().toString())
-              .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId).setCleanSession(true)
+              .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
+              .setCleanSession(true).setKeepAlive(mqttEndpoint.keepAliveTimeSeconds())
               .setProtocolLevel(mqttEndpoint.protocolVersion()).setSessionExpiryInterval(sessionExpiryInterval)
               .setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli());
             return sessionService.saveOrUpdateSession(newSession).replaceWith(newSession);
@@ -343,7 +344,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           return sessionService.saveOrUpdateSession(updatedSession).replaceWith(updatedSession);
         } else {
           Session newSession = new Session().setSessionId(UUIDUtil.timeBasedUuid().toString())
-            .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId).setCleanSession(false)
+            .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
+            .setCleanSession(false).setKeepAlive(mqttEndpoint.keepAliveTimeSeconds())
             .setProtocolLevel(mqttEndpoint.protocolVersion()).setSessionExpiryInterval(sessionExpiryInterval)
             .setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli());
           return sessionService.saveOrUpdateSession(newSession).replaceWith(newSession);
