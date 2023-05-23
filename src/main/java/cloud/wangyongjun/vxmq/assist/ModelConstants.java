@@ -27,6 +27,7 @@ public class ModelConstants {
   public static final String FIELD_NAME_VERTICLE_ID = "verticleId";
   public static final String FIELD_NAME_NODE_ID = "nodeId";
   public static final String FIELD_NAME_CLEAN_SESSION = "cleanSession";
+  public static final String FIELD_NAME_KEEP_ALIVE = "keepAlive";
   public static final String FIELD_NAME_PROTOCOL_LEVEL = "protocolLevel";
   public static final String FIELD_NAME_SESSION_EXPIRY_INTERVAL = "sessionExpiryInterval";
 

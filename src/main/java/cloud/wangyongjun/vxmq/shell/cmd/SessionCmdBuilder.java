@@ -56,7 +56,8 @@ public class SessionCmdBuilder {
         sessionService.allSessions()
           .subscribe().with(sessions -> {
             List<String> headers = List.of(ModelConstants.FIELD_NAME_SESSION_ID, ModelConstants.FIELD_NAME_CLIENT_ID, ModelConstants.FIELD_NAME_ONLINE,
-              ModelConstants.FIELD_NAME_VERTICLE_ID, ModelConstants.FIELD_NAME_NODE_ID, ModelConstants.FIELD_NAME_CLEAN_SESSION,
+              ModelConstants.FIELD_NAME_VERTICLE_ID, ModelConstants.FIELD_NAME_NODE_ID,
+              ModelConstants.FIELD_NAME_CLEAN_SESSION, ModelConstants.FIELD_NAME_KEEP_ALIVE,
               ModelConstants.FIELD_NAME_PROTOCOL_LEVEL, ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL,
               ModelConstants.FIELD_NAME_CREATED_TIME, ModelConstants.FIELD_NAME_UPDATED_TIME);
             List<List<String>> rows = sessions.stream().map(session -> {
@@ -67,6 +68,7 @@ public class SessionCmdBuilder {
               list.add(session.getVerticleId());
               list.add(session.getNodeId());
               list.add(String.valueOf(session.isCleanSession()));
+              list.add(String.valueOf(session.getKeepAlive()));
               list.add(String.valueOf(session.getProtocolLevel()));
               list.add(String.valueOf(session.getSessionExpiryInterval()));
               list.add(Instant.ofEpochMilli(session.getCreatedTime()).toString());

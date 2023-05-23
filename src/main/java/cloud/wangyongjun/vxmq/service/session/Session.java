@@ -30,6 +30,7 @@ public class Session {
   private String verticleId;
   private String nodeId;
   private boolean cleanSession;
+  private int keepAlive;
   private int protocolLevel;
   // MqttProperties
   private Integer sessionExpiryInterval;  // seconds
@@ -47,6 +48,7 @@ public class Session {
     this.verticleId = jsonObject.getString(ModelConstants.FIELD_NAME_VERTICLE_ID);
     this.nodeId = jsonObject.getString(ModelConstants.FIELD_NAME_NODE_ID);
     this.cleanSession = jsonObject.getBoolean(ModelConstants.FIELD_NAME_CLEAN_SESSION);
+    this.keepAlive = jsonObject.getInteger(ModelConstants.FIELD_NAME_KEEP_ALIVE);
     this.protocolLevel = jsonObject.getInteger(ModelConstants.FIELD_NAME_PROTOCOL_LEVEL);
     this.sessionExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL);
     this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
@@ -61,6 +63,7 @@ public class Session {
     jsonObject.put(ModelConstants.FIELD_NAME_VERTICLE_ID, this.verticleId);
     jsonObject.put(ModelConstants.FIELD_NAME_NODE_ID, this.nodeId);
     jsonObject.put(ModelConstants.FIELD_NAME_CLEAN_SESSION, this.cleanSession);
+    jsonObject.put(ModelConstants.FIELD_NAME_KEEP_ALIVE, this.keepAlive);
     jsonObject.put(ModelConstants.FIELD_NAME_PROTOCOL_LEVEL, this.protocolLevel);
     jsonObject.put(ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL, this.sessionExpiryInterval);
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
@@ -70,7 +73,8 @@ public class Session {
 
   public Session copy() {
     return new Session().setSessionId(sessionId).setClientId(clientId).setOnline(online).setVerticleId(verticleId)
-      .setNodeId(nodeId).setCleanSession(cleanSession).setProtocolLevel(protocolLevel).setSessionExpiryInterval(sessionExpiryInterval)
+      .setNodeId(nodeId).setCleanSession(cleanSession).setKeepAlive(keepAlive)
+      .setProtocolLevel(protocolLevel).setSessionExpiryInterval(sessionExpiryInterval)
       .setCreatedTime(createdTime).setUpdatedTime(updatedTime);
   }
 
@@ -130,6 +134,15 @@ public class Session {
 
   public Session setCleanSession(boolean cleanSession) {
     this.cleanSession = cleanSession;
+    return this;
+  }
+
+  public int getKeepAlive() {
+    return keepAlive;
+  }
+
+  public Session setKeepAlive(int keepAlive) {
+    this.keepAlive = keepAlive;
     return this;
   }
 
