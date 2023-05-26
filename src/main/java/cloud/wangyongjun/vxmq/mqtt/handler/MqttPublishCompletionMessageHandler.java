@@ -61,12 +61,14 @@ public class MqttPublishCompletionMessageHandler implements Consumer<MqttPubComp
       LOGGER.debug("PUBCOMP from {}: {}", mqttEndpoint.clientIdentifier(), pubCompInfo(mqttPubCompMessage));
     }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.removeOutboundQos2Rel(session.getSessionId(), mqttPubCompMessage.messageId()))
+      .onItem().transformToUni(session -> msgService.getOutboundQos2Rel(session.getSessionId(), mqttPubCompMessage.messageId()))
       .onItem().transformToUni(outboundQos2Rel -> {
         if (outboundQos2Rel == null) {
           LOGGER.warn("PUBCOMP from {} without having related PUBREL packet", mqttEndpoint.clientIdentifier());
+          return Uni.createFrom().voidItem();
+        }else {
+          return msgService.removeOutboundQos2Rel(outboundQos2Rel.getSessionId(), outboundQos2Rel.getMessageId());
         }
-        return Uni.createFrom().voidItem();
       })
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBCOMP from {}", mqttEndpoint.clientIdentifier(), t));
   }
