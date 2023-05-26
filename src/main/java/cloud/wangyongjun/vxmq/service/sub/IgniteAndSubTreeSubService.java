@@ -79,7 +79,9 @@ public class IgniteAndSubTreeSubService implements SubService {
     ContinuousQuery<SubscriptionKey, Subscription> subsContinuousQuery = new ContinuousQuery<>();
     subsContinuousQuery.setInitialQuery(new ScanQuery<>());
     subsContinuousQuery.setLocalListener(cacheEntryEvents -> cacheEntryEvents.forEach(cacheEntryEvent -> {
-      LOGGER.debug("Cache entry event received: {}", cacheEntryEvent.toString());
+      if (LOGGER.isDebugEnabled()){
+        LOGGER.debug("Cache entry event received: {}", cacheEntryEvent.toString());
+      }
       switch (cacheEntryEvent.getEventType()) {
         case CREATED, UPDATED -> subTree.saveOrUpdateSubscription(cacheEntryEvent.getValue());
         case REMOVED ->

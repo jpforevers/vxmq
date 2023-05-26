@@ -65,7 +65,9 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
   @Override
   public void accept(MqttPubRelMessage mqttPubRelMessage) {
     String clientId = mqttEndpoint.clientIdentifier();
-    LOGGER.debug("PUBREL from {}: {}", clientId, pubRelInfo(mqttPubRelMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PUBREL from {}: {}", clientId, pubRelInfo(mqttPubRelMessage));
+    }
 
     MqttProperties pubCompProperties = new MqttProperties();
     sessionService.getSession(clientId)

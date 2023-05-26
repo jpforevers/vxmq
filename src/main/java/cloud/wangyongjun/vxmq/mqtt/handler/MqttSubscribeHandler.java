@@ -80,7 +80,9 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
   @Override
   public void accept(MqttSubscribeMessage mqttSubscribeMessage) {
     String clientId = mqttEndpoint.clientIdentifier();
-    LOGGER.debug("SUBSCRIBE from {}: {}", clientId, subscribeInfo(mqttSubscribeMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("SUBSCRIBE from {}: {}", clientId, subscribeInfo(mqttSubscribeMessage));
+    }
 
     sessionService.updateLatestUpdatedTime(clientId, Instant.now().toEpochMilli())
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when updating session latest updatedTime", t));
@@ -114,7 +116,9 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
           } else {
             reasonCodes.add(MqttSubAckReasonCode.qosGranted(topicSubscription.qualityOfService()));
           }
-          LOGGER.debug("SUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicSubscription.topicName());
+          if (LOGGER.isDebugEnabled()){
+            LOGGER.debug("SUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicSubscription.topicName());
+          }
         })
         .onItem().call(() -> sessionService.getSession(mqttEndpoint.clientIdentifier())
           .onItem().transformToUni(session -> eventService.publishEvent(new MqttSubscribedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),

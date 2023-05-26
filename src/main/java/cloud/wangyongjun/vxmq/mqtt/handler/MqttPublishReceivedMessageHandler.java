@@ -62,7 +62,9 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
 
   @Override
   public void accept(MqttPubRecMessage mqttPubRecMessage) {
-    LOGGER.debug("PUBREC from {}: {}", mqttEndpoint.clientIdentifier(), pubRecInfo(mqttPubRecMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PUBREC from {}: {}", mqttEndpoint.clientIdentifier(), pubRecInfo(mqttPubRecMessage));
+    }
     MqttProperties pubRelProperties = new MqttProperties();
     sessionService.getSession(mqttEndpoint.clientIdentifier())
       .onItem().transformToUni(session -> msgService.removeOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId())

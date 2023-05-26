@@ -57,7 +57,9 @@ public class MqttPublishCompletionMessageHandler implements Consumer<MqttPubComp
 
   @Override
   public void accept(MqttPubCompMessage mqttPubCompMessage) {
-    LOGGER.debug("PUBCOMP from {}: {}", mqttEndpoint.clientIdentifier(), pubCompInfo(mqttPubCompMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PUBCOMP from {}: {}", mqttEndpoint.clientIdentifier(), pubCompInfo(mqttPubCompMessage));
+    }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
       .onItem().transformToUni(session -> msgService.removeOutboundQos2Rel(session.getSessionId(), mqttPubCompMessage.messageId()))
       .onItem().transformToUni(outboundQos2Rel -> {
