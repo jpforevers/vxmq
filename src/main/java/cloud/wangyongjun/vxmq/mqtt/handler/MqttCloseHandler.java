@@ -65,7 +65,9 @@ public class MqttCloseHandler implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.debug("Mqtt endpoint of client {} closed", mqttEndpoint.clientIdentifier());
+    if(LOGGER.isDebugEnabled()){
+      LOGGER.debug("Mqtt endpoint of client {} closed", mqttEndpoint.clientIdentifier());
+    }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
       .onItem().transformToUni(session -> Uni.createFrom().voidItem()
         .onItem().transformToUni(v -> handleWill(session))

@@ -105,7 +105,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     if (StringUtils.isBlank(clientIdOriginal)) {
       mqttEndpoint.setClientIdentifier(UUIDUtil.timeBasedUuid().toString());
     }
-    LOGGER.debug("CONNECT from {}: {}", mqttEndpoint.clientIdentifier(), connectInfo(mqttEndpoint));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("CONNECT from {}: {}", mqttEndpoint.clientIdentifier(), connectInfo(mqttEndpoint));
+    }
 
     MqttProperties connAckProperties = new MqttProperties();
     if (StringUtils.isBlank(clientIdOriginal) && mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -135,7 +137,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         } else {
           mqttEndpoint.accept(sessionPresent, connAckProperties);
         }
-        LOGGER.debug("Mqtt client {} connected", mqttEndpoint.clientIdentifier());
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Mqtt client {} connected", mqttEndpoint.clientIdentifier());
+        }
       }, t -> {
         LOGGER.error("Error occurred when processing CONNECT from " + mqttEndpoint.clientIdentifier(), t);
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

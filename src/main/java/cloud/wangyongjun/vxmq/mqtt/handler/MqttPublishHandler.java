@@ -70,7 +70,9 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
 
   @Override
   public void accept(MqttPublishMessage mqttPublishMessage) {
-    LOGGER.debug("PUBLISH from {}: {}", mqttEndpoint.clientIdentifier(), publicationInfo(mqttPublishMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PUBLISH from {}: {}", mqttEndpoint.clientIdentifier(), publicationInfo(mqttPublishMessage));
+    }
 
     sessionService.updateLatestUpdatedTime(mqttEndpoint.clientIdentifier(), Instant.now().toEpochMilli())
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when updating session latest updatedTime", t));
@@ -86,7 +88,9 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
           mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
           mqttPublishMessage.messageId(), mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain()))))
       .subscribe().with(v -> {
-        LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
+        }
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           switch (mqttPublishMessage.qosLevel()) {
             case AT_MOST_ONCE -> {

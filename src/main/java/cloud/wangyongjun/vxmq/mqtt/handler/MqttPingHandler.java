@@ -50,7 +50,9 @@ public class MqttPingHandler implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.debug("PINGREQ from {}", mqttEndpoint.clientIdentifier());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PINGREQ from {}", mqttEndpoint.clientIdentifier());
+    }
     String clientId = mqttEndpoint.clientIdentifier();
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> sessionService.updateLatestUpdatedTime(clientId, Instant.now().toEpochMilli()))
