@@ -67,7 +67,7 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
     }
     MqttProperties pubRelProperties = new MqttProperties();
     sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.removeOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId())
+      .onItem().transformToUni(session -> msgService.getOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId())
         .onItem().transformToUni(outboundQos2Pub -> {
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
             if (outboundQos2Pub == null) {
@@ -82,7 +82,7 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
               mqttEndpoint.publishRelease(mqttPubRecMessage.messageId(), MqttPubRelReasonCode.SUCCESS, pubRelProperties);
             }
           }
-          return Uni.createFrom().voidItem();
+          return msgService.removeOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId());
         })
         .onItem().transformToUni(v -> msgService.saveOutboundQos2Rel(new OutboundQos2Rel(session.getSessionId(), mqttEndpoint.clientIdentifier(), mqttPubRecMessage.messageId(), Instant.now().toEpochMilli()))))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBREC from {}", mqttEndpoint.clientIdentifier(), t));
