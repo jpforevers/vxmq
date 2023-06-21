@@ -6,7 +6,7 @@
 
   <groupId>cloud.wangyongjun</groupId>
   <artifactId>vxmq</artifactId>
-  <version>1.4.999-SNAPSHOT</version>
+  <version>1.4.0</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
