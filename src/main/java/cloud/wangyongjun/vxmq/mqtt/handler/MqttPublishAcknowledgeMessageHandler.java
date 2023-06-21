@@ -57,12 +57,14 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
       LOGGER.debug("PUBACK from {}: {}", mqttEndpoint.clientIdentifier(), pubAckInfo(mqttPubAckMessage));
     }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.removeOutboundQos1Pub(session.getSessionId(), mqttPubAckMessage.messageId()))
-      .onItem().transformToUni(ifExist -> {
-        if (!ifExist) {
+      .onItem().transformToUni(session -> msgService.getOutboundQos1Pub(session.getSessionId(), mqttPubAckMessage.messageId()))
+      .onItem().transformToUni(outboundQos1Pub -> {
+        if (outboundQos1Pub == null){
           LOGGER.warn("PUBACK from {} with messageId {} without having related PUBLISH packet", mqttEndpoint.clientIdentifier(), mqttPubAckMessage.messageId());
+          return Uni.createFrom().voidItem();
+        }else {
+          return msgService.removeOutboundQos2Pub(outboundQos1Pub.getSessionId(), outboundQos1Pub.getMessageId());
         }
-        return Uni.createFrom().voidItem();
       })
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBACK from {}", mqttEndpoint.clientIdentifier(), t));
   }
