@@ -34,7 +34,9 @@ public interface MsgService {
 
   Uni<Void> saveOutboundQos1Pub(OutboundQos1Pub outboundQos1Pub);
 
-  Uni<Boolean> removeOutboundQos1Pub(String sessionId, int messageId);
+  Uni<OutboundQos1Pub> getOutboundQos1Pub(String sessionId, int messageId);
+
+  Uni<Void> removeOutboundQos1Pub(String sessionId, int messageId);
 
   Uni<List<OutboundQos1Pub>> allOutboundQos1Pub();
 

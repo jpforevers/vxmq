@@ -76,7 +76,7 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
             mqttEndpoint.publishRelease(mqttPubRecMessage.messageId());
           } else {
             if (outboundQos2Pub == null) {
-              LOGGER.warn("PUBREC from {} withozut having related PUBLISH packet", mqttEndpoint.clientIdentifier());
+              LOGGER.warn("PUBREC from {} without having related PUBLISH packet", mqttEndpoint.clientIdentifier());
               mqttEndpoint.publishRelease(mqttPubRecMessage.messageId(), MqttPubRelReasonCode.PACKET_IDENTIFIER_NOT_FOUND, pubRelProperties);
             } else {
               mqttEndpoint.publishRelease(mqttPubRecMessage.messageId(), MqttPubRelReasonCode.SUCCESS, pubRelProperties);

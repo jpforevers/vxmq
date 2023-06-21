@@ -103,9 +103,14 @@ public class IgniteMsgService implements MsgService {
   }
 
   @Override
-  public Uni<Boolean> removeOutboundQos1Pub(String sessionId, int messageId) {
-    boolean ifExist = outboundQos1PubCache.remove(new OutboundQos1PubKey(sessionId, messageId));
-    return Uni.createFrom().item(ifExist);
+  public Uni<OutboundQos1Pub> getOutboundQos1Pub(String sessionId, int messageId) {
+    return Uni.createFrom().item(outboundQos1PubCache.get(new OutboundQos1PubKey(sessionId, messageId)));
+  }
+
+  @Override
+  public Uni<Void> removeOutboundQos1Pub(String sessionId, int messageId) {
+    outboundQos1PubCache.remove(new OutboundQos1PubKey(sessionId, messageId));
+    return Uni.createFrom().voidItem();
   }
 
   @Override
