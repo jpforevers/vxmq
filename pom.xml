@@ -16,12 +16,12 @@
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-    <vertx.version>4.4.1</vertx.version>
+    <vertx.version>4.4.2</vertx.version>
     <junit-jupiter.version>5.7.0</junit-jupiter.version>
 
     <slf4j.version>2.0.4</slf4j.version>
     <logback.version>1.4.6</logback.version>
-    <smallrye-mutiny-vertx.version>3.3.0</smallrye-mutiny-vertx.version>
+    <smallrye-mutiny-vertx.version>3.4.2</smallrye-mutiny-vertx.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-codec.version>1.15</commons-codec.version>
@@ -29,7 +29,7 @@
     <asciitable.version>0.3.2</asciitable.version>
     <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
 
-    <ignite.version>2.14.0</ignite.version>
+    <ignite.version>2.15.0</ignite.version>
 
     <launcher.class>cloud.wangyongjun.vxmq.VxmqLauncher</launcher.class>
   </properties>
