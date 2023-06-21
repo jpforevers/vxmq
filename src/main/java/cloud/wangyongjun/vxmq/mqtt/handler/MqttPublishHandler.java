@@ -20,16 +20,16 @@ import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttPublishInboundAcceptedEvent;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
-import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.assist.TopicUtil;
+import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttPublishException;
-import cloud.wangyongjun.vxmq.mqtt.msg.InboundQos2Pub;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgToTopic;
-import cloud.wangyongjun.vxmq.mqtt.retain.Retain;
-import cloud.wangyongjun.vxmq.mqtt.retain.RetainService;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
+import cloud.wangyongjun.vxmq.service.msg.InboundQos2Pub;
+import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.msg.MsgToTopic;
+import cloud.wangyongjun.vxmq.service.retain.Retain;
+import cloud.wangyongjun.vxmq.service.retain.RetainService;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
@@ -70,7 +70,9 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
 
   @Override
   public void accept(MqttPublishMessage mqttPublishMessage) {
-    LOGGER.debug("PUBLISH from {}: {}", mqttEndpoint.clientIdentifier(), publicationInfo(mqttPublishMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PUBLISH from {}: {}", mqttEndpoint.clientIdentifier(), publicationInfo(mqttPublishMessage));
+    }
 
     sessionService.updateLatestUpdatedTime(mqttEndpoint.clientIdentifier(), Instant.now().toEpochMilli())
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when updating session latest updatedTime", t));
@@ -86,7 +88,9 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
           mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
           mqttPublishMessage.messageId(), mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain()))))
       .subscribe().with(v -> {
-        LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
+        }
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           switch (mqttPublishMessage.qosLevel()) {
             case AT_MOST_ONCE -> {
@@ -242,16 +246,18 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
    */
   private Uni<Void> handleMessage(MqttPublishMessage mqttPublishMessage) {
     switch (mqttPublishMessage.qosLevel()) {
-      case AT_MOST_ONCE:
-      case AT_LEAST_ONCE:
+      case AT_MOST_ONCE, AT_LEAST_ONCE -> {
         MsgToTopic msgToTopic = new MsgToTopic().setClientId(mqttEndpoint.clientIdentifier()).setTopic(mqttPublishMessage.topicName())
           .setQos(mqttPublishMessage.qosLevel().value()).setPayload(mqttPublishMessage.payload().getDelegate())
           .setRetain(mqttPublishMessage.isRetain());
         return compositeService.forward(msgToTopic);
-      case EXACTLY_ONCE:
+      }
+      case EXACTLY_ONCE -> {
         return Uni.createFrom().voidItem();
-      default:
+      }
+      default -> {
         return Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
+      }
     }
   }
 

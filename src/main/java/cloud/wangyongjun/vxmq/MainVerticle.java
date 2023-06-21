@@ -18,7 +18,8 @@ package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
-import cloud.wangyongjun.vxmq.mqtt.sub.SubVerticle;
+import cloud.wangyongjun.vxmq.mqtt.SessionCheckerVerticle;
+import cloud.wangyongjun.vxmq.service.sub.SubVerticle;
 import cloud.wangyongjun.vxmq.rule.RuleVerticle;
 import cloud.wangyongjun.vxmq.shell.ShellServerVerticle;
 import io.smallrye.mutiny.Uni;
@@ -61,20 +62,24 @@ public class MainVerticle extends AbstractVerticle {
    * @return void
    */
   private Uni<Void> deployVerticle() {
+
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle.class.getName(), new DeploymentOptions().setConfig(config()).setInstances(CpuCoreSensor.availableProcessors())))
+      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(CpuCoreSensor.availableProcessors())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", HttpServerVerticle.class.getSimpleName()))
 
-      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle.class.getName(), new DeploymentOptions().setConfig(config()).setInstances(CpuCoreSensor.availableProcessors())))
+      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(CpuCoreSensor.availableProcessors())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", MqttServerVerticle.class.getSimpleName()))
 
-      .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle.class.getName(), new DeploymentOptions().setConfig(config())))
+      .onItem().transformToUni(s -> vertx.deployVerticle(SessionCheckerVerticle::new, new DeploymentOptions().setConfig(config()).setWorker(true)))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", SessionCheckerVerticle.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", ShellServerVerticle.class.getSimpleName()))
 
-      .onItem().transformToUni(s -> vertx.deployVerticle(RuleVerticle.class.getName(), new DeploymentOptions().setConfig(config())))
+      .onItem().transformToUni(s -> vertx.deployVerticle(RuleVerticle::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", RuleVerticle.class.getSimpleName()))
 
-      .onItem().transformToUni(s -> vertx.deployVerticle(SubVerticle.class.getName(), new DeploymentOptions().setConfig(config())))
+      .onItem().transformToUni(s -> vertx.deployVerticle(SubVerticle::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", SubVerticle.class.getSimpleName()))
 
       .replaceWithVoid();

@@ -19,13 +19,12 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttUnsubscribedEvent;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.assist.TopicUtil;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttUnsubscribeException;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
-import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
+import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
@@ -65,7 +64,9 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
 
   @Override
   public void accept(MqttUnsubscribeMessage mqttUnsubscribeMessage) {
-    LOGGER.debug("UNSUBSCRIBE from {}: {}", mqttEndpoint.clientIdentifier(), unsubscribeInfo(mqttUnsubscribeMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("UNSUBSCRIBE from {}: {}", mqttEndpoint.clientIdentifier(), unsubscribeInfo(mqttUnsubscribeMessage));
+    }
 
     sessionService.updateLatestUpdatedTime(mqttEndpoint.clientIdentifier(), Instant.now().toEpochMilli())
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when updating session latest updatedTime", t));
@@ -98,7 +99,9 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
           } else {
             reasonCodes.add(MqttUnsubAckReasonCode.SUCCESS);
           }
-          LOGGER.debug("UNSUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicUnSub);
+          if (LOGGER.isDebugEnabled()){
+            LOGGER.debug("UNSUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicUnSub);
+          }
         })
         .onItem().call(() -> sessionService.getSession(mqttEndpoint.clientIdentifier())
           .onItem().transformToUni(session -> eventService.publishEvent(new MqttUnsubscribedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),

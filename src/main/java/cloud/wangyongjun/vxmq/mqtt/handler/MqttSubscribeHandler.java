@@ -19,18 +19,17 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttSubscribedEvent;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.mqtt.TopicUtil;
-import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.assist.TopicUtil;
+import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttSubscribeException;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgToClient;
-import cloud.wangyongjun.vxmq.mqtt.retain.Retain;
-import cloud.wangyongjun.vxmq.mqtt.retain.RetainService;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
-import cloud.wangyongjun.vxmq.mqtt.sub.Subscription;
-import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
+import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
+import cloud.wangyongjun.vxmq.service.retain.Retain;
+import cloud.wangyongjun.vxmq.service.retain.RetainService;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
+import cloud.wangyongjun.vxmq.service.sub.Subscription;
+import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscriptionOption;
@@ -54,6 +53,7 @@ import java.util.stream.Collectors;
 /**
  * This handler is called when a SUBSCRIBE message is received.
  */
+@SuppressWarnings("ALL")
 public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MqttSubscribeHandler.class);
@@ -80,7 +80,9 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
   @Override
   public void accept(MqttSubscribeMessage mqttSubscribeMessage) {
     String clientId = mqttEndpoint.clientIdentifier();
-    LOGGER.debug("SUBSCRIBE from {}: {}", clientId, subscribeInfo(mqttSubscribeMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("SUBSCRIBE from {}: {}", clientId, subscribeInfo(mqttSubscribeMessage));
+    }
 
     sessionService.updateLatestUpdatedTime(clientId, Instant.now().toEpochMilli())
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when updating session latest updatedTime", t));
@@ -114,7 +116,9 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
           } else {
             reasonCodes.add(MqttSubAckReasonCode.qosGranted(topicSubscription.qualityOfService()));
           }
-          LOGGER.debug("SUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicSubscription.topicName());
+          if (LOGGER.isDebugEnabled()){
+            LOGGER.debug("SUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicSubscription.topicName());
+          }
         })
         .onItem().call(() -> sessionService.getSession(mqttEndpoint.clientIdentifier())
           .onItem().transformToUni(session -> eventService.publishEvent(new MqttSubscribedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),

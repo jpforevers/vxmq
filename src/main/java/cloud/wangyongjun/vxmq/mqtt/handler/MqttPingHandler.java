@@ -20,7 +20,7 @@ import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttPingEvent;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
@@ -50,7 +50,9 @@ public class MqttPingHandler implements Runnable {
 
   @Override
   public void run() {
-    LOGGER.debug("PINGREQ from {}", mqttEndpoint.clientIdentifier());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PINGREQ from {}", mqttEndpoint.clientIdentifier());
+    }
     String clientId = mqttEndpoint.clientIdentifier();
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> sessionService.updateLatestUpdatedTime(clientId, Instant.now().toEpochMilli()))

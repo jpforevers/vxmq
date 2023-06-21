@@ -1,37 +1,41 @@
-= Vxmq
+= VXMQ
 
-image:https://img.shields.io/badge/vert.x-4.3.7-purple.svg[link="https://vertx.io"]
-
-This application was generated using http://start.vertx.io
+VXMQ is a Java-based open source MQTT broker, implemented by reactive framework - vert.x.
 
 == Building
 
 To launch your tests:
 
-```
+[source]
+----
 ./mvnw clean test
-```
+----
 
 To package your application:
 
-```
+[source]
+----
 ./mvnw clean package
-```
+----
 
 To run your application:
 
-```
+[source]
+----
 ./mvnw clean compile exec:java
-```
+----
 
-== Help
+To build docker image:
 
-* https://vertx.io/docs/[Vert.x Documentation]
-* https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
-* https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
-* https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
-
-# 构建docker镜像
-```
+[source]
+----
 ./mvnw clean package jib:dockerBuild
-```
+----
+
+== How to use
+
+[source]
+----
+docker run -d --name vxmq -p 1883:1883 -p 5000:5000 -p 8060:8060 jpforevers/vxmq:1.4.0
+----
+

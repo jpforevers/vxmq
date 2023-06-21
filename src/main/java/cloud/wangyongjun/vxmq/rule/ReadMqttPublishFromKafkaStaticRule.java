@@ -19,8 +19,8 @@ package cloud.wangyongjun.vxmq.rule;
 import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.ServiceFactory;
-import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgToTopic;
+import cloud.wangyongjun.vxmq.service.composite.CompositeService;
+import cloud.wangyongjun.vxmq.service.msg.MsgToTopic;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
@@ -61,9 +61,7 @@ public class ReadMqttPublishFromKafkaStaticRule extends AbstractVerticle {
     kafkaConfig.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
     kafkaConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "vxmq.rule.static.ReadMqttPublishFromKafka");
     kafkaConsumer = KafkaConsumer.create(vertx, kafkaConfig);
-    kafkaConsumer.handler(record -> {
-      compositeService.forward(new MsgToTopic(record.value())).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when forward msg from kafka", t));
-    });
+    kafkaConsumer.handler(record -> compositeService.forward(new MsgToTopic(record.value())).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when forward msg from kafka", t)));
 
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> kafkaAdminClient.listTopics())

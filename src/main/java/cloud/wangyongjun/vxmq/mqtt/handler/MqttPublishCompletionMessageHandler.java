@@ -17,9 +17,9 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
@@ -57,14 +57,18 @@ public class MqttPublishCompletionMessageHandler implements Consumer<MqttPubComp
 
   @Override
   public void accept(MqttPubCompMessage mqttPubCompMessage) {
-    LOGGER.debug("PUBCOMP from {}: {}", mqttEndpoint.clientIdentifier(), pubCompInfo(mqttPubCompMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PUBCOMP from {}: {}", mqttEndpoint.clientIdentifier(), pubCompInfo(mqttPubCompMessage));
+    }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.removeOutboundQos2Rel(session.getSessionId(), mqttPubCompMessage.messageId()))
+      .onItem().transformToUni(session -> msgService.getOutboundQos2Rel(session.getSessionId(), mqttPubCompMessage.messageId()))
       .onItem().transformToUni(outboundQos2Rel -> {
         if (outboundQos2Rel == null) {
           LOGGER.warn("PUBCOMP from {} without having related PUBREL packet", mqttEndpoint.clientIdentifier());
+          return Uni.createFrom().voidItem();
+        }else {
+          return msgService.removeOutboundQos2Rel(outboundQos2Rel.getSessionId(), outboundQos2Rel.getMessageId());
         }
-        return Uni.createFrom().voidItem();
       })
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBCOMP from {}", mqttEndpoint.clientIdentifier(), t));
   }

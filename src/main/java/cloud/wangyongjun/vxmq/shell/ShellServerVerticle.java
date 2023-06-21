@@ -18,10 +18,10 @@ package cloud.wangyongjun.vxmq.shell;
 
 import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.ServiceFactory;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
-import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
-import cloud.wangyongjun.vxmq.mqtt.will.WillService;
+import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
+import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
+import cloud.wangyongjun.vxmq.service.will.WillService;
 import cloud.wangyongjun.vxmq.shell.cmd.*;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;

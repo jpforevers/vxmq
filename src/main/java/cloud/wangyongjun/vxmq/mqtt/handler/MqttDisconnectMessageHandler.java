@@ -17,13 +17,12 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
 import cloud.wangyongjun.vxmq.event.MqttDisconnectedEvent;
-import cloud.wangyongjun.vxmq.mqtt.session.Session;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
-import cloud.wangyongjun.vxmq.mqtt.will.WillService;
+import cloud.wangyongjun.vxmq.service.session.Session;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
+import cloud.wangyongjun.vxmq.service.will.WillService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
@@ -61,15 +60,19 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
 
   @Override
   public void accept(MqttDisconnectMessage mqttDisconnectMessage) {
-    LOGGER.debug("DISCONNECT from {}: {}", mqttEndpoint.clientIdentifier(), disconnectInfo(mqttDisconnectMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("DISCONNECT from {}: {}", mqttEndpoint.clientIdentifier(), disconnectInfo(mqttDisconnectMessage));
+    }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
       .onItem().call(session -> handleWill(session.getProtocolLevel(), session.getSessionId(), mqttDisconnectMessage.code()))
       .onItem().call(session -> processSessionExpiryInterval(mqttDisconnectMessage, session))
       // Publish EVENT_MQTT_DISCONNECTED_EVENT
       .onItem().call(session -> eventService.publishEvent(new MqttDisconnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
         mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttDisconnectMessage.code())))
-      .subscribe().with(v -> LOGGER.debug("Mqtt client {} disconnected", mqttEndpoint.clientIdentifier()),
-        t -> LOGGER.error("Error occurred when processing DISCONNECT from " + mqttEndpoint.clientIdentifier(), t));
+      .subscribe().with(v -> {
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Mqtt client {} disconnected", mqttEndpoint.clientIdentifier());
+        }}, t -> LOGGER.error("Error occurred when processing DISCONNECT from " + mqttEndpoint.clientIdentifier(), t));
   }
 
   private String disconnectInfo(MqttDisconnectMessage mqttDisconnectMessage) {

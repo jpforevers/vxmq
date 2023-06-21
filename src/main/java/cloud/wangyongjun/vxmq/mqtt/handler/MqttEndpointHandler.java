@@ -18,20 +18,20 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
 import cloud.wangyongjun.vxmq.event.*;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.mqtt.StringPair;
-import cloud.wangyongjun.vxmq.mqtt.client.ClientService;
-import cloud.wangyongjun.vxmq.mqtt.client.ClientVerticle;
-import cloud.wangyongjun.vxmq.mqtt.client.DisconnectRequest;
-import cloud.wangyongjun.vxmq.mqtt.composite.CompositeService;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.assist.StringPair;
+import cloud.wangyongjun.vxmq.service.client.ClientService;
+import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
+import cloud.wangyongjun.vxmq.service.client.DisconnectRequest;
+import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
-import cloud.wangyongjun.vxmq.mqtt.retain.RetainService;
-import cloud.wangyongjun.vxmq.mqtt.session.Session;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
-import cloud.wangyongjun.vxmq.mqtt.sub.mutiny.SubService;
-import cloud.wangyongjun.vxmq.mqtt.will.Will;
-import cloud.wangyongjun.vxmq.mqtt.will.WillService;
+import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.retain.RetainService;
+import cloud.wangyongjun.vxmq.service.session.Session;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
+import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
+import cloud.wangyongjun.vxmq.service.will.Will;
+import cloud.wangyongjun.vxmq.service.will.WillService;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttQoS;
@@ -105,7 +105,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     if (StringUtils.isBlank(clientIdOriginal)) {
       mqttEndpoint.setClientIdentifier(UUIDUtil.timeBasedUuid().toString());
     }
-    LOGGER.debug("CONNECT from {}: {}", mqttEndpoint.clientIdentifier(), connectInfo(mqttEndpoint));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("CONNECT from {}: {}", mqttEndpoint.clientIdentifier(), connectInfo(mqttEndpoint));
+    }
 
     MqttProperties connAckProperties = new MqttProperties();
     if (StringUtils.isBlank(clientIdOriginal) && mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -135,7 +137,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         } else {
           mqttEndpoint.accept(sessionPresent, connAckProperties);
         }
-        LOGGER.debug("Mqtt client {} connected", mqttEndpoint.clientIdentifier());
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Mqtt client {} connected", mqttEndpoint.clientIdentifier());
+        }
       }, t -> {
         LOGGER.error("Error occurred when processing CONNECT from " + mqttEndpoint.clientIdentifier(), t);
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -321,7 +325,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
             }
           }).onItem().transformToUni(v -> {
             Session newSession = new Session().setSessionId(UUIDUtil.timeBasedUuid().toString())
-              .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId).setCleanSession(true)
+              .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
+              .setCleanSession(true).setKeepAlive(mqttEndpoint.keepAliveTimeSeconds())
               .setProtocolLevel(mqttEndpoint.protocolVersion()).setSessionExpiryInterval(sessionExpiryInterval)
               .setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli());
             return sessionService.saveOrUpdateSession(newSession).replaceWith(newSession);
@@ -343,7 +348,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           return sessionService.saveOrUpdateSession(updatedSession).replaceWith(updatedSession);
         } else {
           Session newSession = new Session().setSessionId(UUIDUtil.timeBasedUuid().toString())
-            .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId).setCleanSession(false)
+            .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
+            .setCleanSession(false).setKeepAlive(mqttEndpoint.keepAliveTimeSeconds())
             .setProtocolLevel(mqttEndpoint.protocolVersion()).setSessionExpiryInterval(sessionExpiryInterval)
             .setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli());
           return sessionService.saveOrUpdateSession(newSession).replaceWith(newSession);

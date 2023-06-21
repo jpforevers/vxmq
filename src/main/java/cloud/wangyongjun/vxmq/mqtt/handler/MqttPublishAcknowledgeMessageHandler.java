@@ -17,9 +17,9 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
-import cloud.wangyongjun.vxmq.mqtt.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.mqtt.msg.MsgService;
-import cloud.wangyongjun.vxmq.mqtt.session.SessionService;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
@@ -53,7 +53,9 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
 
   @Override
   public void accept(MqttPubAckMessage mqttPubAckMessage) {
-    LOGGER.debug("PUBACK from {}: {}", mqttEndpoint.clientIdentifier(), pubAckInfo(mqttPubAckMessage));
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("PUBACK from {}: {}", mqttEndpoint.clientIdentifier(), pubAckInfo(mqttPubAckMessage));
+    }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
       .onItem().transformToUni(session -> msgService.removeOutboundQos1Pub(session.getSessionId(), mqttPubAckMessage.messageId()))
       .onItem().transformToUni(ifExist -> {
