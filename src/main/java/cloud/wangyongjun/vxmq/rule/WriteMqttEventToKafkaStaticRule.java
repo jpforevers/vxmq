@@ -26,22 +26,25 @@ import cloud.wangyongjun.vxmq.event.MqttEvent;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
-import io.vertx.kafka.admin.NewTopic;
 import io.vertx.kafka.client.serialization.JsonObjectSerializer;
-import io.vertx.mutiny.kafka.admin.KafkaAdminClient;
 import io.vertx.mutiny.kafka.client.producer.KafkaProducer;
 import io.vertx.mutiny.kafka.client.producer.KafkaProducerRecord;
-import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WriteMqttEventToKafkaStaticRule.class);
+
+  private static final String KAFKA_TOPIC_PREFIX = "vxmq";
+
 
   private EventService eventService;
   private KafkaProducer<String, JsonObject> kafkaProducer;
@@ -49,11 +52,6 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
   @Override
   public Uni<Void> asyncStart() {
     String servers = Config.getRuleStaticWriteMqttEventToKafkaKafkaServers(config());
-    String kafkaTopic = Config.getRuleStaticWriteMqttEventToKafkaKafkaTopic(config());
-
-    Map<String, String> adminConfig = new HashMap<>();
-    adminConfig.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
-    KafkaAdminClient kafkaAdminClient = KafkaAdminClient.create(vertx, adminConfig);
 
     eventService = ServiceFactory.eventService(vertx);
     Map<String, String> kafkaConfig = new HashMap<>();
@@ -68,7 +66,7 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
       Uni<Void> consumeEventUni = eventService.consumeEvent(value, data -> {
         Event event = value.fromJson(data);
         if (event instanceof MqttEvent) {
-          KafkaProducerRecord<String, JsonObject> record = KafkaProducerRecord.create(kafkaTopic, ((MqttEvent) event).getClientId(), data);
+          KafkaProducerRecord<String, JsonObject> record = KafkaProducerRecord.create(genKafkaTopicFromEventType(value), ((MqttEvent) event).getClientId(), data);
           kafkaProducer.write(record).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when write record to kafka", t));
         }
       }, true).replaceWithVoid();
@@ -76,15 +74,16 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
     }
 
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> kafkaAdminClient.listTopics())
-      .onItem().transformToUni(topics -> topics.contains(kafkaTopic) ? Uni.createFrom().voidItem() : kafkaAdminClient.createTopics(Collections.singletonList(new NewTopic(kafkaTopic, 1, (short) 1))))
-      .onItem().transformToUni(v -> kafkaAdminClient.close())
       .onItem().transformToUni(v -> Uni.combine().all().unis(consumeEventUnis).discardItems());
   }
 
   @Override
   public Uni<Void> asyncStop() {
     return Uni.createFrom().voidItem();
+  }
+
+  private String genKafkaTopicFromEventType(EventType eventType) {
+    return KAFKA_TOPIC_PREFIX + "." + eventType.name().toLowerCase();
   }
 
 }
