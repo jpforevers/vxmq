@@ -22,13 +22,13 @@ import io.vertx.core.json.JsonObject;
 public enum EventType {
 
   NOTHING(EBAddress.EVENT_NOTHING),
-  MQTT_CONNECTED_EVENT(EBAddress.EVENT_MQTT_CONNECTED),
-  MQTT_ENDPOINT_CLOSED_EVENT(EBAddress.EVENT_MQTT_ENDPOINT_CLOSED),
-  MQTT_DISCONNECTED_EVENT(EBAddress.EVENT_MQTT_DISCONNECTED),
-  MQTT_PING_EVENT(EBAddress.EVENT_MQTT_PING),
-  MQTT_SUBSCRIBED_EVENT(EBAddress.EVENT_MQTT_SUBSCRIBED),
-  MQTT_UNSUBSCRIBED_EVENT(EBAddress.EVENT_MQTT_UNSUBSCRIBED),
-  MQTT_PUBLISH_INBOUND_ACCEPTED_EVENT(EBAddress.EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED)
+  EVENT_MQTT_CONNECTED(EBAddress.EVENT_MQTT_CONNECTED),
+  EVENT_MQTT_ENDPOINT_CLOSED(EBAddress.EVENT_MQTT_ENDPOINT_CLOSED),
+  EVENT_MQTT_DISCONNECTED(EBAddress.EVENT_MQTT_DISCONNECTED),
+  EVENT_MQTT_PING(EBAddress.EVENT_MQTT_PING),
+  EVENT_MQTT_SUBSCRIBED(EBAddress.EVENT_MQTT_SUBSCRIBED),
+  EVENT_MQTT_UNSUBSCRIBED(EBAddress.EVENT_MQTT_UNSUBSCRIBED),
+  EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED(EBAddress.EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED)
   ;
 
   private final String ebAddress;
@@ -44,13 +44,13 @@ public enum EventType {
   public Event fromJson(JsonObject data){
     return switch (this){
       case NOTHING -> null;
-      case MQTT_CONNECTED_EVENT -> new MqttConnectedEvent().fromJson(data);
-      case MQTT_ENDPOINT_CLOSED_EVENT -> new MqttEndpointClosedEvent().fromJson(data);
-      case MQTT_DISCONNECTED_EVENT -> new MqttDisconnectedEvent().fromJson(data);
-      case MQTT_PING_EVENT -> new MqttPingEvent().fromJson(data);
-      case MQTT_SUBSCRIBED_EVENT -> new MqttSubscribedEvent().fromJson(data);
-      case MQTT_UNSUBSCRIBED_EVENT -> new MqttUnsubscribedEvent().fromJson(data);
-      case MQTT_PUBLISH_INBOUND_ACCEPTED_EVENT -> new MqttPublishInboundAcceptedEvent().fromJson(data);
+      case EVENT_MQTT_CONNECTED -> new MqttConnectedEvent().fromJson(data);
+      case EVENT_MQTT_ENDPOINT_CLOSED -> new MqttEndpointClosedEvent().fromJson(data);
+      case EVENT_MQTT_DISCONNECTED -> new MqttDisconnectedEvent().fromJson(data);
+      case EVENT_MQTT_PING -> new MqttPingEvent().fromJson(data);
+      case EVENT_MQTT_SUBSCRIBED -> new MqttSubscribedEvent().fromJson(data);
+      case EVENT_MQTT_UNSUBSCRIBED -> new MqttUnsubscribedEvent().fromJson(data);
+      case EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED -> new MqttPublishInboundAcceptedEvent().fromJson(data);
     };
   }
 

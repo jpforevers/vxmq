@@ -83,7 +83,7 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
   }
 
   private String genKafkaTopicFromEventType(EventType eventType) {
-    return KAFKA_TOPIC_PREFIX + "." + eventType.name().toLowerCase();
+    return KAFKA_TOPIC_PREFIX + "." + eventType.name().toLowerCase().replace('_', '.');
   }
 
 }

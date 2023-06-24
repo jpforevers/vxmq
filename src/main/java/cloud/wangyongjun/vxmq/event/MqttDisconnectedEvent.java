@@ -45,7 +45,7 @@ public class MqttDisconnectedEvent implements MqttEvent {
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_DISCONNECTED_EVENT;
+    return EventType.EVENT_MQTT_DISCONNECTED;
   }
 
   @Override

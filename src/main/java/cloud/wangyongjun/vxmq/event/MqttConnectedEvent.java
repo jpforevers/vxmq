@@ -46,7 +46,7 @@ public class MqttConnectedEvent implements MqttEvent {
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_CONNECTED_EVENT;
+    return EventType.EVENT_MQTT_CONNECTED;
   }
 
   @Override
