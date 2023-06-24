@@ -44,7 +44,7 @@ public class MqttUnsubscribedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_UNSUBSCRIBED_EVENT;
+    return EventType.EVENT_MQTT_UNSUBSCRIBED;
   }
 
   @Override

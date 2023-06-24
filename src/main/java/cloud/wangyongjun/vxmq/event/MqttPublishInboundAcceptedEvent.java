@@ -55,7 +55,7 @@ public class MqttPublishInboundAcceptedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_PUBLISH_INBOUND_ACCEPTED_EVENT;
+    return EventType.EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED;
   }
 
   @Override

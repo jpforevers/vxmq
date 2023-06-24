@@ -46,7 +46,7 @@ public class MqttSubscribedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_SUBSCRIBED_EVENT;
+    return EventType.EVENT_MQTT_SUBSCRIBED;
   }
 
   @Override
