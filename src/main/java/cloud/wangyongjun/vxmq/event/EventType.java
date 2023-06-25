@@ -28,7 +28,8 @@ public enum EventType {
   EVENT_MQTT_PING(EBAddress.EVENT_MQTT_PING),
   EVENT_MQTT_SUBSCRIBED(EBAddress.EVENT_MQTT_SUBSCRIBED),
   EVENT_MQTT_UNSUBSCRIBED(EBAddress.EVENT_MQTT_UNSUBSCRIBED),
-  EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED(EBAddress.EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED)
+  EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED(EBAddress.EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED),
+  EVENT_MQTT_PUBLISH_OUTBOUND_ACKED(EBAddress.EVENT_MQTT_PUBLISH_OUTBOUND_ACKED),
   ;
 
   private final String ebAddress;
@@ -51,6 +52,7 @@ public enum EventType {
       case EVENT_MQTT_SUBSCRIBED -> new MqttSubscribedEvent().fromJson(data);
       case EVENT_MQTT_UNSUBSCRIBED -> new MqttUnsubscribedEvent().fromJson(data);
       case EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED -> new MqttPublishInboundAcceptedEvent().fromJson(data);
+      case EVENT_MQTT_PUBLISH_OUTBOUND_ACKED -> new MqttPublishOutboundAckedEvent().fromJson(data);
     };
   }
 

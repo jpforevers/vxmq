@@ -29,5 +29,6 @@ public class EBAddress {
   public static final String EVENT_MQTT_SUBSCRIBED = "event.mqtt.subscribed";
   public static final String EVENT_MQTT_UNSUBSCRIBED = "event.mqtt.unsubscribed";
   public static final String EVENT_MQTT_PUBLISH_INBOUND_ACCEPTED = "event.mqtt.publish.inbound.accepted";
+  public static final String EVENT_MQTT_PUBLISH_OUTBOUND_ACKED = "event.mqtt.publish.outbound.acked";
 
 }
