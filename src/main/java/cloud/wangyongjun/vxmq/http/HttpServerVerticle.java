@@ -20,21 +20,21 @@ import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.http.api.ApiConstants;
 import cloud.wangyongjun.vxmq.http.api.ApiFailureHandler;
 import cloud.wangyongjun.vxmq.http.api.ApiRouterFactory;
+import cloud.wangyongjun.vxmq.http.q.QRouterFactory;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.AllowForwardHeaders;
 import io.vertx.mutiny.ext.web.Router;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HttpServerVerticle extends AbstractVerticle {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
 
   @Override
   public Uni<Void> asyncStart() {
     Router rootRouter = Router.router(vertx);
     rootRouter.allowForward(AllowForwardHeaders.ALL);
+
+    rootRouter.route(ApiConstants.Q_URL_PREFIX + "/*")
+      .subRouter(QRouterFactory.router(vertx, config()));
 
     rootRouter.route(ApiConstants.API_URL_PREFIX_V1 + "/*")
       .failureHandler(new ApiFailureHandler())
