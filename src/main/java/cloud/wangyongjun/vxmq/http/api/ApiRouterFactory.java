@@ -18,7 +18,6 @@ package cloud.wangyongjun.vxmq.http.api;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.ServiceFactory;
-import cloud.wangyongjun.vxmq.http.api.ping.PingHandler;
 import cloud.wangyongjun.vxmq.http.api.session.DeleteSessionByClientIdHandler;
 import cloud.wangyongjun.vxmq.http.api.test.TestHandler;
 import io.vertx.core.json.JsonObject;
@@ -30,30 +29,13 @@ public class ApiRouterFactory {
   public static Router router(Vertx vertx, JsonObject config) {
     Router apiRouter = Router.router(vertx);
 
-    apiRouter.route(ApiConstants.API_PREFIX_TEST + "/*").subRouter(testRouter(vertx));
-    apiRouter.route(ApiConstants.API_PREFIX_PING + "/*").subRouter(pingRouter(vertx));
-    apiRouter.route(ApiConstants.API_PREFIX_SESSION + "/*").subRouter(sessionRouter(vertx));
-    return apiRouter;
-  }
+    apiRouter.get(ApiConstants.API_PREFIX_TEST)
+      .handler(new TestHandler(vertx));
 
-  private static Router testRouter(Vertx vertx) {
-    Router router = Router.router(vertx);
-    router.get().handler(new TestHandler(vertx));
-    return router;
-  }
-
-  private static Router pingRouter(Vertx vertx) {
-    Router router = Router.router(vertx);
-    router.get().handler(new PingHandler(vertx));
-    return router;
-  }
-
-  private static Router sessionRouter(Vertx vertx) {
-    Router router = Router.router(vertx);
-    router
-      .delete("/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
+    apiRouter.delete(ApiConstants.API_PREFIX_SESSION + "/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
       .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.sessionService(vertx), ServiceFactory.clientService(vertx)));
-    return router;
+
+    return apiRouter;
   }
 
 }

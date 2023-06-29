@@ -36,7 +36,7 @@ services:
     container_name: vxmq-vxmq
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "curl --fail http://localhost:8060/api/v1/health | jq -e '.status == \"UP\"'" ]
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8060/q/health | jq -e '.status == \"UP\"'" ]
       interval: 10s
       timeout: 3s
       retries: 5
