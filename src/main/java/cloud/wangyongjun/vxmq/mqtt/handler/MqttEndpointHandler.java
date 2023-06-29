@@ -46,6 +46,7 @@ import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRelReasonCode;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.eventbus.MessageConsumer;
+import io.vertx.mutiny.core.shareddata.Lock;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -63,7 +64,8 @@ import java.util.stream.Collectors;
  */
 public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
-  private final static String SESSION_PRESENT = "sessionPresent";
+  private final static String CONTEXT_KEY_SESSION_PRESENT = "sessionPresent";
+  private final static String CONTEXT_KEY_LOCK = "lock";
 
   private final static Logger LOGGER = LoggerFactory.getLogger(MqttEndpointHandler.class);
 
@@ -116,11 +118,11 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
     Context context = Context.empty();
     Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> obtainClientLock(mqttEndpoint.clientIdentifier(), context))
       .onItem().transformToUni(v -> authenticate(mqttEndpoint))
       .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint))
       .onItem().transformToUni(v -> registerHandler(mqttEndpoint))
-      .attachContext()
-      .onItem().transformToUni(voidItemWithContext -> computeSessionPresentAndStoreInContext(mqttEndpoint, voidItemWithContext.context()))
+      .onItem().transformToUni(v -> computeSessionPresent(mqttEndpoint, context))
       .onItem().transformToUni(v -> deployClientVerticle(mqttEndpoint))
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
@@ -129,9 +131,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
         mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",
         mqttEndpoint.auth() != null ? mqttEndpoint.auth().getPassword() : "")))
-      .attachContext()
-      .subscribe().with(context, voidItemWithContext -> {
-        boolean sessionPresent = getSessionPresentFromContext(voidItemWithContext.context());
+      .onItemOrFailure().call((v,t) -> releaseClientLock(mqttEndpoint.clientIdentifier(), context))
+      .subscribe().with(context, v -> {
+        boolean sessionPresent = getSessionPresentFromContext(context);
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           mqttEndpoint.accept(sessionPresent);
         } else {
@@ -157,6 +159,42 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           }
         }
       });
+
+  }
+
+  /**
+   * Get client lock
+   * @param clientId clientId
+   * @param context context
+   * @return Void
+   */
+  public Uni<Void> obtainClientLock(String clientId, Context context){
+    return vertx.sharedData().getLockWithTimeout(clientId, 5000)
+      .onItem().invoke(lock -> {
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Client lock obtained for {}", clientId);
+        }
+        context.put(CONTEXT_KEY_LOCK, lock);
+      }).replaceWithVoid();
+  }
+
+  /**
+   * Release client lock
+   * @param clientId clientId
+   * @param context context
+   * @return Void
+   */
+  public Uni<Void> releaseClientLock(String clientId, Context context){
+    vertx.setTimer(3000, l -> {
+      Lock lock = context.get(CONTEXT_KEY_LOCK);
+      if (lock != null){
+        lock.release();
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Client lock released for {}", clientId);
+        }
+      }
+    });
+    return Uni.createFrom().voidItem();
   }
 
   /**
@@ -266,13 +304,13 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @param context      context
    * @return Void
    */
-  private Uni<Void> computeSessionPresentAndStoreInContext(MqttEndpoint mqttEndpoint, Context context) {
+  private Uni<Void> computeSessionPresent(MqttEndpoint mqttEndpoint, Context context) {
     if (mqttEndpoint.isCleanSession()) {
-      context.put(SESSION_PRESENT, false);
+      context.put(CONTEXT_KEY_SESSION_PRESENT, false);
       return Uni.createFrom().voidItem();
     } else {
       return sessionService.getSession(mqttEndpoint.clientIdentifier())
-        .onItem().invoke(session -> context.put(SESSION_PRESENT, Objects.nonNull(session)))
+        .onItem().invoke(session -> context.put(CONTEXT_KEY_SESSION_PRESENT, Objects.nonNull(session)))
         .replaceWithVoid();
     }
   }
@@ -283,7 +321,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return sessionPresent
    */
   private boolean getSessionPresentFromContext(Context context) {
-    return context.get(SESSION_PRESENT);
+    return context.get(CONTEXT_KEY_SESSION_PRESENT);
   }
 
   /**
