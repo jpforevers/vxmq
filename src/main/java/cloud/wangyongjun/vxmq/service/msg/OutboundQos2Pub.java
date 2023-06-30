@@ -58,7 +58,7 @@ public class OutboundQos2Pub {
     this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
     this.dup = jsonObject.getBoolean(ModelConstants.FIELD_NAME_DUP);
     this.retain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_RETAIN);
-    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
+    this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
   public JsonObject toJson() {
@@ -71,7 +71,7 @@ public class OutboundQos2Pub {
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
     jsonObject.put(ModelConstants.FIELD_NAME_DUP, this.dup);
     jsonObject.put(ModelConstants.FIELD_NAME_RETAIN, this.retain);
-    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
 

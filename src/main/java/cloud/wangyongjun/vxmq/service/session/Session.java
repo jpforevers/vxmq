@@ -20,8 +20,6 @@ import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.Nullable;
 import io.vertx.core.json.JsonObject;
 
-import java.time.Instant;
-
 public class Session {
 
   private String sessionId;
@@ -51,8 +49,8 @@ public class Session {
     this.keepAlive = jsonObject.getInteger(ModelConstants.FIELD_NAME_KEEP_ALIVE);
     this.protocolLevel = jsonObject.getInteger(ModelConstants.FIELD_NAME_PROTOCOL_LEVEL);
     this.sessionExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL);
-    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
-    this.updatedTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_UPDATED_TIME)).toEpochMilli();
+    this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
+    this.updatedTime = jsonObject.getLong(ModelConstants.FIELD_NAME_UPDATED_TIME);
   }
 
   public JsonObject toJson() {
@@ -66,8 +64,8 @@ public class Session {
     jsonObject.put(ModelConstants.FIELD_NAME_KEEP_ALIVE, this.keepAlive);
     jsonObject.put(ModelConstants.FIELD_NAME_PROTOCOL_LEVEL, this.protocolLevel);
     jsonObject.put(ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL, this.sessionExpiryInterval);
-    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
-    jsonObject.put(ModelConstants.FIELD_NAME_UPDATED_TIME, Instant.ofEpochMilli(this.updatedTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
+    jsonObject.put(ModelConstants.FIELD_NAME_UPDATED_TIME, this.updatedTime);
     return jsonObject;
   }
 
