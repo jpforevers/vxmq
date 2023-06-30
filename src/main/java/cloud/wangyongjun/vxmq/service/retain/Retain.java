@@ -20,8 +20,6 @@ import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-import java.time.Instant;
-
 public class Retain {
 
   private final String topicName;  // don't contain wildcard
@@ -40,7 +38,7 @@ public class Retain {
     this.topicName = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC_NAME);
     this.qos = jsonObject.getInteger(ModelConstants.FIELD_NAME_QOS);
     this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
-    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
+    this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
   public JsonObject toJson() {
@@ -48,7 +46,7 @@ public class Retain {
     jsonObject.put(ModelConstants.FIELD_NAME_TOPIC_NAME, this.topicName);
     jsonObject.put(ModelConstants.FIELD_NAME_QOS, this.qos);
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
-    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
 

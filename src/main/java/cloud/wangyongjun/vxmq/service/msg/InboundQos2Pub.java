@@ -57,7 +57,7 @@ public class InboundQos2Pub {
     this.payload = jsonObject.getBuffer("payload");
     this.dup = jsonObject.getBoolean("dup");
     this.retain = jsonObject.getBoolean("retain");
-    this.createdTime = Instant.parse(jsonObject.getString("createdTime")).toEpochMilli();
+    this.createdTime = jsonObject.getLong("createdTime");
   }
 
   public JsonObject toJson() {
@@ -70,7 +70,7 @@ public class InboundQos2Pub {
     jsonObject.put("payload", this.payload);
     jsonObject.put("dup", this.dup);
     jsonObject.put("retain", this.retain);
-    jsonObject.put("createdTime", Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put("createdTime", this.createdTime);
     return jsonObject;
   }
 
