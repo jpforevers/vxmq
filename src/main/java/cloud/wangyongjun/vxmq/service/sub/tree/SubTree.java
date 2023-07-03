@@ -19,7 +19,9 @@ package cloud.wangyongjun.vxmq.service.sub.tree;
 import cloud.wangyongjun.vxmq.service.sub.Subscription;
 import cloud.wangyongjun.vxmq.service.sub.tree.impl.SubTreeTrieAndRecursiveImpl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public interface SubTree {
@@ -39,16 +41,13 @@ public interface SubTree {
   void clearSubscription(String sessionId);
 
   static List<Subscription> distinct(List<Subscription> subscriptions) {
-    Map<String, List<Subscription>> sessionIdToSubsMap = subscriptions.stream().collect(Collectors.groupingBy(Subscription::getSessionId));
-    Map<String, Subscription> sessionIdToSubMap = new HashMap<>();
-    sessionIdToSubsMap.forEach((sessionId, subs) -> {
-      if (subs.size() > 1) {
-        sessionIdToSubMap.put(sessionId, subs.stream().max(Comparator.comparing(Subscription::getQos)).get());
-      } else {
-        sessionIdToSubMap.put(sessionId, subs.get(0));
-      }
-    });
-    return new ArrayList<>(sessionIdToSubMap.values());
+    return new ArrayList<>(
+      subscriptions.stream()
+        .collect(Collectors.toMap(Subscription::getSessionId,
+          Function.identity(),
+          (s1, s2) -> s1.getQos() > s2.getQos() ? s1 : s2))
+        .values()
+    );
   }
 
 }

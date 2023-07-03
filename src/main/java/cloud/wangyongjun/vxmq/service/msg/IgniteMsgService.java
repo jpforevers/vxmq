@@ -29,8 +29,6 @@ import org.apache.ignite.cache.query.ScanQuery;
 import javax.cache.Cache;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class IgniteMsgService implements MsgService {
@@ -215,21 +213,29 @@ public class IgniteMsgService implements MsgService {
   @Override
   public Uni<Void> clearMsgs(String sessionId) {
     return vertx.executeBlocking(Uni.createFrom().emitter(uniEmitter -> {
-      QueryCursor<InboundQos2PubKey> inboundQos2PubKeysCursor = inboundQos2PubCache.<Cache.Entry<InboundQos2PubKey, InboundQos2Pub>, InboundQos2PubKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey);
-      Set<InboundQos2PubKey> inboundQos2PubKeys = inboundQos2PubKeysCursor.getAll().stream().collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-      inboundQos2PubCache.removeAll(inboundQos2PubKeys);
+      try (QueryCursor<InboundQos2PubKey> inboundQos2PubKeysCursor = inboundQos2PubCache.<Cache.Entry<InboundQos2PubKey, InboundQos2Pub>, InboundQos2PubKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey)) {
+        for (InboundQos2PubKey inboundQos2PubKey : inboundQos2PubKeysCursor) {
+          inboundQos2PubCache.remove(inboundQos2PubKey);
+        }
+      }
 
-      QueryCursor<OutboundQos1PubKey> outboundQos1PubKeysCursor = outboundQos1PubCache.<Cache.Entry<OutboundQos1PubKey, OutboundQos1Pub>, OutboundQos1PubKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey);
-      Set<OutboundQos1PubKey> outboundQos1PubKeys = outboundQos1PubKeysCursor.getAll().stream().collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-      outboundQos1PubCache.removeAll(outboundQos1PubKeys);
+      try (QueryCursor<OutboundQos1PubKey> outboundQos1PubKeysCursor = outboundQos1PubCache.<Cache.Entry<OutboundQos1PubKey, OutboundQos1Pub>, OutboundQos1PubKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey)) {
+        for (OutboundQos1PubKey outboundQos1PubKey : outboundQos1PubKeysCursor) {
+          outboundQos1PubCache.remove(outboundQos1PubKey);
+        }
+      }
 
-      QueryCursor<OutboundQos2PubKey> outboundQos2PubKeysCursor = outboundQos2PubCache.<Cache.Entry<OutboundQos2PubKey, OutboundQos2Pub>, OutboundQos2PubKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey);
-      Set<OutboundQos2PubKey> outboundQos2PubKeys = outboundQos2PubKeysCursor.getAll().stream().collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-      outboundQos2PubCache.removeAll(outboundQos2PubKeys);
+      try (QueryCursor<OutboundQos2PubKey> outboundQos2PubKeysCursor = outboundQos2PubCache.<Cache.Entry<OutboundQos2PubKey, OutboundQos2Pub>, OutboundQos2PubKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey)) {
+        for (OutboundQos2PubKey outboundQos2PubKey : outboundQos2PubKeysCursor) {
+          outboundQos2PubCache.remove(outboundQos2PubKey);
+        }
+      }
 
-      QueryCursor<OutboundQos2RelKey> outboundQos2RelKeysCursor = outboundQos2RelCache.<Cache.Entry<OutboundQos2RelKey, OutboundQos2Rel>, OutboundQos2RelKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey);
-      Set<OutboundQos2RelKey> outboundQos2RelKeys = outboundQos2RelKeysCursor.getAll().stream().collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-      outboundQos2RelCache.removeAll(outboundQos2RelKeys);
+      try (QueryCursor<OutboundQos2RelKey> outboundQos2RelKeysCursor = outboundQos2RelCache.<Cache.Entry<OutboundQos2RelKey, OutboundQos2Rel>, OutboundQos2RelKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey)) {
+        for (OutboundQos2RelKey outboundQos2RelKey : outboundQos2RelKeysCursor) {
+          outboundQos2RelCache.remove(outboundQos2RelKey);
+        }
+      }
 
       IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId, config).close();
       uniEmitter.complete(null);
