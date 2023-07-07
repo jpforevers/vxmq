@@ -22,6 +22,21 @@ import io.smallrye.mutiny.Uni;
 public interface ClientService {
 
   /**
+   * Get client distributed lock
+   * @param clientId clientId
+   * @param timeout timeout
+   * @return Void
+   */
+  Uni<Void> obtainClientLock(String clientId, long timeout);
+
+  /**
+   * Release client lock
+   * @param clientId clientId
+   * @return Void
+   */
+  Uni<Void> releaseClientLock(String clientId);
+
+  /**
    * Close {@link io.vertx.mqtt.MqttEndpoint}.
    *
    * @param clientVerticleId clientVerticleId

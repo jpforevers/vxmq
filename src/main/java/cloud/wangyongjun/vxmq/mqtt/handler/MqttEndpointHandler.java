@@ -46,7 +46,6 @@ import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRelReasonCode;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.eventbus.MessageConsumer;
-import io.vertx.mutiny.core.shareddata.Lock;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -65,7 +64,6 @@ import java.util.stream.Collectors;
 public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
   private final static String CONTEXT_KEY_SESSION_PRESENT = "sessionPresent";
-  private final static String CONTEXT_KEY_LOCK = "lock";
 
   private final static Logger LOGGER = LoggerFactory.getLogger(MqttEndpointHandler.class);
 
@@ -118,7 +116,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
     Context context = Context.empty();
     Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> obtainClientLock(mqttEndpoint.clientIdentifier(), context))
+      .onItem().transformToUni(v -> obtainClientLock(mqttEndpoint.clientIdentifier()))
       .onItem().transformToUni(v -> authenticate(mqttEndpoint))
       .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint))
       .onItem().transformToUni(v -> registerHandler(mqttEndpoint))
@@ -131,7 +129,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
         mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",
         mqttEndpoint.auth() != null ? mqttEndpoint.auth().getPassword() : "")))
-      .onItemOrFailure().call((v,t) -> releaseClientLock(mqttEndpoint.clientIdentifier(), context))
+      .onItemOrFailure().call((v, t) -> releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(context, v -> {
         boolean sessionPresent = getSessionPresentFromContext(context);
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -165,35 +163,21 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   /**
    * Get client lock
    * @param clientId clientId
-   * @param context context
    * @return Void
    */
-  public Uni<Void> obtainClientLock(String clientId, Context context){
-    return vertx.sharedData().getLockWithTimeout(clientId, 5000)
-      .onItem().invoke(lock -> {
-        if (LOGGER.isDebugEnabled()){
-          LOGGER.debug("Client lock obtained for {}", clientId);
-        }
-        context.put(CONTEXT_KEY_LOCK, lock);
-      }).replaceWithVoid();
+  public Uni<Void> obtainClientLock(String clientId){
+    return clientService.obtainClientLock(clientId, 5000);
   }
 
   /**
    * Release client lock
    * @param clientId clientId
-   * @param context context
    * @return Void
    */
-  public Uni<Void> releaseClientLock(String clientId, Context context){
-    vertx.setTimer(3000, l -> {
-      Lock lock = context.get(CONTEXT_KEY_LOCK);
-      if (lock != null){
-        lock.release();
-        if (LOGGER.isDebugEnabled()){
-          LOGGER.debug("Client lock released for {}", clientId);
-        }
-      }
-    });
+  public Uni<Void> releaseClientLock(String clientId){
+    vertx.setTimer(3000, l -> clientService
+      .releaseClientLock(clientId)
+      .subscribe().with(v -> {}, t -> LOGGER.error("Error occurred when release client lock for: " + clientId, t)));
     return Uni.createFrom().voidItem();
   }
 
@@ -372,12 +356,12 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       } else {
         if (previousSession != null) {
           // Resend OutboundQos1Pub OutboundQos2Pub OutboundQos2Rel OfflineMsg
-          vertx.setTimer(200, l -> {
+          vertx.setTimer(500, l -> {
             resendOutboundQos1Pub(mqttEndpoint, previousSession.getSessionId()).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending outboundQos1Pub", t));
             resendOutboundQos2Pub(mqttEndpoint, previousSession.getSessionId()).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending outboundQos2Pub", t));
             resendOutboundQos2Rel(mqttEndpoint, previousSession.getSessionId()).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending outboundQos2Rel", t));
           });
-          vertx.setTimer(300, l -> compositeService.sendOfflineMsg(previousSession.getSessionId())
+          vertx.setTimer(1000, l -> compositeService.sendOfflineMsg(previousSession.getSessionId())
             .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending offline messages of " + mqttEndpoint.clientIdentifier(), t)));
 
           Session updatedSession = previousSession.copy().setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
