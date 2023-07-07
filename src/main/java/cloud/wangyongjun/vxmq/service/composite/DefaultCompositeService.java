@@ -80,7 +80,7 @@ public class DefaultCompositeService implements CompositeService {
   public Uni<Void> clearSession(String clientId) {
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> sessionService.getSession(clientId))
-      .onItem().transformToUni(session -> Uni.createFrom().voidItem()
+      .onItem().ifNotNull().transformToUni(session -> Uni.createFrom().voidItem()
         .onItem().transformToUni(v -> msgService.clearMsgs(session.getSessionId()))
         .onItem().transformToUni(v -> subService.clearSubs(session.getSessionId()))
         .onItem().transformToUni(v -> sessionService.removeSession(clientId)));
