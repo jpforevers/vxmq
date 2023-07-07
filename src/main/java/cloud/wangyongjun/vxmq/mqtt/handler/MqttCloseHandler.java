@@ -89,7 +89,12 @@ public class MqttCloseHandler implements Runnable {
    * @return Void
    */
   public Uni<Void> obtainClientLock(String clientId){
-    return clientService.obtainClientLock(clientId, 5000);
+    return clientService.obtainClientLock(clientId, 5000)
+      .onItem().invoke(lock -> {
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Client lock obtained for {}", clientId);
+        }
+      });
   }
 
   /**
@@ -100,6 +105,11 @@ public class MqttCloseHandler implements Runnable {
   public Uni<Void> releaseClientLock(String clientId){
     vertx.setTimer(3000, l -> clientService
       .releaseClientLock(clientId)
+      .onItem().invoke(v -> {
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Client lock released for {}", clientId);
+        }
+      })
       .subscribe().with(v -> {}, t -> LOGGER.error("Error occurred when release client lock for " + clientId, t)));
     return Uni.createFrom().voidItem();
   }

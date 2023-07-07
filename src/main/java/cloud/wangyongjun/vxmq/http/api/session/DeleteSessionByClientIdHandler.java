@@ -64,12 +64,40 @@ public class DeleteSessionByClientIdHandler extends AbstractApiJsonResultHandler
       })
       .onItem().invoke(v -> vertx.setTimer(2000, l -> {
         Uni.createFrom().voidItem()
-          .onItem().transformToUni(vv -> clientService.obtainClientLock(clientId, 5000))
+          .onItem().transformToUni(vv -> obtainClientLock(clientId))
           .onItem().transformToUni(vv -> compositeService.clearSession(clientId))
-          .onItemOrFailure().call((vv, t) -> clientService.releaseClientLock(clientId))
+          .onItemOrFailure().call((vv, t) -> releaseClientLock(clientId))
           .subscribe().with(vv -> {}, t -> LOGGER.error("Error occurred when clear session for " + clientId, t));
       }))
       .replaceWith(new JsonObject());
+  }
+
+  /**
+   * Get client lock
+   * @param clientId clientId
+   * @return Void
+   */
+  public Uni<Void> obtainClientLock(String clientId){
+    return clientService.obtainClientLock(clientId, 5000)
+      .onItem().invoke(lock -> {
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Client lock obtained for {}", clientId);
+        }
+      });
+  }
+
+  /**
+   * Release client lock
+   * @param clientId clientId
+   * @return Void
+   */
+  public Uni<Void> releaseClientLock(String clientId){
+    return clientService.releaseClientLock(clientId)
+      .onItem().invoke(v -> {
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Client lock released for {}", clientId);
+        }
+      });
   }
 
 }
