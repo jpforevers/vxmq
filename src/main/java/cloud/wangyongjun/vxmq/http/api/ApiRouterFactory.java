@@ -33,7 +33,8 @@ public class ApiRouterFactory {
       .handler(new TestHandler(vertx));
 
     apiRouter.delete(ApiConstants.API_PREFIX_SESSION + "/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
-      .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.sessionService(vertx), ServiceFactory.clientService(vertx)));
+      .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.sessionService(vertx),
+        ServiceFactory.clientService(vertx), ServiceFactory.compositeService(vertx, config)));
 
     return apiRouter;
   }
