@@ -29,14 +29,10 @@ import io.vertx.ext.shell.ShellServiceOptions;
 import io.vertx.ext.shell.term.TelnetTermOptions;
 import io.vertx.mutiny.ext.shell.ShellService;
 import io.vertx.mutiny.ext.shell.command.CommandRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 
 public class ShellServerVerticle extends AbstractVerticle {
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(ShellServerVerticle.class);
 
   @Override
   public Uni<Void> asyncStart() {
@@ -51,6 +47,8 @@ public class ShellServerVerticle extends AbstractVerticle {
     ShellServiceOptions shellServiceOptions = new ShellServiceOptions().setWelcomeMessage(banner).setTelnetOptions(telnetTermOptions);
     ShellService shellService = ShellService.create(vertx, shellServiceOptions);
     return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(TopCmdBuilder.build(vertx)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(TelehackCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LoggerCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LogsCmdBuilder.build(vertx, config())))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(SessionCmdBuilder.build(vertx, sessionService)))
