@@ -280,7 +280,7 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
                   // Nothing to do.
               }
             }
-            return unis.size() > 0 ? Uni.combine().all().unis(unis).discardItems() : Uni.createFrom().voidItem();
+            return unis.size() > 0 ? Uni.combine().all().unis(unis).collectFailures().discardItems() : Uni.createFrom().voidItem();
           }));
     }
   }
