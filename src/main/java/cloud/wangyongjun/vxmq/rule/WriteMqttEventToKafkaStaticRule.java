@@ -74,7 +74,7 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
     }
 
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> Uni.combine().all().unis(consumeEventUnis).discardItems());
+      .onItem().transformToUni(v -> Uni.combine().all().unis(consumeEventUnis).collectFailures().discardItems());
   }
 
   @Override

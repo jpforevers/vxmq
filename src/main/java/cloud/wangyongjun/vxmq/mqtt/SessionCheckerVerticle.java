@@ -54,7 +54,7 @@ public class SessionCheckerVerticle extends AbstractVerticle {
               Uni<Void> uni = clientService.closeMqttEndpoint(session.getVerticleId());
               unis.add(uni);
             }
-            return Uni.combine().all().unis(unis).discardItems();
+            return Uni.combine().all().unis(unis).collectFailures().discardItems();
           }))
         .onItemOrFailure().invoke((lock, t) -> {
           lock.release();
