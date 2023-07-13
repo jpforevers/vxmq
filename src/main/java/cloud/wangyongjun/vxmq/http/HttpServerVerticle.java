@@ -25,8 +25,12 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.ext.web.AllowForwardHeaders;
 import io.vertx.mutiny.ext.web.Router;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpServerVerticle extends AbstractVerticle {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(HttpServerVerticle.class);
 
   @Override
   public Uni<Void> asyncStart() {
@@ -41,6 +45,7 @@ public class HttpServerVerticle extends AbstractVerticle {
       .subRouter(ApiRouterFactory.router(vertx, config()));
 
     return vertx.createHttpServer().requestHandler(rootRouter)
+      .exceptionHandler(t -> LOGGER.error("Error occurred at http server layer", t))
       .listen(Config.getHttpServerPort(config()))
       .replaceWithVoid();
   }
