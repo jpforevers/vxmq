@@ -25,8 +25,10 @@ import cloud.wangyongjun.vxmq.service.will.WillService;
 import cloud.wangyongjun.vxmq.shell.cmd.*;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.shell.ShellServiceOptions;
-import io.vertx.ext.shell.term.TelnetTermOptions;
+import io.vertx.ext.shell.term.SSHTermOptions;
 import io.vertx.mutiny.ext.shell.ShellService;
 import io.vertx.mutiny.ext.shell.command.CommandRegistry;
 
@@ -43,8 +45,18 @@ public class ShellServerVerticle extends AbstractVerticle {
 
     CommandRegistry commandRegistry = CommandRegistry.getShared(vertx);
     String banner = vertx.fileSystem().readFileBlocking("banner.txt").toString(StandardCharsets.UTF_8);
-    TelnetTermOptions telnetTermOptions = new TelnetTermOptions().setPort(Config.getShellServerPort(config()));
-    ShellServiceOptions shellServiceOptions = new ShellServiceOptions().setWelcomeMessage(banner).setTelnetOptions(telnetTermOptions);
+
+    SSHTermOptions sshTermOptions = new SSHTermOptions();
+    sshTermOptions.setPort(Config.getShellServerPort(config()));
+    sshTermOptions.setKeyPairOptions(new JksOptions().
+      setPath("shell-ssh.jks").
+      setPassword("123456"));
+    sshTermOptions.setAuthOptions(new JsonObject()
+      .put("provider", "properties")
+      .put("config", new JsonObject()
+        .put("file", "shell-ssh-auth.properties")));
+
+    ShellServiceOptions shellServiceOptions = new ShellServiceOptions().setWelcomeMessage(banner).setSSHOptions(sshTermOptions);
     ShellService shellService = ShellService.create(vertx, shellServiceOptions);
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> commandRegistry.registerCommand(TopCmdBuilder.build(vertx)))
