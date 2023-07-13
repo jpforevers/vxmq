@@ -135,6 +135,13 @@
       <version>${smallrye-mutiny-vertx.version}</version>
     </dependency>
 
+    <!-- Auth -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-auth-properties</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
     <!-- Apache Util -->
     <dependency>
       <groupId>org.apache.commons</groupId>
