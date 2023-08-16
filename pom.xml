@@ -249,7 +249,7 @@
         <configuration>
           <allowInsecureRegistries>true</allowInsecureRegistries>
           <from>
-            <image>docker.io/jpforevers/myjavabase:17-alpine</image>
+            <image>jpforevers/myjavabase:17</image>
           </from>
           <to>
             <image>jpforevers/${project.artifactId}</image>
@@ -271,8 +271,9 @@
               <jvmFlag>--add-opens=java.base/java.io=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmFlag>
-              <jvmFlag>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvmFlag>
             </jvmFlags>
             <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
             <ports>
