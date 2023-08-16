@@ -41,6 +41,9 @@ public class Config {
   public static final String KEY_VXMQ_IGNITE_WORK_DIR = "vxmq.ignite.work-dir";
   public static final String DEFAULT_VXMQ_IGNITE_WORK_DIR = "/vxmq/ignite";
 
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "vxmq.ignite.discovery.tcp.addresses";
+  public static final String DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "localhost:47500";
+
   public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE = "vxmq.rule.static.WriteMqttEventToKafka.enable";
   public static final boolean DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE = false;
 
@@ -79,6 +82,10 @@ public class Config {
 
   public static String getIgniteWorkDirectory(JsonObject config){
     return config.getString(KEY_VXMQ_IGNITE_WORK_DIR, DEFAULT_VXMQ_IGNITE_WORK_DIR);
+  }
+
+  public static String getIgniteDiscoveryTcpAddresses(JsonObject config){
+    return config.getString(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES, DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES);
   }
 
   public static String getLogsDir(JsonObject config){

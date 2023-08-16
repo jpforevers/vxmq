@@ -59,6 +59,7 @@ public class ShellServerVerticle extends AbstractVerticle {
     ShellServiceOptions shellServiceOptions = new ShellServiceOptions().setWelcomeMessage(banner).setSSHOptions(sshTermOptions);
     ShellService shellService = ShellService.create(vertx, shellServiceOptions);
     return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(ClusterCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(TopCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(TelehackCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LoggerCmdBuilder.build(vertx)))

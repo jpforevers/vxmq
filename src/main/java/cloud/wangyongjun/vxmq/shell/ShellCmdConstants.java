@@ -49,6 +49,6 @@ public class ShellCmdConstants {
   public static final String COMMAND_LOGGER = "logger";
   public static final String COMMAND_LOGS = "logs";
   public static final String COMMAND_CLIENT_VERTICLE = "client-verticle";
-
+  public static final String COMMAND_CLUSTER = "cluster";
 
 }
