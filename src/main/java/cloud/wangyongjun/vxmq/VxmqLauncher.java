@@ -35,12 +35,16 @@ import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.mutiny.config.ConfigRetriever;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.ignite.IgniteClusterManager;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Arrays;
 
 public class VxmqLauncher {
 
@@ -191,16 +195,17 @@ public class VxmqLauncher {
    * @return Vertx
    */
   private static Uni<Vertx> startVertx(JsonObject config) {
-//    TcpDiscoverySpi spi = new TcpDiscoverySpi();
-//    TcpDiscoveryMulticastIpFinder ipFinder = new TcpDiscoveryMulticastIpFinder();
-//    ipFinder.setMulticastGroup("228.10.10.157");
-//    spi.setIpFinder(ipFinder);
+    TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
+    TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
+    tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(config), ",")).toList());
+    tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
 
-    IgniteConfiguration igniteCfg = new IgniteConfiguration();
-    igniteCfg.setGridLogger(new Slf4jLogger());
-    igniteCfg.setWorkDirectory(Config.getIgniteWorkDirectory(config));
-    igniteCfg.setMetricsLogFrequency(0);
-    ClusterManager clusterManager = new IgniteClusterManager(igniteCfg);
+    IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
+    igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);
+    igniteConfiguration.setGridLogger(new Slf4jLogger());
+    igniteConfiguration.setWorkDirectory(Config.getIgniteWorkDirectory(config));
+    igniteConfiguration.setMetricsLogFrequency(0);
+    ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
 
     VertxOptions vertxOptions = new VertxOptions();
     vertxOptions.setClusterManager(clusterManager);

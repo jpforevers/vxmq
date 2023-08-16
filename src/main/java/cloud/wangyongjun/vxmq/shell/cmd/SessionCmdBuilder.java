@@ -61,19 +61,19 @@ public class SessionCmdBuilder {
               ModelConstants.FIELD_NAME_PROTOCOL_LEVEL, ModelConstants.FIELD_NAME_SESSION_EXPIRY_INTERVAL,
               ModelConstants.FIELD_NAME_CREATED_TIME, ModelConstants.FIELD_NAME_UPDATED_TIME);
             List<List<String>> rows = sessions.stream().map(session -> {
-              List<String> list = new ArrayList<>();
-              list.add(session.getSessionId());
-              list.add(session.getClientId());
-              list.add(String.valueOf(session.isOnline()));
-              list.add(session.getVerticleId());
-              list.add(session.getNodeId());
-              list.add(String.valueOf(session.isCleanSession()));
-              list.add(String.valueOf(session.getKeepAlive()));
-              list.add(String.valueOf(session.getProtocolLevel()));
-              list.add(String.valueOf(session.getSessionExpiryInterval()));
-              list.add(Instant.ofEpochMilli(session.getCreatedTime()).toString());
-              list.add(Instant.ofEpochMilli(session.getUpdatedTime()).toString());
-              return list;
+              List<String> row = new ArrayList<>();
+              row.add(session.getSessionId());
+              row.add(session.getClientId());
+              row.add(String.valueOf(session.isOnline()));
+              row.add(session.getVerticleId());
+              row.add(session.getNodeId());
+              row.add(String.valueOf(session.isCleanSession()));
+              row.add(String.valueOf(session.getKeepAlive()));
+              row.add(String.valueOf(session.getProtocolLevel()));
+              row.add(String.valueOf(session.getSessionExpiryInterval()));
+              row.add(Instant.ofEpochMilli(session.getCreatedTime()).toString());
+              row.add(Instant.ofEpochMilli(session.getUpdatedTime()).toString());
+              return row;
             }).toList();
             process.write(AsciiTableUtil.format(headers, rows)).write("\n").end();
           }, t -> process.write(t.getMessage()).end());

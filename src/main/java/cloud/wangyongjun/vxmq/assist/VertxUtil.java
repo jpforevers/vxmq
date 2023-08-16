@@ -16,17 +16,33 @@
 
 package cloud.wangyongjun.vxmq.assist;
 
+import io.smallrye.mutiny.vertx.UniHelper;
+import io.vertx.core.Promise;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.spi.cluster.NodeInfo;
 import io.vertx.mutiny.core.Vertx;
+
+import java.time.Duration;
+import java.util.List;
 
 public class VertxUtil {
 
+  public static VertxInternal getVertxInternal(Vertx vertx) {
+    return ((VertxInternal) vertx.getDelegate());
+  }
+
+  public static List<String> getNodes(Vertx vertx) {
+    return VertxUtil.getVertxInternal(vertx).getClusterManager().getNodes();
+  }
+
   public static String getNodeId(Vertx vertx) {
-    if (vertx.isClustered()){
-      return ((VertxInternal) vertx.getDelegate()).getClusterManager().getNodeId();
-    }else {
-      throw new IllegalStateException("Can not get nodeId, because vertx is not clustered");
-    }
+    return VertxUtil.getVertxInternal(vertx).getClusterManager().getNodeId();
+  }
+
+  public static NodeInfo getNodeInfo(Vertx vertx, String nodeId) {
+    Promise<NodeInfo> promise = Promise.promise();
+    VertxUtil.getVertxInternal(vertx).getClusterManager().getNodeInfo(nodeId, promise);
+    return UniHelper.toUni(promise.future()).await().atMost(Duration.ofSeconds(10));
   }
 
 }
