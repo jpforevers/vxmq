@@ -180,7 +180,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Void
    */
   public Uni<Void> releaseClientLock(String clientId){
-    vertx.setTimer(3000, l -> clientService
+    vertx.setTimer(2000, l -> clientService
       .releaseClientLock(clientId)
       .onItem().invoke(v -> {
         if (LOGGER.isDebugEnabled()){
