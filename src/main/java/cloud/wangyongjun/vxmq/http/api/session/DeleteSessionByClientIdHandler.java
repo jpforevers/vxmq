@@ -58,17 +58,13 @@ public class DeleteSessionByClientIdHandler extends AbstractApiJsonResultHandler
           if (session.isOnline() && StringUtils.isNotBlank(session.getVerticleId())){
             return clientService.closeMqttEndpoint(session.getVerticleId());
           }else {
-            return Uni.createFrom().voidItem();
+            return Uni.createFrom().voidItem()
+              .onItem().transformToUni(vv -> obtainClientLock(clientId))
+              .onItem().transformToUni(vv -> compositeService.clearSession(clientId))
+              .onItemOrFailure().call((vv, t) -> releaseClientLock(clientId));
           }
         }
       })
-      .onItem().invoke(v -> vertx.setTimer(2000, l -> {
-        Uni.createFrom().voidItem()
-          .onItem().transformToUni(vv -> obtainClientLock(clientId))
-          .onItem().transformToUni(vv -> compositeService.clearSession(clientId))
-          .onItemOrFailure().call((vv, t) -> releaseClientLock(clientId))
-          .subscribe().with(vv -> {}, t -> LOGGER.error("Error occurred when clear session for " + clientId, t));
-      }))
       .replaceWith(new JsonObject());
   }
 
