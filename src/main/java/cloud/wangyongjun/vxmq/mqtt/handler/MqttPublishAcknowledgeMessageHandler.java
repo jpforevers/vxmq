@@ -77,7 +77,7 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
               VertxUtil.getNodeId(vertx), outboundQos1Pub.getSessionId(), outboundQos1Pub.getClientId(),
               outboundQos1Pub.getMessageId(), outboundQos1Pub.getTopic(), outboundQos1Pub.getQos(),
               outboundQos1Pub.getPayload(), outboundQos1Pub.isDup(), outboundQos1Pub.isRetain())))
-            .onItem().transformToUni(v -> msgService.removeOutboundQos2Pub(outboundQos1Pub.getSessionId(), outboundQos1Pub.getMessageId()));
+            .onItem().transformToUni(v -> msgService.removeOutboundQos1Pub(outboundQos1Pub.getSessionId(), outboundQos1Pub.getMessageId()));
         }
       })
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBACK from {}", mqttEndpoint.clientIdentifier(), t));
