@@ -104,6 +104,11 @@ public class IgniteSessionService implements SessionService {
     return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
   }
 
+  public Uni<List<Session>> search(String nodeId) {
+    QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(new ScanQuery<>((k ,v) -> v.getNodeId().equals(nodeId)));
+    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
+  }
+
   @Override
   public Uni<Long> count() {
     QueryCursor<String> cursor = sessionCache.<Cache.Entry<String, Session>, String>query(new ScanQuery<>(), Cache.Entry::getKey);

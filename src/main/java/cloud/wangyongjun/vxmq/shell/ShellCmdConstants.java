@@ -34,6 +34,7 @@ public class ShellCmdConstants {
   public static final String COMMAND_OPTION_WILDCARD_LONG_NAME = "wildcard";
   public static final String COMMAND_OPTION_MATCH_LONG_NAME = "match";
   public static final String COMMAND_OPTION_CLIENT_LONG_NAME = "client";
+  public static final String COMMAND_OPTION_NODE_LONG_NAME = "node";
 
 
   public static final String COMMAND_SESSION = "session";

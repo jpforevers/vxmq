@@ -17,14 +17,15 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
-import cloud.wangyongjun.vxmq.event.*;
-import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.assist.StringPair;
+import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.event.EventType;
+import cloud.wangyongjun.vxmq.event.MqttConnectedEvent;
+import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
 import cloud.wangyongjun.vxmq.service.client.DisconnectRequest;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
-import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;
 import cloud.wangyongjun.vxmq.service.session.Session;
@@ -105,7 +106,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     if (StringUtils.isBlank(clientIdOriginal)) {
       mqttEndpoint.setClientIdentifier(UUIDUtil.timeBasedUuid().toString());
     }
-    if (LOGGER.isDebugEnabled()){
+    if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("CONNECT from {}: {}", mqttEndpoint.clientIdentifier(), connectInfo(mqttEndpoint));
     }
 
@@ -137,7 +138,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         } else {
           mqttEndpoint.accept(sessionPresent, connAckProperties);
         }
-        if (LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Mqtt client {} connected", mqttEndpoint.clientIdentifier());
         }
       }, t -> {
@@ -162,13 +163,14 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
   /**
    * Get client lock
+   *
    * @param clientId clientId
    * @return Void
    */
-  public Uni<Void> obtainClientLock(String clientId){
+  public Uni<Void> obtainClientLock(String clientId) {
     return clientService.obtainClientLock(clientId, 5000)
       .onItem().invoke(lock -> {
-        if (LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Client lock obtained for {}", clientId);
         }
       });
@@ -176,14 +178,15 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
   /**
    * Release client lock
+   *
    * @param clientId clientId
    * @return Void
    */
-  public Uni<Void> releaseClientLock(String clientId){
+  public Uni<Void> releaseClientLock(String clientId) {
     vertx.setTimer(2000, l -> clientService
       .releaseClientLock(clientId)
       .onItem().invoke(v -> {
-        if (LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Client lock released for {}", clientId);
         }
       })
@@ -237,37 +240,40 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Void
    */
   private Uni<Void> kickOffExistingConnection(MqttEndpoint mqttEndpoint) {
-    return Uni.createFrom().emitter(uniEmitter -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> {
-        if (session != null && session.isOnline() && vertx.deploymentIDs().contains(session.getVerticleId())) {
-          LOGGER.warn("Kick off existing connection for: {}", mqttEndpoint.clientIdentifier());
-          // Whether the above code can receive EVENT_MQTT_ENDPOINT_CLOSED_EVENT, always continue to run forward after a period of time.
-          long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
-          AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
-          return Uni.createFrom().voidItem()
-            .onItem().transformToUni(v -> eventService
-              .consumeEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED, data -> {
-                MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
-                if (session.getSessionId().equals(mqttEndpointClosedEvent.getSessionId())) {
-                  // When EVENT_MQTT_ENDPOINT_CLOSED_EVENT received and sessionId is same, cancel timer and run forward.
-                  vertx.cancelTimer(timerId);
-                  uniEmitter.complete(null);
+    return Uni.createFrom().emitter(uniEmitter ->
+      sessionService.getSession(mqttEndpoint.clientIdentifier())
+        .onItem().transformToUni(session -> {
+          if (session != null && session.isOnline() && vertx.deploymentIDs().contains(session.getVerticleId())) {
+            LOGGER.warn("Kick off existing connection for: {}", mqttEndpoint.clientIdentifier());
+            // Whether the above code can receive EVENT_MQTT_ENDPOINT_CLOSED_EVENT, always continue to run forward after a period of time.
+            long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
+            AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
+            return Uni.createFrom().voidItem()
+              .onItem().transformToUni(v -> eventService
+                .consumeEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED, data -> {
+                  MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
+                  if (session.getSessionId().equals(mqttEndpointClosedEvent.getSessionId())) {
+                    // When EVENT_MQTT_ENDPOINT_CLOSED_EVENT received and sessionId is same, cancel timer and run forward.
+                    vertx.cancelTimer(timerId);
+                    uniEmitter.complete(null);
+                  }
+                  messageConsumer.get().unregisterAndForget();
+                }, false))
+              .onItem().invoke(messageConsumer::set)
+              .onItem().transformToUni(v -> {
+                if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
+                  return clientService.closeMqttEndpoint(session.getVerticleId());
+                } else {
+                  return clientService.disconnect(session.getVerticleId(), new DisconnectRequest(MqttDisconnectReasonCode.SESSION_TAKEN_OVER, MqttProperties.NO_PROPERTIES));
                 }
-                messageConsumer.get().unregisterAndForget();
-              }, false))
-            .onItem().invoke(messageConsumer::set)
-            .onItem().transformToUni(v -> {
-              if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-                return clientService.closeMqttEndpoint(session.getVerticleId());
-              } else {
-                return clientService.disconnect(session.getVerticleId(), new DisconnectRequest(MqttDisconnectReasonCode.SESSION_TAKEN_OVER, MqttProperties.NO_PROPERTIES));
-              }
-            });
-        } else {
-          uniEmitter.complete(null);
-          return Uni.createFrom().voidItem();
-        }
-      }).subscribe().with(ConsumerUtil.nothingToDo(), uniEmitter::fail));
+              });
+          } else {
+            uniEmitter.complete(null);
+            return Uni.createFrom().voidItem();
+          }
+        })
+        .subscribe().with(ConsumerUtil.nothingToDo(), uniEmitter::fail)
+    );
   }
 
   /**
