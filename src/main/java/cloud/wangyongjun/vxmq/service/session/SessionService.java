@@ -34,6 +34,8 @@ public interface SessionService {
 
   Uni<List<Session>> allSessions();
 
+  Uni<List<Session>> search(String nodeId);
+
   Uni<Long> count();
 
 }
