@@ -29,8 +29,10 @@ import org.apache.ignite.IgniteQueue;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.CacheWriteSynchronizationMode;
+import org.apache.ignite.cache.eviction.lru.LruEvictionPolicyFactory;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.CollectionConfiguration;
+import org.apache.ignite.configuration.NearCacheConfiguration;
 
 public class IgniteAssist {
 
@@ -106,6 +108,12 @@ public class IgniteAssist {
     sessionCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
     sessionCacheConfiguration.setBackups(Config.getIgniteBackups(config));
     sessionCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
+
+    NearCacheConfiguration<String, Session> sessionNearCacheConfiguration = new NearCacheConfiguration<>();
+    LruEvictionPolicyFactory<String, Session> sessionLruEvictionPolicyFactory = new LruEvictionPolicyFactory<>();
+    sessionNearCacheConfiguration.setNearEvictionPolicyFactory(sessionLruEvictionPolicyFactory);
+    sessionCacheConfiguration.setNearConfiguration(sessionNearCacheConfiguration);
+
     return ignite.getOrCreateCache(sessionCacheConfiguration);
   }
 
