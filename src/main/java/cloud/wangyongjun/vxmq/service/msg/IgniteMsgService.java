@@ -71,15 +71,9 @@ public class IgniteMsgService implements MsgService {
   }
 
   @Override
-  public Uni<InboundQos2Pub> getInboundQos2Pub(String sessionId, int messageId) {
+  public Uni<InboundQos2Pub> getAndRemoveInboundQos2Pub(String sessionId, int messageId) {
     InboundQos2PubKey inboundQos2PubKey = new InboundQos2PubKey(sessionId, messageId);
-    return Uni.createFrom().item(inboundQos2PubCache.get(inboundQos2PubKey));
-  }
-
-  @Override
-  public Uni<Void> removeInboundQos2Pub(String sessionId, int messageId) {
-    inboundQos2PubCache.remove(new InboundQos2PubKey(sessionId, messageId));
-    return Uni.createFrom().voidItem();
+    return Uni.createFrom().item(inboundQos2PubCache.getAndRemove(inboundQos2PubKey));
   }
 
   @Override
@@ -101,14 +95,8 @@ public class IgniteMsgService implements MsgService {
   }
 
   @Override
-  public Uni<OutboundQos1Pub> getOutboundQos1Pub(String sessionId, int messageId) {
-    return Uni.createFrom().item(outboundQos1PubCache.get(new OutboundQos1PubKey(sessionId, messageId)));
-  }
-
-  @Override
-  public Uni<Void> removeOutboundQos1Pub(String sessionId, int messageId) {
-    outboundQos1PubCache.remove(new OutboundQos1PubKey(sessionId, messageId));
-    return Uni.createFrom().voidItem();
+  public Uni<OutboundQos1Pub> getAndRemoveOutboundQos1Pub(String sessionId, int messageId) {
+    return Uni.createFrom().item(outboundQos1PubCache.getAndRemove(new OutboundQos1PubKey(sessionId, messageId)));
   }
 
   @Override
@@ -136,14 +124,8 @@ public class IgniteMsgService implements MsgService {
   }
 
   @Override
-  public Uni<OutboundQos2Pub> getOutboundQos2Pub(String sessionId, int messageId) {
-    return Uni.createFrom().item(outboundQos2PubCache.get(new OutboundQos2PubKey(sessionId, messageId)));
-  }
-
-  @Override
-  public Uni<Void> removeOutboundQos2Pub(String sessionId, int messageId) {
-    outboundQos2PubCache.remove(new OutboundQos2PubKey(sessionId, messageId));
-    return Uni.createFrom().voidItem();
+  public Uni<OutboundQos2Pub> getAndRemoveOutboundQos2Pub(String sessionId, int messageId) {
+    return Uni.createFrom().item(outboundQos2PubCache.getAndRemove(new OutboundQos2PubKey(sessionId, messageId)));
   }
 
   @Override
@@ -171,14 +153,8 @@ public class IgniteMsgService implements MsgService {
   }
 
   @Override
-  public Uni<OutboundQos2Rel> getOutboundQos2Rel(String sessionId, int messageId) {
-    return Uni.createFrom().item(outboundQos2RelCache.get(new OutboundQos2RelKey(sessionId, messageId)));
-  }
-
-  @Override
-  public Uni<Void> removeOutboundQos2Rel(String sessionId, int messageId) {
-    outboundQos2RelCache.remove(new OutboundQos2RelKey(sessionId, messageId));
-    return Uni.createFrom().voidItem();
+  public Uni<OutboundQos2Rel> getAndRemoveOutboundQos2Rel(String sessionId, int messageId) {
+    return Uni.createFrom().item(outboundQos2RelCache.getAndRemove(new OutboundQos2RelKey(sessionId, messageId)));
   }
 
   @Override
