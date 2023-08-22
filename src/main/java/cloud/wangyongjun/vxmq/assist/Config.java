@@ -32,8 +32,8 @@ public class Config {
   public static final String KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX = "vxmq.session.queued-message.max";
   public static final int DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX = 1000;
 
-  public static final String KEY_VXMQ_SUB_IGNITE_BACKUPS = "vxmq.sub.ignite.backups";
-  public static final int DEFAULT_VXMQ_SUB_IGNITE_BACKUPS = 1;
+  public static final String KEY_VXMQ_IGNITE_BACKUPS = "vxmq.ignite.backups";
+  public static final int DEFAULT_VXMQ_IGNITE_BACKUPS = 1;
 
   public static final String KEY_VXMQ_LOGS_DIR = "vxmq.logs.dir";
   public static final String DEFAULT_VXMQ_LOGS_DIR = "/vxmq/logs";
@@ -56,7 +56,7 @@ public class Config {
   public static final String KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS = "vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers";
   public static final String DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS = "localhost:9094";
 
-  public static String getNothing(JsonObject config){
+  public static String getNothing(JsonObject config) {
     return config.getString(KEY_NOTHING, DEFAULT_NOTHING);
   }
 
@@ -76,39 +76,39 @@ public class Config {
     return config.getInteger(KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX, DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX);
   }
 
-  public static int getSubIgniteBackups(JsonObject config) {
-    return config.getInteger(KEY_VXMQ_SUB_IGNITE_BACKUPS, DEFAULT_VXMQ_SUB_IGNITE_BACKUPS);
+  public static int getIgniteBackups(JsonObject config) {
+    return config.getInteger(KEY_VXMQ_IGNITE_BACKUPS, DEFAULT_VXMQ_IGNITE_BACKUPS);
   }
 
   public static String getIgniteWorkDirectory(JsonObject config){
     return config.getString(KEY_VXMQ_IGNITE_WORK_DIR, DEFAULT_VXMQ_IGNITE_WORK_DIR);
   }
 
-  public static String getIgniteDiscoveryTcpAddresses(JsonObject config){
+  public static String getIgniteDiscoveryTcpAddresses(JsonObject config) {
     return config.getString(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES, DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES);
   }
 
-  public static String getLogsDir(JsonObject config){
+  public static String getLogsDir(JsonObject config) {
     return config.getString(KEY_VXMQ_LOGS_DIR, DEFAULT_VXMQ_LOGS_DIR);
   }
 
-  public static String getLogFile(JsonObject config){
+  public static String getLogFile(JsonObject config) {
     return getLogsDir(config) + "/vxmq.log";
   }
 
-  public static boolean getRuleStaticWriteMqttEventToKafkaEnable(JsonObject config){
+  public static boolean getRuleStaticWriteMqttEventToKafkaEnable(JsonObject config) {
     return config.getBoolean(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE, DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE);
   }
 
-  public static String getRuleStaticWriteMqttEventToKafkaKafkaServers(JsonObject config){
+  public static String getRuleStaticWriteMqttEventToKafkaKafkaServers(JsonObject config) {
     return config.getString(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS, DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS);
   }
 
-  public static boolean getRuleStaticReadMqttPublishFromKafkaEnable(JsonObject config){
+  public static boolean getRuleStaticReadMqttPublishFromKafkaEnable(JsonObject config) {
     return config.getBoolean(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE, DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE);
   }
 
-  public static String getRuleStaticReadMqttPublishFromKafkaKafkaServers(JsonObject config){
+  public static String getRuleStaticReadMqttPublishFromKafkaKafkaServers(JsonObject config) {
     return config.getString(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS, DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS);
   }
 

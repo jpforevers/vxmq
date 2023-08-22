@@ -38,7 +38,7 @@ public class ShellServerVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    SessionService sessionService = ServiceFactory.sessionService(vertx);
+    SessionService sessionService = ServiceFactory.sessionService(vertx, config());
     WillService willService = ServiceFactory.willService(vertx);
     SubService subService = ServiceFactory.subService(vertx);
     MsgService msgService = ServiceFactory.msgService(vertx, config());
