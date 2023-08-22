@@ -37,7 +37,7 @@ public class MqttServerVerticle extends AbstractVerticle {
     mqttServer.endpointHandler(new MqttEndpointHandler(vertx, config(),
       ServiceFactory.sessionService(vertx, config()),
       ServiceFactory.msgService(vertx, config()),
-      ServiceFactory.willService(vertx),
+      ServiceFactory.willService(vertx, config()),
       ServiceFactory.clientService(vertx),
       ServiceFactory.subService(vertx),
       ServiceFactory.retainService(vertx, config()),

@@ -56,12 +56,12 @@ public class ServiceFactory {
     return IgniteRetainService.getSingleton(vertx, config);
   }
 
-  public static WillService willService(Vertx vertx) {
-    return IgniteWillService.getSingleton(vertx);
+  public static WillService willService(Vertx vertx, JsonObject config) {
+    return IgniteWillService.getSingleton(vertx, config);
   }
 
   public static CompositeService compositeService(Vertx vertx, JsonObject config) {
-    return DefaultCompositeService.getSingleton(vertx, config, sessionService(vertx, config), subService(vertx), willService(vertx), msgService(vertx, config), retainService(vertx, config), clientService(vertx));
+    return DefaultCompositeService.getSingleton(vertx, config, sessionService(vertx, config), subService(vertx), willService(vertx, config), msgService(vertx, config), retainService(vertx, config), clientService(vertx));
   }
 
   public static EventService eventService(Vertx vertx){
