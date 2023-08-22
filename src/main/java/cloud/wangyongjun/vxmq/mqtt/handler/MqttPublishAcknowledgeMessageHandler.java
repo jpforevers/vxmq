@@ -62,22 +62,20 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
 
   @Override
   public void accept(MqttPubAckMessage mqttPubAckMessage) {
-    if (LOGGER.isDebugEnabled()){
+    if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("PUBACK from {}: {}", mqttEndpoint.clientIdentifier(), pubAckInfo(mqttPubAckMessage));
     }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.getOutboundQos1Pub(session.getSessionId(), mqttPubAckMessage.messageId()))
+      .onItem().transformToUni(session -> msgService.getAndRemoveOutboundQos1Pub(session.getSessionId(), mqttPubAckMessage.messageId()))
       .onItem().transformToUni(outboundQos1Pub -> {
-        if (outboundQos1Pub == null){
+        if (outboundQos1Pub == null) {
           LOGGER.warn("PUBACK from {} with messageId {} without having related PUBLISH packet", mqttEndpoint.clientIdentifier(), mqttPubAckMessage.messageId());
           return Uni.createFrom().voidItem();
-        }else {
-          return Uni.createFrom().voidItem()
-            .onItem().call(v -> eventService.publishEvent(new MqttPublishOutboundAckedEvent(Instant.now().toEpochMilli(),
-              VertxUtil.getNodeId(vertx), outboundQos1Pub.getSessionId(), outboundQos1Pub.getClientId(),
-              outboundQos1Pub.getMessageId(), outboundQos1Pub.getTopic(), outboundQos1Pub.getQos(),
-              outboundQos1Pub.getPayload(), outboundQos1Pub.isDup(), outboundQos1Pub.isRetain())))
-            .onItem().transformToUni(v -> msgService.removeOutboundQos1Pub(outboundQos1Pub.getSessionId(), outboundQos1Pub.getMessageId()));
+        } else {
+          return eventService.publishEvent(new MqttPublishOutboundAckedEvent(Instant.now().toEpochMilli(),
+            VertxUtil.getNodeId(vertx), outboundQos1Pub.getSessionId(), outboundQos1Pub.getClientId(),
+            outboundQos1Pub.getMessageId(), outboundQos1Pub.getTopic(), outboundQos1Pub.getQos(),
+            outboundQos1Pub.getPayload(), outboundQos1Pub.isDup(), outboundQos1Pub.isRetain()));
         }
       })
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBACK from {}", mqttEndpoint.clientIdentifier(), t));
