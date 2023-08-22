@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.assist;
 
 import io.vertx.core.json.JsonObject;
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 
 public class Config {
 
@@ -40,6 +41,9 @@ public class Config {
 
   public static final String KEY_VXMQ_IGNITE_WORK_DIR = "vxmq.ignite.work-dir";
   public static final String DEFAULT_VXMQ_IGNITE_WORK_DIR = "/vxmq/ignite";
+
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT = "vxmq.ignite.discovery.tcp.port";
+  public static final int DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT = TcpDiscoverySpi.DFLT_PORT;
 
   public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "vxmq.ignite.discovery.tcp.addresses";
   public static final String DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "localhost:47500";
@@ -82,6 +86,10 @@ public class Config {
 
   public static String getIgniteWorkDirectory(JsonObject config){
     return config.getString(KEY_VXMQ_IGNITE_WORK_DIR, DEFAULT_VXMQ_IGNITE_WORK_DIR);
+  }
+
+  public static int getIgniteDiscoveryTcpPort(JsonObject config){
+    return config.getInteger(KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT, DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT);
   }
 
   public static String getIgniteDiscoveryTcpAddresses(JsonObject config) {
