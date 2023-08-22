@@ -48,7 +48,7 @@ public class IgniteAssist {
   public static IgniteCache<InboundQos2PubKey, InboundQos2Pub> initInboundQos2PubCache(Ignite ignite) {
     CacheConfiguration<InboundQos2PubKey, InboundQos2Pub> inboundQos2PubCacheConfiguration = new CacheConfiguration<>();
     inboundQos2PubCacheConfiguration.setName(IgniteAssist.INBOUND_QOS2_PUB_CACHE_NAME);
-    inboundQos2PubCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.FULL_ASYNC);
+    inboundQos2PubCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     inboundQos2PubCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
     inboundQos2PubCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
     return ignite.getOrCreateCache(inboundQos2PubCacheConfiguration);
@@ -57,7 +57,7 @@ public class IgniteAssist {
   public static IgniteCache<OutboundQos1PubKey, OutboundQos1Pub> initOutboundQos1PubCache(Ignite ignite) {
     CacheConfiguration<OutboundQos1PubKey, OutboundQos1Pub> outboundQos1PubCacheConfiguration = new CacheConfiguration<>();
     outboundQos1PubCacheConfiguration.setName(IgniteAssist.OUTBOUND_QOS1_PUB_CACHE_NAME);
-    outboundQos1PubCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.FULL_ASYNC);
+    outboundQos1PubCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     outboundQos1PubCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
     outboundQos1PubCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
     return ignite.getOrCreateCache(outboundQos1PubCacheConfiguration);
@@ -67,7 +67,7 @@ public class IgniteAssist {
   public static IgniteCache<OutboundQos2PubKey, OutboundQos2Pub> initOutboundQos2PubCache(Ignite ignite) {
     CacheConfiguration<OutboundQos2PubKey, OutboundQos2Pub> outboundQos2PubCacheConfiguration = new CacheConfiguration<>();
     outboundQos2PubCacheConfiguration.setName(IgniteAssist.OUTBOUND_QOS2_PUB_CACHE_NAME);
-    outboundQos2PubCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.FULL_ASYNC);
+    outboundQos2PubCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     outboundQos2PubCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
     outboundQos2PubCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
     return ignite.getOrCreateCache(outboundQos2PubCacheConfiguration);
@@ -76,7 +76,7 @@ public class IgniteAssist {
   public static IgniteCache<OutboundQos2RelKey, OutboundQos2Rel> initOutboundQos2RelCache(Ignite ignite) {
     CacheConfiguration<OutboundQos2RelKey, OutboundQos2Rel> outboundQos2RelCacheConfiguration = new CacheConfiguration<>();
     outboundQos2RelCacheConfiguration.setName(IgniteAssist.OUTBOUND_QOS2_REL_CACHE_NAME);
-    outboundQos2RelCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.FULL_ASYNC);
+    outboundQos2RelCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     outboundQos2RelCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
     outboundQos2RelCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
     return ignite.getOrCreateCache(outboundQos2RelCacheConfiguration);
