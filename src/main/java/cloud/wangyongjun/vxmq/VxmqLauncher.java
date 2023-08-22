@@ -198,6 +198,7 @@ public class VxmqLauncher {
     TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
     TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
     tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(config), ",")).toList());
+    tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort(config));
     tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
 
     IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
