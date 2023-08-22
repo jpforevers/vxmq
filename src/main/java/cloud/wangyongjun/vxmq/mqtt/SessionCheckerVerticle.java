@@ -36,11 +36,14 @@ public class SessionCheckerVerticle extends AbstractVerticle {
 
   public static final String SESSION_CHECKER_LOCK_NAME = "SESSION_CHECKER";
 
-  private final SessionService sessionService = ServiceFactory.sessionService(vertx);
-  private final ClientService clientService = ServiceFactory.clientService(vertx);
+  private SessionService sessionService;
+  private ClientService clientService;
 
   @Override
   public Uni<Void> asyncStart() {
+    sessionService = ServiceFactory.sessionService(vertx, config());
+    clientService = ServiceFactory.clientService(vertx);
+
     vertx.setPeriodic(10000, 60000, l -> {
       vertx.sharedData().getLock(SESSION_CHECKER_LOCK_NAME)
         .onItem().call(lock -> sessionService.allSessions()

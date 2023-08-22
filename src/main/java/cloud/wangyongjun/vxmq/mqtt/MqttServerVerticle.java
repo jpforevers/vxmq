@@ -35,12 +35,12 @@ public class MqttServerVerticle extends AbstractVerticle {
     MqttServerOptions mqttServerOptions = new MqttServerOptions().setAutoClientId(false).setPort(Config.getMqttServerPort(config()));
     MqttServer mqttServer = MqttServer.create(vertx, mqttServerOptions);
     mqttServer.endpointHandler(new MqttEndpointHandler(vertx, config(),
-      ServiceFactory.sessionService(vertx),
+      ServiceFactory.sessionService(vertx, config()),
       ServiceFactory.msgService(vertx, config()),
       ServiceFactory.willService(vertx),
       ServiceFactory.clientService(vertx),
       ServiceFactory.subService(vertx),
-      ServiceFactory.retainService(vertx),
+      ServiceFactory.retainService(vertx, config()),
       ServiceFactory.compositeService(vertx, config()),
       ServiceFactory.eventService(vertx))
     );
