@@ -16,6 +16,8 @@
 
 package cloud.wangyongjun.vxmq.service.composite;
 
+import cloud.wangyongjun.vxmq.MainVerticle;
+import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
@@ -193,7 +195,7 @@ public class DefaultCompositeService implements CompositeService {
             unis.add(unix);
           }
         }
-        return !unis.isEmpty() ? Uni.combine().all().unis(unis).usingConcurrencyOf(CpuCoreSensor.availableProcessors()).collectFailures().discardItems() : Uni.createFrom().voidItem();
+        return !unis.isEmpty() ? Uni.combine().all().unis(unis).usingConcurrencyOf(Config.AVAILABLE_CPU_CORE_SENSORS).collectFailures().discardItems() : Uni.createFrom().voidItem();
       });
   }
 
