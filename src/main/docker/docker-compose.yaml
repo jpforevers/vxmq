@@ -12,7 +12,9 @@ services:
       timeout: 3s
       retries: 5
     environment:
+      vxmq.ignite.discovery.tcp.port: 47500
       vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
+      vxmq.ignite.backups: 0
     volumes:
       - vxmq1-log-volume:/vxmq/logs
       - vxmq1-ignite-volume:/vxmq/ignite
@@ -29,7 +31,9 @@ services:
       timeout: 3s
       retries: 5
     environment:
+      vxmq.ignite.discovery.tcp.port: 47500
       vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
+      vxmq.ignite.backups: 0
     volumes:
       - vxmq2-log-volume:/vxmq/logs
       - vxmq2-ignite-volume:/vxmq/ignite
@@ -46,7 +50,9 @@ services:
       timeout: 3s
       retries: 5
     environment:
+      vxmq.ignite.discovery.tcp.port: 47500
       vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
+      vxmq.ignite.backups: 0
     volumes:
       - vxmq3-log-volume:/vxmq/logs
       - vxmq3-ignite-volume:/vxmq/ignite

@@ -22,6 +22,7 @@ import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.DefaultClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.composite.DefaultCompositeService;
+import cloud.wangyongjun.vxmq.service.msg.IgniteAndMapMsgService;
 import cloud.wangyongjun.vxmq.service.msg.IgniteMsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.retain.IgniteRetainService;
@@ -49,7 +50,8 @@ public class ServiceFactory {
   }
 
   public static MsgService msgService(Vertx vertx, JsonObject config) {
-    return IgniteMsgService.getSingleton(vertx, config);
+//    return IgniteMsgService.getSingleton(vertx, config);
+    return IgniteAndMapMsgService.getSingleton(vertx, config);
   }
 
   public static RetainService retainService(Vertx vertx, JsonObject config) {
