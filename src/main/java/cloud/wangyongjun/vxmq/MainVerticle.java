@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq;
 
+import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.SessionCheckerVerticle;
@@ -27,7 +28,6 @@ import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.impl.HttpServerImpl;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.cpu.CpuCoreSensor;
 import io.vertx.core.net.impl.NetServerImpl;
 import io.vertx.core.net.impl.ServerID;
 import org.slf4j.Logger;
@@ -64,10 +64,10 @@ public class MainVerticle extends AbstractVerticle {
   private Uni<Void> deployVerticle() {
 
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(CpuCoreSensor.availableProcessors())))
+      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
       .onItem().invoke(s -> LOGGER.info("{} deployed", HttpServerVerticle.class.getSimpleName()))
 
-      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(CpuCoreSensor.availableProcessors())))
+      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
       .onItem().invoke(s -> LOGGER.info("{} deployed", MqttServerVerticle.class.getSimpleName()))
 
       .onItem().transformToUni(s -> vertx.deployVerticle(SessionCheckerVerticle::new, new DeploymentOptions().setConfig(config()).setWorker(true)))

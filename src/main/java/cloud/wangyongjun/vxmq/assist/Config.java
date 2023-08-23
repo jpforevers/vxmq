@@ -16,10 +16,13 @@
 
 package cloud.wangyongjun.vxmq.assist;
 
+import io.vertx.core.impl.cpu.CpuCoreSensor;
 import io.vertx.core.json.JsonObject;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 
 public class Config {
+
+  public static final int AVAILABLE_CPU_CORE_SENSORS = CpuCoreSensor.availableProcessors();
 
   public static final String KEY_NOTHING = "nothing";
   public static final String DEFAULT_NOTHING = "default_nothing";
