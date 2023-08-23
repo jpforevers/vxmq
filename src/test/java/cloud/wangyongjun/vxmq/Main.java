@@ -33,13 +33,21 @@ public class Main {
 
   public static void main(String[] args) {
     Vertx vertx = Vertx.vertx();
-    MqttClient mqttClient1 = MqttClient.create(vertx, new MqttClientOptions().setClientId("d1"));
-    MqttClient mqttClient2 = MqttClient.create(vertx, new MqttClientOptions().setClientId("d1"));
-    mqttClient1.connect(1884, "localhost")
+    MqttClientOptions mqttClientOptions = new MqttClientOptions();
+    mqttClientOptions.setAutoAck(false);
+    mqttClientOptions.setClientId("d1");
+    mqttClientOptions.setCleanSession(false);
+
+    MqttClient mqttClient1 = MqttClient.create(vertx, mqttClientOptions);
+    mqttClient1.publishHandler(mqttPublishMessage -> {
+      System.out.println("Publish: " + mqttPublishMessage.topicName() + " " + mqttPublishMessage.qosLevel() + " " + mqttPublishMessage.payload().toString());
+//      mqttPublishMessage.ack();
+    });
+    mqttClient1.connect(1883, "localhost")
       .onItem().invoke(mqttConnAckMessage -> System.out.println("client1: " + mqttConnAckMessage.code()))
-      .subscribe().with(v -> {}, Throwable::printStackTrace);
-    mqttClient2.connect(1884, "localhost")
-      .onItem().invoke(mqttConnAckMessage -> System.out.println("client2: " + mqttConnAckMessage.code()))
+      .replaceWithVoid()
+      .onItem().transformToUni(v -> mqttClient1.subscribe("t", 1))
+      .onItem().invoke(i -> System.out.println("Subscribe result: " + i))
       .subscribe().with(v -> {}, Throwable::printStackTrace);
   }
 
