@@ -195,7 +195,7 @@ public class DefaultCompositeService implements CompositeService {
             unis.add(unix);
           }
         }
-        return !unis.isEmpty() ? Uni.combine().all().unis(unis).usingConcurrencyOf(Config.AVAILABLE_CPU_CORE_SENSORS).collectFailures().discardItems() : Uni.createFrom().voidItem();
+        return !unis.isEmpty() ? Uni.combine().all().unis(unis).usingConcurrencyOf(Config.AVAILABLE_CPU_CORE_SENSORS * 2).collectFailures().discardItems() : Uni.createFrom().voidItem();
       });
   }
 
