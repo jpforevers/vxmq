@@ -32,7 +32,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubCmdBuilder {
+public class SubsCmdBuilder {
 
   public static Command build(Vertx vertx, SubService subService) {
     Option helpOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_HELP_SHORT_NAME)
@@ -48,10 +48,10 @@ public class SubCmdBuilder {
       .setDescription("List exact subscriptions");
     Option wildcardOption = new Option().setLongName(ShellCmdConstants.COMMAND_OPTION_WILDCARD_LONG_NAME).setFlag(true)
       .setDescription("List wildcard subscriptions");
-    Option matchOption = new Option().setLongName(ShellCmdConstants.COMMAND_OPTION_MATCH_LONG_NAME)
+    Option matchOption = new Option().setLongName(ShellCmdConstants.COMMAND_OPTION_MATCH_LONG_NAME).setArgName(ShellCmdConstants.COMMAND_ARG_NAME_TOPIC_NAME)
       .setDescription("List match topic subscription");
 
-    CLI cli = CLI.create(ShellCmdConstants.COMMAND_SUB).setDescription("A command line interface to interact with mqtt subscription")
+    CLI cli = CLI.create(ShellCmdConstants.COMMAND_SUBS).setDescription("A command line interface to interact with mqtt subscription")
       .addOption(helpOption).addOption(listOption).addOption(countOption).addOption(exactOption).addOption(wildcardOption).addOption(matchOption);
     StringBuilder usageBuilder = new StringBuilder();
     cli.getDelegate().usage(usageBuilder);

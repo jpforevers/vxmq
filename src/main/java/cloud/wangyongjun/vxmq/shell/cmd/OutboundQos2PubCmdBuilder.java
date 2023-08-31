@@ -38,7 +38,7 @@ public class OutboundQos2PubCmdBuilder {
       .setLongName(ShellCmdConstants.COMMAND_OPTION_COUNT_LONG_NAME).setFlag(true)
       .setDescription("Count outboundQos2Pub");
 
-    CLI cli = CLI.create(ShellCmdConstants.COMMAND_OUTBOUNDQOS2PUB).setDescription("A command line interface to interact with outboundQos2Pub")
+    CLI cli = CLI.create(ShellCmdConstants.COMMAND_OUTBOUNDQOS2PUBS).setDescription("A command line interface to interact with outboundQos2Pub")
       .addOption(helpOption).addOption(listOption).addOption(countOption);
     StringBuilder usageBuilder = new StringBuilder();
     cli.getDelegate().usage(usageBuilder);

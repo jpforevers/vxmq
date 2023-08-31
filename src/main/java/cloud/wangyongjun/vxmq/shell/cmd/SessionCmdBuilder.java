@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.shell.cmd;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
@@ -34,20 +35,22 @@ import java.util.List;
 
 public class SessionCmdBuilder {
 
-  public static Command build(Vertx vertx, SessionService sessionService) {
+  public static Command build(Vertx vertx, SessionService sessionService, CompositeService compositeService) {
     Option helpOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_HELP_SHORT_NAME).setLongName(ShellCmdConstants.COMMAND_OPTION_HELP_LONG_NAME).setFlag(true)
       .setDescription("Help information");
     Option listOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_LIST_SHORT_NAME).setLongName(ShellCmdConstants.COMMAND_OPTION_LIST_LONG_NAME).setFlag(true)
       .setDescription("List sessions");
     Option countOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_COUNT_SHORT_NAME).setLongName(ShellCmdConstants.COMMAND_OPTION_COUNT_LONG_NAME).setFlag(true)
       .setDescription("Count sessions");
-    Option clientOption = new Option().setLongName(ShellCmdConstants.COMMAND_OPTION_CLIENT_LONG_NAME)
+    Option deleteOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_DELETE_SHORT_NAME).setLongName(ShellCmdConstants.COMMAND_OPTION_DELETE_LONG_NAME).setArgName(ShellCmdConstants.COMMAND_ARG_NAME_CLIENT_ID)
+      .setDescription("Delete session");
+    Option clientOption = new Option().setLongName(ShellCmdConstants.COMMAND_OPTION_CLIENT_LONG_NAME).setArgName(ShellCmdConstants.COMMAND_ARG_NAME_CLIENT_ID)
       .setDescription("Get session of client");
-    Option nodeOption = new Option().setLongName(ShellCmdConstants.COMMAND_OPTION_NODE_LONG_NAME)
+    Option nodeOption = new Option().setLongName(ShellCmdConstants.COMMAND_OPTION_NODE_LONG_NAME).setArgName(ShellCmdConstants.COMMAND_ARG_NAME_NODE_ID)
       .setDescription("Get sessions of node");
 
-    CLI cli = CLI.create(ShellCmdConstants.COMMAND_SESSION).setDescription("A command line interface to interact with mqtt session")
-      .addOption(helpOption).addOption(listOption).addOption(countOption).addOption(clientOption).addOption(nodeOption);
+    CLI cli = CLI.create(ShellCmdConstants.COMMAND_SESSIONS).setDescription("A command line interface to interact with mqtt session")
+      .addOption(helpOption).addOption(listOption).addOption(countOption).addOption(deleteOption).addOption(clientOption).addOption(nodeOption);
     StringBuilder usageBuilder = new StringBuilder();
     cli.getDelegate().usage(usageBuilder);
     CommandBuilder builder = CommandBuilder.command(cli);
@@ -57,11 +60,11 @@ public class SessionCmdBuilder {
         process.write(usageBuilder.toString()).end();
       } else if (commandLine.isFlagEnabled(countOption.getName())) {
         if (commandLine.isOptionAssigned(clientOption)) {
-          sessionService.getSession(commandLine.getOptionValue(clientOption.getLongName()))
+          sessionService.getSession(commandLine.getRawValueForOption(clientOption))
             .onItem().transform(session -> session != null ? 1 : 0)
             .subscribe().with(count -> process.write(count + "\n").end(), t -> process.write(t.getMessage()).end());
         } else if (commandLine.isOptionAssigned(nodeOption)) {
-          sessionService.search(commandLine.getOptionValue(nodeOption.getLongName()))
+          sessionService.search(commandLine.getRawValueForOption(nodeOption))
             .onItem().transform(List::size)
             .subscribe().with(count -> process.write(count + "\n").end(), t -> process.write(t.getMessage()).end());
         } else {
@@ -70,15 +73,18 @@ public class SessionCmdBuilder {
         }
       } else if (commandLine.isFlagEnabled(listOption.getName())) {
         if (commandLine.isOptionAssigned(clientOption)) {
-          sessionService.getSession(commandLine.getOptionValue(clientOption.getLongName()))
+          sessionService.getSession(commandLine.getRawValueForOption(clientOption))
             .subscribe().with(session -> writeSessionsToProcess(session != null ? List.of(session) : new ArrayList<>(), process), t -> process.write(t.getMessage()).end());
         } else if (commandLine.isOptionAssigned(nodeOption)) {
-          sessionService.search(commandLine.getOptionValue(nodeOption.getLongName()))
+          sessionService.search(commandLine.getRawValueForOption(nodeOption))
             .subscribe().with(sessions -> writeSessionsToProcess(sessions, process), t -> process.write(t.getMessage()).end());
         } else {
           sessionService.allSessions()
             .subscribe().with(sessions -> writeSessionsToProcess(sessions, process), t -> process.write(t.getMessage()).end());
         }
+      } else if (commandLine.isOptionAssigned(deleteOption)) {
+        compositeService.deleteSession(commandLine.getRawValueForOption(deleteOption))
+          .subscribe().with(v -> process.end(), t -> process.write(t.getMessage()).end());
       } else {
         process.write("Command wrong!\n").end();
       }
