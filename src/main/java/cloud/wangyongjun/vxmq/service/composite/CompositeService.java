@@ -29,7 +29,7 @@ public interface CompositeService {
    * @param clientId clientId
    * @return Void
    */
-  Uni<Void> clearSession(String clientId);
+  Uni<Void> clearSessionData(String clientId);
 
   /**
    * Publish will.
@@ -63,5 +63,12 @@ public interface CompositeService {
    * @return Void
    */
   Uni<Void> sendOfflineMsg(String sessionId);
+
+  /**
+   * Kickoff client connection if connected, clear session data, delete session self.
+   * @param clientId clientId
+   * @return Void
+   */
+  Uni<Void> deleteSession(String clientId);
 
 }

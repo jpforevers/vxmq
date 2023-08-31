@@ -169,13 +169,13 @@ public class MqttCloseHandler implements Runnable {
     if (session != null) {
       if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
         if (session.isCleanSession()) {
-          return compositeService.clearSession(session.getClientId());
+          return compositeService.clearSessionData(session.getClientId());
         } else {
           return sessionService.saveOrUpdateSession(session.copy().setOnline(false).setVerticleId(null).setNodeId(null).setUpdatedTime(Instant.now().toEpochMilli()));
         }
       } else {
         if (session.getSessionExpiryInterval() == null || session.getSessionExpiryInterval() == 0) {
-          return compositeService.clearSession(session.getClientId())
+          return compositeService.clearSessionData(session.getClientId())
             .onItem().transformToUni(v -> compositeService.publishWill(session.getSessionId()));
         } else {
           // 这里暂时放弃实现：
@@ -187,7 +187,7 @@ public class MqttCloseHandler implements Runnable {
               if (sessionX.isOnline()) {
                 return Uni.createFrom().voidItem();
               } else {
-                return compositeService.clearSession(sessionX.getClientId())
+                return compositeService.clearSessionData(sessionX.getClientId())
                   .onItem().transformToUni(v -> compositeService.publishWill(sessionX.getSessionId()));
               }
             })

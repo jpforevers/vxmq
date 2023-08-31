@@ -357,7 +357,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         return Uni.createFrom().voidItem()
           .onItem().transformToUni(v -> {
             if (previousSession != null) {
-              return compositeService.clearSession(mqttEndpoint.clientIdentifier());
+              return compositeService.clearSessionData(mqttEndpoint.clientIdentifier());
             } else {
               return Uni.createFrom().voidItem();
             }

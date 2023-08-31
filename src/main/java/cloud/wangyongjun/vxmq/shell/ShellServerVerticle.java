@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.shell;
 
 import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.ServiceFactory;
+import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
@@ -42,6 +43,7 @@ public class ShellServerVerticle extends AbstractVerticle {
     WillService willService = ServiceFactory.willService(vertx, config());
     SubService subService = ServiceFactory.subService(vertx);
     MsgService msgService = ServiceFactory.msgService(vertx, config());
+    CompositeService compositeService = ServiceFactory.compositeService(vertx, config());
 
     CommandRegistry commandRegistry = CommandRegistry.getShared(vertx);
     String banner = vertx.fileSystem().readFileBlocking("banner.txt").toString(StandardCharsets.UTF_8);
@@ -64,9 +66,9 @@ public class ShellServerVerticle extends AbstractVerticle {
       .onItem().transformToUni(v -> commandRegistry.registerCommand(TelehackCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LoggerCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LogsCmdBuilder.build(vertx, config())))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(SessionCmdBuilder.build(vertx, sessionService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(SessionCmdBuilder.build(vertx, sessionService, compositeService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(WillCmdBuilder.build(vertx, willService)))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(SubCmdBuilder.build(vertx, subService)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(SubsCmdBuilder.build(vertx, subService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(ClientVerticleCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(InboundQos2PubCmdBuilder.build(vertx, msgService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos1PubCmdBuilder.build(vertx, msgService)))
