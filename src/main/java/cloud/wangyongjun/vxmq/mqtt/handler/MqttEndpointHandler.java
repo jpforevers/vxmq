@@ -168,7 +168,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Void
    */
   public Uni<Void> obtainClientLock(String clientId) {
-    return clientService.obtainClientLock(clientId, 5000)
+    return clientService.obtainClientLock(clientId, 2000)
       .onItem().invoke(lock -> {
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Client lock obtained for {}", clientId);
@@ -183,7 +183,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Void
    */
   public Uni<Void> releaseClientLock(String clientId) {
-    vertx.setTimer(2000, l -> clientService
+    vertx.setTimer(500, l -> clientService
       .releaseClientLock(clientId)
       .onItem().invoke(v -> {
         if (LOGGER.isDebugEnabled()) {
@@ -249,6 +249,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
             long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
             AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
             return Uni.createFrom().voidItem()
+              .onItem().transformToUni(v -> releaseClientLock(mqttEndpoint.clientIdentifier()))
               .onItem().transformToUni(v -> eventService
                 .consumeEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED, data -> {
                   MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
