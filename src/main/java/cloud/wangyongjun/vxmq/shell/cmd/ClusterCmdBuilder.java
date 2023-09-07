@@ -47,10 +47,12 @@ public class ClusterCmdBuilder {
       if (commandLine.isFlagEnabled(helpOption.getName())) {
         process.write(usageBuilder.toString()).end();
       } else if (commandLine.isFlagEnabled(listOption.getName())) {
-        List<String> headers = List.of("nodeId", "host", "port", "metadata");
+        List<String> headers = List.of("current", "nodeId", "host", "port", "metadata");
         List<List<String>> rows = new ArrayList<>();
+        String currentNodeId = VertxUtil.getNodeId(vertx);
         for (String nodeId : VertxUtil.getNodes(vertx)) {
           List<String> row = new ArrayList<>(headers.size());
+          row.add(currentNodeId.equals(nodeId) ? "*" : "");
           row.add(nodeId);
           NodeInfo nodeInfo = VertxUtil.getNodeInfo(vertx, nodeId);
           row.add(nodeInfo.host());
