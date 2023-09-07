@@ -23,7 +23,6 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.RoutingContext;
-import org.apache.commons.lang3.StringUtils;
 
 public class DeleteSessionByClientIdHandler extends AbstractApiJsonResultHandler {
 
