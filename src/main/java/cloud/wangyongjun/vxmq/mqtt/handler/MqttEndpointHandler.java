@@ -243,7 +243,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     return Uni.createFrom().emitter(uniEmitter ->
       sessionService.getSession(mqttEndpoint.clientIdentifier())
         .onItem().transformToUni(session -> {
-          if (session != null && session.isOnline() && vertx.deploymentIDs().contains(session.getVerticleId())) {
+          if (session != null && session.isOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
             LOGGER.warn("Kick off existing connection for: {}", mqttEndpoint.clientIdentifier());
             // Whether the above code can receive EVENT_MQTT_ENDPOINT_CLOSED_EVENT, always continue to run forward after a period of time.
             long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
