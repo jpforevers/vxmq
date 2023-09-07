@@ -89,7 +89,7 @@ public class MqttCloseHandler implements Runnable {
    * @return Void
    */
   public Uni<Void> obtainClientLock(String clientId){
-    return clientService.obtainClientLock(clientId, 5000)
+    return clientService.obtainClientLock(clientId, 2000)
       .onItem().invoke(lock -> {
         if (LOGGER.isDebugEnabled()){
           LOGGER.debug("Client lock obtained for {}", clientId);
@@ -103,7 +103,7 @@ public class MqttCloseHandler implements Runnable {
    * @return Void
    */
   public Uni<Void> releaseClientLock(String clientId){
-    vertx.setTimer(2000, l -> clientService
+    vertx.setTimer(500, l -> clientService
       .releaseClientLock(clientId)
       .onItem().invoke(v -> {
         if (LOGGER.isDebugEnabled()){
