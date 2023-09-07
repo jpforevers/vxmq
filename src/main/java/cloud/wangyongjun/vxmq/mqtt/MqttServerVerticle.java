@@ -32,7 +32,7 @@ public class MqttServerVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    MqttServerOptions mqttServerOptions = new MqttServerOptions().setAutoClientId(false).setPort(Config.getMqttServerPort(config()));
+    MqttServerOptions mqttServerOptions = new MqttServerOptions().setMaxMessageSize(10 * 1024 * 1024).setAutoClientId(false).setPort(Config.getMqttServerPort(config()));
     MqttServer mqttServer = MqttServer.create(vertx, mqttServerOptions);
     mqttServer.endpointHandler(new MqttEndpointHandler(vertx, config(),
       ServiceFactory.sessionService(vertx, config()),
