@@ -210,6 +210,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     jsonObject.put("cleanSession", mqttEndpoint.isCleanSession());
     jsonObject.put("connectProperties", MqttPropertiesUtil.encode(mqttEndpoint.connectProperties()));
     jsonObject.put("will", mqttEndpoint.will().toJson());
+    jsonObject.put("remoteHost", mqttEndpoint.remoteAddress().host());
+    jsonObject.put("remotePort", mqttEndpoint.remoteAddress().port());
     return jsonObject.toString();
   }
 
