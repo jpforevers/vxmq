@@ -182,6 +182,9 @@ public class VxmqLauncher {
     ch.qos.logback.classic.Logger mqttLogger = loggerContext.getLogger("io.vertx.mqtt");
     mqttLogger.setLevel(Level.WARN);
 
+    ch.qos.logback.classic.Logger vxmqLogger = loggerContext.getLogger("cloud.wangyongjun.vxmq");
+    vxmqLogger.setLevel(Level.toLevel(Config.getLogsLevel(config)));
+
     ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
     rootLogger.setLevel(Level.INFO);
     rootLogger.addAppender(consoleAppender);
