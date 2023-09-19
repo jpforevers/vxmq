@@ -42,6 +42,9 @@ public class Config {
   public static final String KEY_VXMQ_LOGS_DIR = "vxmq.logs.dir";
   public static final String DEFAULT_VXMQ_LOGS_DIR = "/vxmq/logs";
 
+  public static final String KEY_VXMQ_LOGS_LEVEL = "vxmq.logs.level";
+  public static final String DEFAULT_VXMQ_LOGS_LEVEL = "INFO";
+
   public static final String KEY_VXMQ_IGNITE_WORK_DIR = "vxmq.ignite.work-dir";
   public static final String DEFAULT_VXMQ_IGNITE_WORK_DIR = "/vxmq/ignite";
 
@@ -101,6 +104,10 @@ public class Config {
 
   public static String getLogsDir(JsonObject config) {
     return config.getString(KEY_VXMQ_LOGS_DIR, DEFAULT_VXMQ_LOGS_DIR);
+  }
+
+  public static String getLogsLevel(JsonObject config){
+    return config.getString(KEY_VXMQ_LOGS_LEVEL, DEFAULT_VXMQ_LOGS_LEVEL);
   }
 
   public static String getLogFile(JsonObject config) {
