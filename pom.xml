@@ -174,6 +174,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-haproxy</artifactId>
+      <!--<version>Should align with netty version that Vert.x uses</version>-->
+    </dependency>
+
+    <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-junit5</artifactId>
       <version>${smallrye-mutiny-vertx.version}</version>

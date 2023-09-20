@@ -30,6 +30,8 @@ public class Config {
   public static final int DEFAULT_VXMQ_HTTP_SERVER_PORT = 8060;
   public static final String KEY_VXMQ_MQTT_SERVER_PORT = "vxmq.mqtt.server.port";
   public static final int DEFAULT_VXMQ_MQTT_SERVER_PORT = 1883;
+  public static final String KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = "vxmq.mqtt.server.proxy-protocol.enable";
+  public static final boolean DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = false;
   public static final String KEY_VXMQ_SHELL_SERVER_PORT = "vxmq.shell.server.port";
   public static final int DEFAULT_VXMQ_SHELL_SERVER_PORT = 5000;
 
@@ -76,6 +78,10 @@ public class Config {
 
   public static int getMqttServerPort(JsonObject config) {
     return config.getInteger(KEY_VXMQ_MQTT_SERVER_PORT, DEFAULT_VXMQ_MQTT_SERVER_PORT);
+  }
+
+  public static boolean getMqttProxyProtocolEnable(JsonObject config){
+    return config.getBoolean(KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE, DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE);
   }
 
   public static int getShellServerPort(JsonObject config) {
