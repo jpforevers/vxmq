@@ -64,6 +64,9 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
     List<Uni<Void>> consumeEventUnis = new ArrayList<>();
     for (EventType value : EventType.values()) {
       Uni<Void> consumeEventUni = eventService.consumeEvent(value, data -> {
+        if (LOGGER.isDebugEnabled()){
+          LOGGER.debug("Event consumed: {}", data);
+        }
         Event event = value.fromJson(data);
         if (event instanceof MqttEvent) {
           KafkaProducerRecord<String, JsonObject> record = KafkaProducerRecord.create(genKafkaTopicFromEventType(value), ((MqttEvent) event).getClientId(), data);

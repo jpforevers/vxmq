@@ -60,25 +60,16 @@ public class DefaultEventService implements EventService {
     DeliveryOptions deliveryOptions = new DeliveryOptions();
     deliveryOptions.setLocalOnly(event.isLocal());
     vertx.eventBus().publish(event.getEventType().getEbAddress(), event.toJson(), deliveryOptions);
-    if (LOGGER.isDebugEnabled()){
-      LOGGER.debug("Event published: {}, ", event.toJson());
-    }
     return Uni.createFrom().voidItem();
   }
 
   @Override
   public Uni<MessageConsumer<JsonObject>> consumeEvent(EventType eventType, Consumer<JsonObject> consumer, boolean local) {
-    Consumer<JsonObject> dataConsumer = data -> {
-      if (LOGGER.isDebugEnabled()){
-        LOGGER.debug("Event consumed: {}", data);
-      }
-      consumer.accept(data);
-    };
     MessageConsumer<JsonObject> messageConsumer;
     if (local){
-      messageConsumer = vertx.eventBus().localConsumer(eventType.getEbAddress(), message -> dataConsumer.accept(message.body()));
+      messageConsumer = vertx.eventBus().localConsumer(eventType.getEbAddress(), message -> consumer.accept(message.body()));
     }else {
-      messageConsumer = vertx.eventBus().consumer(eventType.getEbAddress(), message -> dataConsumer.accept(message.body()));
+      messageConsumer = vertx.eventBus().consumer(eventType.getEbAddress(), message -> consumer.accept(message.body()));
     }
     return messageConsumer.completionHandler().replaceWith(messageConsumer);
   }

@@ -17,10 +17,7 @@
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
-import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.EventType;
-import cloud.wangyongjun.vxmq.event.MqttConnectedEvent;
-import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.event.*;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
@@ -126,10 +123,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
-      .onItem().call(v -> eventService.publishEvent(new MqttConnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-        mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
-        mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",
-        mqttEndpoint.auth() != null ? mqttEndpoint.auth().getPassword() : "")))
+      .onItem().call(v -> publishEvent(mqttEndpoint))
       .onItemOrFailure().call((v, t) -> releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(context, v -> {
         boolean sessionPresent = getSessionPresentFromContext(context);
@@ -254,6 +248,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
               .onItem().transformToUni(v -> releaseClientLock(mqttEndpoint.clientIdentifier()))
               .onItem().transformToUni(v -> eventService
                 .consumeEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED, data -> {
+                  if (LOGGER.isDebugEnabled()){
+                    LOGGER.debug("Consuming event: {}", data);
+                  }
                   MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
                   if (session.getSessionId().equals(mqttEndpointClosedEvent.getSessionId())) {
                     // When EVENT_MQTT_ENDPOINT_CLOSED_EVENT received and sessionId is same, cancel timer and run forward.
@@ -439,6 +436,17 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     } else {
       return Uni.createFrom().voidItem();
     }
+  }
+
+  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint){
+    Event event = new MqttConnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+      mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
+      mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",
+      mqttEndpoint.auth() != null ? mqttEndpoint.auth().getPassword() : "");
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
   private Uni<Void> resendOutboundQos1Pub(MqttEndpoint mqttEndpoint, String sessionId) {
