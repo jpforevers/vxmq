@@ -19,9 +19,11 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttPublishOutboundAckedEvent;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Pub;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Rel;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.netty.handler.codec.mqtt.MqttProperties;
@@ -93,10 +95,7 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
           return Uni.createFrom().voidItem()
             .onItem().transformToUni(v -> {
               if (outboundQos2Pub != null){
-                return eventService.publishEvent(new MqttPublishOutboundAckedEvent(Instant.now().toEpochMilli(),
-                  VertxUtil.getNodeId(vertx), outboundQos2Pub.getSessionId(), outboundQos2Pub.getClientId(),
-                  outboundQos2Pub.getMessageId(), outboundQos2Pub.getTopic(), outboundQos2Pub.getQos(),
-                  outboundQos2Pub.getPayload(), outboundQos2Pub.isDup(), outboundQos2Pub.isRetain()));
+                return publishEvent(outboundQos2Pub);
               }else {
                 return Uni.createFrom().voidItem();
               }
@@ -112,6 +111,17 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
     jsonObject.put("code", mqttPubRecMessage.code());
     jsonObject.put("properties", MqttPropertiesUtil.encode(mqttPubRecMessage.properties()));
     return jsonObject.toString();
+  }
+
+  private Uni<Void> publishEvent(OutboundQos2Pub outboundQos2Pub){
+    Event event = new MqttPublishOutboundAckedEvent(Instant.now().toEpochMilli(),
+      VertxUtil.getNodeId(vertx), outboundQos2Pub.getSessionId(), outboundQos2Pub.getClientId(),
+      outboundQos2Pub.getMessageId(), outboundQos2Pub.getTopic(), outboundQos2Pub.getQos(),
+      outboundQos2Pub.getPayload(), outboundQos2Pub.isDup(), outboundQos2Pub.isRetain());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }

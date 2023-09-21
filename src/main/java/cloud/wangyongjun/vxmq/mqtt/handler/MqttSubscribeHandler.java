@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttSubscribedEvent;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
@@ -27,6 +28,7 @@ import cloud.wangyongjun.vxmq.mqtt.exception.MqttSubscribeException;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import cloud.wangyongjun.vxmq.service.retain.Retain;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;
+import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.service.sub.Subscription;
 import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
@@ -121,8 +123,7 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
           }
         })
         .onItem().call(() -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-          .onItem().transformToUni(session -> eventService.publishEvent(new MqttSubscribedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-           mqttEndpoint.clientIdentifier(), session.getSessionId(), topicSubscription.topicName(), topicSubscription.qualityOfService().value()))))
+          .onItem().transformToUni(session -> publishEvent(session, topicSubscription)))
         .onFailure().invoke(t -> {
           LOGGER.error("Error occurred when processing SUBSCRIBE from " + mqttEndpoint.clientIdentifier() + " to " + topicSubscription.topicName(), t);
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -283,6 +284,15 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
             return unis.size() > 0 ? Uni.combine().all().unis(unis).collectFailures().discardItems() : Uni.createFrom().voidItem();
           }));
     }
+  }
+
+  private Uni<Void> publishEvent(Session session, MqttTopicSubscription topicSubscription){
+    Event event = new MqttSubscribedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+      mqttEndpoint.clientIdentifier(), session.getSessionId(), topicSubscription.topicName(), topicSubscription.qualityOfService().value());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }

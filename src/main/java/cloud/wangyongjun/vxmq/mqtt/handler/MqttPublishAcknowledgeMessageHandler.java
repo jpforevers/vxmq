@@ -19,9 +19,11 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttPublishOutboundAckedEvent;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.msg.OutboundQos1Pub;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
@@ -72,10 +74,7 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
           LOGGER.warn("PUBACK from {} with messageId {} without having related PUBLISH packet", mqttEndpoint.clientIdentifier(), mqttPubAckMessage.messageId());
           return Uni.createFrom().voidItem();
         } else {
-          return eventService.publishEvent(new MqttPublishOutboundAckedEvent(Instant.now().toEpochMilli(),
-            VertxUtil.getNodeId(vertx), outboundQos1Pub.getSessionId(), outboundQos1Pub.getClientId(),
-            outboundQos1Pub.getMessageId(), outboundQos1Pub.getTopic(), outboundQos1Pub.getQos(),
-            outboundQos1Pub.getPayload(), outboundQos1Pub.isDup(), outboundQos1Pub.isRetain()));
+          return publishEvent(outboundQos1Pub);
         }
       })
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBACK from {}", mqttEndpoint.clientIdentifier(), t));
@@ -87,6 +86,17 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
     jsonObject.put("code", mqttPubAckMessage.code());
     jsonObject.put("properties", MqttPropertiesUtil.encode(mqttPubAckMessage.properties()));
     return jsonObject.toString();
+  }
+
+  private Uni<Void> publishEvent(OutboundQos1Pub outboundQos1Pub){
+    Event event = new MqttPublishOutboundAckedEvent(Instant.now().toEpochMilli(),
+      VertxUtil.getNodeId(vertx), outboundQos1Pub.getSessionId(), outboundQos1Pub.getClientId(),
+      outboundQos1Pub.getMessageId(), outboundQos1Pub.getTopic(), outboundQos1Pub.getQos(),
+      outboundQos1Pub.getPayload(), outboundQos1Pub.isDup(), outboundQos1Pub.isRetain());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }
