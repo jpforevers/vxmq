@@ -263,6 +263,15 @@
               <tag>${project.version}</tag>
             </tags>
           </to>
+          <extraDirectories>
+            <paths>
+              <path>
+                <from>src/main/docker</from>
+                <into>/root/.ssh/</into>
+                <includes>config</includes>
+              </path>
+            </paths>
+          </extraDirectories>
           <container>
             <mainClass>${launcher.class}</mainClass>
             <appRoot>/vxmq/app</appRoot>
@@ -287,6 +296,7 @@
               <port>8060/tcp</port>
               <port>1883/tcp</port>
               <port>5000/tcp</port>
+              <port>47500/tcp</port>
             </ports>
           </container>
         </configuration>
