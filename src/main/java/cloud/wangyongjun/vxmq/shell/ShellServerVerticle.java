@@ -65,7 +65,6 @@ public class ShellServerVerticle extends AbstractVerticle {
       .onItem().transformToUni(v -> commandRegistry.registerCommand(TopCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(TelehackCmdBuilder.build(vertx)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(LoggerCmdBuilder.build(vertx)))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(LogsCmdBuilder.build(vertx, config())))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(SessionCmdBuilder.build(vertx, sessionService, compositeService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(WillCmdBuilder.build(vertx, willService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(SubsCmdBuilder.build(vertx, subService)))

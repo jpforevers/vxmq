@@ -41,9 +41,6 @@ public class Config {
   public static final String KEY_VXMQ_IGNITE_BACKUPS = "vxmq.ignite.backups";
   public static final int DEFAULT_VXMQ_IGNITE_BACKUPS = 1;
 
-  public static final String KEY_VXMQ_LOGS_DIR = "vxmq.logs.dir";
-  public static final String DEFAULT_VXMQ_LOGS_DIR = "/vxmq/logs";
-
   public static final String KEY_VXMQ_LOGS_LEVEL = "vxmq.logs.level";
   public static final String DEFAULT_VXMQ_LOGS_LEVEL = "INFO";
 
@@ -108,16 +105,8 @@ public class Config {
     return config.getString(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES, DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES);
   }
 
-  public static String getLogsDir(JsonObject config) {
-    return config.getString(KEY_VXMQ_LOGS_DIR, DEFAULT_VXMQ_LOGS_DIR);
-  }
-
   public static String getLogsLevel(JsonObject config){
     return config.getString(KEY_VXMQ_LOGS_LEVEL, DEFAULT_VXMQ_LOGS_LEVEL);
-  }
-
-  public static String getLogFile(JsonObject config) {
-    return getLogsDir(config) + "/vxmq.log";
   }
 
   public static boolean getRuleStaticWriteMqttEventToKafkaEnable(JsonObject config) {

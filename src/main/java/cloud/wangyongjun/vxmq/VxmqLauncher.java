@@ -136,8 +136,6 @@ public class VxmqLauncher {
     loggerContext.reset();
 
     String pattern = "%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC} [%26.26thread] %-5level %-40.40logger{39} : %msg%n";
-    String logDir = Config.getLogsDir(config);
-    String logFile = Config.getLogFile(config);
 
     ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
     consoleAppender.setContext(loggerContext);
@@ -148,30 +146,6 @@ public class VxmqLauncher {
     consoleEncoder.start();
     consoleAppender.setEncoder(consoleEncoder);
     consoleAppender.start();
-
-    RollingFileAppender<ILoggingEvent> rollingFileAppender = new RollingFileAppender<>();
-    rollingFileAppender.setContext(loggerContext);
-    rollingFileAppender.setName("rollingFile");
-    rollingFileAppender.setFile(logFile);
-
-    SizeAndTimeBasedRollingPolicy<ILoggingEvent> sizeAndTimeBasedRollingPolicy = new SizeAndTimeBasedRollingPolicy<>();
-    sizeAndTimeBasedRollingPolicy.setContext(loggerContext);
-    sizeAndTimeBasedRollingPolicy.setParent(rollingFileAppender);
-    sizeAndTimeBasedRollingPolicy.setFileNamePattern(logDir + "/archived/vxmq.%d{yyyy-MM-dd}.%i.log.gz");
-    sizeAndTimeBasedRollingPolicy.setMaxFileSize(FileSize.valueOf("100MB"));
-    sizeAndTimeBasedRollingPolicy.setTotalSizeCap(FileSize.valueOf("100GB"));
-    sizeAndTimeBasedRollingPolicy.setMaxHistory(30);
-    sizeAndTimeBasedRollingPolicy.start();
-
-    PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
-    fileEncoder.setContext(loggerContext);
-    fileEncoder.setPattern(pattern);
-    fileEncoder.start();
-
-    rollingFileAppender.setEncoder(fileEncoder);
-    rollingFileAppender.setRollingPolicy(sizeAndTimeBasedRollingPolicy);
-    rollingFileAppender.setTriggeringPolicy(sizeAndTimeBasedRollingPolicy);
-    rollingFileAppender.start();
 
     ch.qos.logback.classic.Logger igniteLogger = loggerContext.getLogger("org.apache.ignite");
     igniteLogger.setLevel(Level.WARN);
@@ -188,7 +162,6 @@ public class VxmqLauncher {
     ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
     rootLogger.setLevel(Level.INFO);
     rootLogger.addAppender(consoleAppender);
-    rootLogger.addAppender(rollingFileAppender);
 
   }
 
