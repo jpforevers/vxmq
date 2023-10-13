@@ -18,7 +18,9 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
 import cloud.wangyongjun.vxmq.event.*;
-import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
+import cloud.wangyongjun.vxmq.mqtt.exception.MqttAuthFailedException;
+import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
+import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
 import cloud.wangyongjun.vxmq.service.client.DisconnectRequest;
@@ -40,6 +42,7 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mqtt.MqttAuth;
 import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRelReasonCode;
 import io.vertx.mutiny.core.Vertx;
@@ -49,6 +52,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -75,6 +79,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final RetainService retainService;
   private final CompositeService compositeService;
   private final EventService eventService;
+  private final AuthenticationService authenticationService;
 
   public MqttEndpointHandler(Vertx vertx, JsonObject config,
                              SessionService sessionService,
@@ -84,7 +89,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              SubService subService,
                              RetainService retainService,
                              CompositeService compositeService,
-                             EventService eventService) {
+                             EventService eventService,
+                             AuthenticationService authenticationService) {
     this.vertx = vertx;
     this.config = config;
     this.sessionService = sessionService;
@@ -95,6 +101,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.retainService = retainService;
     this.compositeService = compositeService;
     this.eventService = eventService;
+    this.authenticationService = authenticationService;
   }
 
   @Override
@@ -138,13 +145,14 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       }, t -> {
         LOGGER.error("Error occurred when processing CONNECT from " + mqttEndpoint.clientIdentifier(), t);
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-          if (t instanceof MqttConnectException e) {
+          if (t instanceof MqttAuthFailedException e) {
             mqttEndpoint.reject(e.getCode());
           } else {
             mqttEndpoint.reject(MqttConnectReturnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE);
           }
         } else {
-          if (t instanceof MqttConnectException e) {
+          if (t instanceof MqttAuthFailedException e) {
+            connAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), ((MqttAuthFailedException) t).getReason()));
             mqttEndpoint.reject(e.getCode(), connAckProperties);
           } else {
             connAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
@@ -184,7 +192,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           LOGGER.debug("Client lock released for {}", clientId);
         }
       })
-      .subscribe().with(v -> {}, t -> LOGGER.error("Error occurred when release client lock for " + clientId, t)));
+      .subscribe().with(v -> {
+      }, t -> LOGGER.error("Error occurred when release client lock for " + clientId, t)));
     return Uni.createFrom().voidItem();
   }
 
@@ -216,17 +225,22 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return If the authentication fails, an MqttConnectFailedException is thrown.
    */
   private Uni<Void> authenticate(MqttEndpoint mqttEndpoint) {
-    // TODO 认证机制
-    boolean authenticationResult = true;
-    if (authenticationResult) {
-      return Uni.createFrom().voidItem();
-    } else {
-      if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-        return Uni.createFrom().failure(new MqttConnectException(MqttConnectReturnCode.CONNECTION_REFUSED_NOT_AUTHORIZED));
-      } else {
-        return Uni.createFrom().failure(new MqttConnectException(MqttConnectReturnCode.CONNECTION_REFUSED_NOT_AUTHORIZED_5));
-      }
-    }
+    MqttAuth mqttAuth = mqttEndpoint.auth();
+    MqttAuthData mqttAuthData = MqttAuthData.builder()
+      .protocolLevel(mqttEndpoint.protocolVersion())
+      .username(mqttAuth == null ? null : mqttAuth.getUsername())
+      .password(mqttAuth == null ? null : mqttAuth.getPassword().getBytes(StandardCharsets.UTF_8))
+      .build();
+    LOGGER.debug("Mqtt auth data: {}", mqttAuthData.toJson());
+    return authenticationService.authenticate(mqttAuthData)
+      .onItem().invoke(mqttAuthResult -> LOGGER.debug("Mqtt auth result: {}", mqttAuthResult.toJson()))
+      .onItem().transformToUni(mqttAuthResult -> {
+        if (MqttConnectReturnCode.CONNECTION_ACCEPTED.equals(mqttAuthResult.getCode())) {
+          return Uni.createFrom().voidItem();
+        } else {
+          return Uni.createFrom().failure(new MqttAuthFailedException(mqttAuthResult.getCode(), mqttAuthResult.getReason()));
+        }
+      });
   }
 
   /**
@@ -248,7 +262,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
               .onItem().transformToUni(v -> releaseClientLock(mqttEndpoint.clientIdentifier()))
               .onItem().transformToUni(v -> eventService
                 .consumeEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED, data -> {
-                  if (LOGGER.isDebugEnabled()){
+                  if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Consuming event: {}", data);
                   }
                   MqttEndpointClosedEvent mqttEndpointClosedEvent = new MqttEndpointClosedEvent().fromJson(data);
@@ -438,12 +452,12 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     }
   }
 
-  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint){
+  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint) {
     Event event = new MqttConnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
       mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
       mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",
       mqttEndpoint.auth() != null ? mqttEndpoint.auth().getPassword() : "");
-    if (LOGGER.isDebugEnabled()){
+    if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("Publishing event: {}, ", event.toJson());
     }
     return eventService.publishEvent(event);

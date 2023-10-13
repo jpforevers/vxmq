@@ -23,6 +23,11 @@ public class ModelConstants {
 
   public static final String FIELD_NAME_SESSION_ID = "sessionId";
   public static final String FIELD_NAME_CLIENT_ID = "clientId";
+  public static final String FIELD_NAME_USERNAME = "username";
+  public static final String FIELD_NAME_PASSWORD = "password";
+  public static final String FIELD_NAME_CERT = "cert";
+  public static final String FIELD_NAME_REMOTE_ADDR = "remoteAddr";
+  public static final String FIELD_NAME_REMOTE_PORT = "remotePort";
   public static final String FIELD_NAME_ONLINE = "online";
   public static final String FIELD_NAME_VERTICLE_ID = "verticleId";
   public static final String FIELD_NAME_NODE_ID = "nodeId";
@@ -60,7 +65,7 @@ public class ModelConstants {
   public static final String FIELD_NAME_DUP = "dup";
   public static final String FIELD_NAME_RETAIN = "retain";
 
-
-
+  public static final String FIELD_NAME_CODE = "code";
+  public static final String FIELD_NAME_REASON = "reason";
 
 }
