@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.assist;
 
 import cloud.wangyongjun.vxmq.event.DefaultEventService;
 import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.DefaultClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
@@ -68,6 +69,10 @@ public class ServiceFactory {
 
   public static EventService eventService(Vertx vertx){
     return DefaultEventService.getSingleton(vertx);
+  }
+
+  public static AuthenticationService authenticationService(Vertx vertx){
+    return VertxServiceProxyBuilder.buildAuthenticationService(vertx);
   }
 
 }

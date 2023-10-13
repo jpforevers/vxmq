@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.assist;
 
+import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.mutiny.core.Vertx;
@@ -28,6 +29,14 @@ public class VertxServiceProxyBuilder {
       .setOptions(new DeliveryOptions().setLocalOnly(true));
     cloud.wangyongjun.vxmq.service.sub.SubService subService = builder.build(cloud.wangyongjun.vxmq.service.sub.SubService.class);
     return SubService.newInstance(subService);
+  }
+
+  public static AuthenticationService buildAuthenticationService(Vertx vertx){
+    io.vertx.serviceproxy.ServiceProxyBuilder builder = new io.vertx.serviceproxy.ServiceProxyBuilder(vertx.getDelegate())
+      .setAddress(EBServices.AUTHENTICATION_SERVICE.getEbAddress())
+      .setOptions(new DeliveryOptions().setLocalOnly(true));
+    cloud.wangyongjun.vxmq.service.authentication.AuthenticationService subService = builder.build(cloud.wangyongjun.vxmq.service.authentication.AuthenticationService.class);
+    return AuthenticationService.newInstance(subService);
   }
 
 }

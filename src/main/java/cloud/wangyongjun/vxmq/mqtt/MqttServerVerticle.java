@@ -48,7 +48,8 @@ public class MqttServerVerticle extends AbstractVerticle {
       ServiceFactory.subService(vertx),
       ServiceFactory.retainService(vertx, config),
       ServiceFactory.compositeService(vertx, config),
-      ServiceFactory.eventService(vertx))
+      ServiceFactory.eventService(vertx),
+      ServiceFactory.authenticationService(vertx))
     );
     mqttServer.exceptionHandler(t -> LOGGER.error("Error occurred at mqtt server layer", t));
     return mqttServer.listen().replaceWithVoid();

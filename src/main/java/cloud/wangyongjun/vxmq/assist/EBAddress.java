@@ -20,6 +20,7 @@ public class EBAddress {
 
   public static final String SERVICE_NOTHING_SERVICE = "service.NothingService";
   public static final String SERVICE_SUB_SERVICE = "service.SubService";
+  public static final String SERVICE_AUTHENTICATION_SERVICE = "service.AuthenticationService";
 
   public static final String EVENT_NOTHING = "event.nothing";
   public static final String EVENT_MQTT_CONNECTED = "event.mqtt.connected";

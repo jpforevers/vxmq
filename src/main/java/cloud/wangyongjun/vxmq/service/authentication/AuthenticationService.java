@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.mqtt.exception;
+package cloud.wangyongjun.vxmq.service.authentication;
 
-import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
+import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Future;
 
-public class MqttConnectException extends MqttException {
+@ProxyGen
+@VertxGen
+public interface AuthenticationService {
 
-  private final MqttConnectReturnCode code;
-
-  /**
-   * Suitable for MQTT version 3 and above.
-   *
-   * @param code code
-   */
-  public MqttConnectException(MqttConnectReturnCode code) {
-    super("Connect failed: " + code);
-    this.code = code;
-  }
-
-  public MqttConnectReturnCode getCode() {
-    return code;
-  }
+  Future<MqttAuthResult> authenticate(MqttAuthData mqttAuthData);
 
 }

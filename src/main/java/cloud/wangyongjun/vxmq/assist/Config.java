@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.assist;
 
+import cloud.wangyongjun.vxmq.service.authentication.MqttAuthType;
 import io.vertx.core.impl.cpu.CpuCoreSensor;
 import io.vertx.core.json.JsonObject;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
@@ -32,6 +33,11 @@ public class Config {
   public static final int DEFAULT_VXMQ_MQTT_SERVER_PORT = 1883;
   public static final String KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = "vxmq.mqtt.server.proxy-protocol.enable";
   public static final boolean DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = false;
+  public static final String KEY_VXMQ_MQTT_AUTH_TYPE = "vxmq.mqtt.auth.type";
+  public static final String DEFAULT_VXMQ_MQTT_AUTH_TYPE = MqttAuthType.NONE.name();
+  public static final String KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL = "vxmq.mqtt.auth.webhook.url";
+  public static final String DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL = "http://localhost:8080";
+
   public static final String KEY_VXMQ_SHELL_SERVER_PORT = "vxmq.shell.server.port";
   public static final int DEFAULT_VXMQ_SHELL_SERVER_PORT = 5000;
 
@@ -79,6 +85,14 @@ public class Config {
 
   public static boolean getMqttProxyProtocolEnable(JsonObject config){
     return config.getBoolean(KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE, DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE);
+  }
+
+  public static MqttAuthType getMqttAuthType(JsonObject config){
+    return MqttAuthType.valueOf(config.getString(KEY_VXMQ_MQTT_AUTH_TYPE, DEFAULT_VXMQ_MQTT_AUTH_TYPE));
+  }
+
+  public static String getMqttAuthWebhookUrl(JsonObject config){
+    return config.getString(KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL, DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL);
   }
 
   public static int getShellServerPort(JsonObject config) {

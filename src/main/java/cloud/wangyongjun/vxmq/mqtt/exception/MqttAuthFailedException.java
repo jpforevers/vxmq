@@ -14,22 +14,31 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.assist;
+package cloud.wangyongjun.vxmq.mqtt.exception;
 
-public enum EBServices {
+import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 
-  NOTHING_SERVICE(EBAddress.SERVICE_NOTHING_SERVICE),
-  SUB_SERVICE(EBAddress.SERVICE_SUB_SERVICE),
-  AUTHENTICATION_SERVICE(EBAddress.SERVICE_AUTHENTICATION_SERVICE);
+public class MqttAuthFailedException extends MqttException {
 
-  private final String ebAddress;
+  private final MqttConnectReturnCode code;
+  private final String reason;
 
-  EBServices(String ebAddress) {
-    this.ebAddress = ebAddress;
+  public MqttAuthFailedException(MqttConnectReturnCode code) {
+    this(code, code.name());
   }
 
-  public String getEbAddress() {
-    return ebAddress;
+  public MqttAuthFailedException(MqttConnectReturnCode code, String reason) {
+    super(reason);
+    this.code = code;
+    this.reason = reason;
+  }
+
+  public MqttConnectReturnCode getCode() {
+    return code;
+  }
+
+  public String getReason() {
+    return reason;
   }
 
 }

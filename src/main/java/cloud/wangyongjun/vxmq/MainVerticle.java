@@ -20,6 +20,7 @@ import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.SessionCheckerVerticle;
+import cloud.wangyongjun.vxmq.service.authentication.AuthenticationVerticle;
 import cloud.wangyongjun.vxmq.service.sub.SubVerticle;
 import cloud.wangyongjun.vxmq.rule.RuleVerticle;
 import cloud.wangyongjun.vxmq.shell.ShellServerVerticle;
@@ -81,6 +82,9 @@ public class MainVerticle extends AbstractVerticle {
 
       .onItem().transformToUni(s -> vertx.deployVerticle(SubVerticle::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", SubVerticle.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(AuthenticationVerticle::new, new DeploymentOptions().setConfig(config())))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", AuthenticationVerticle.class.getSimpleName()))
 
       .replaceWithVoid();
   }
