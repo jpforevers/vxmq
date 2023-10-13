@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.mqtt.exception;
 
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
+import org.apache.commons.lang3.StringUtils;
 
 public class MqttAuthFailedException extends MqttException {
 
@@ -28,7 +29,7 @@ public class MqttAuthFailedException extends MqttException {
   }
 
   public MqttAuthFailedException(MqttConnectReturnCode code, String reason) {
-    super(reason);
+    super(StringUtils.isBlank(reason) ? code.name() : reason);
     this.code = code;
     this.reason = reason;
   }
