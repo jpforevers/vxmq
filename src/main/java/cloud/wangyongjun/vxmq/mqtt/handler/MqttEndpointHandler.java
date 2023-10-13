@@ -228,6 +228,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     MqttAuth mqttAuth = mqttEndpoint.auth();
     MqttAuthData mqttAuthData = MqttAuthData.builder()
       .protocolLevel(mqttEndpoint.protocolVersion())
+      .clientId(mqttEndpoint.clientIdentifier())
       .username(mqttAuth == null ? null : mqttAuth.getUsername())
       .password(mqttAuth == null ? null : mqttAuth.getPassword().getBytes(StandardCharsets.UTF_8))
       .build();
