@@ -147,7 +147,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     jsonObject.put("topicName", mqttPublishMessage.topicName());
     jsonObject.put("mqttQoS", mqttPublishMessage.qosLevel());
     jsonObject.put("messageId", mqttPublishMessage.messageId());
-    jsonObject.put("payload", mqttPublishMessage.payload());
+    jsonObject.put("payload", mqttPublishMessage.payload().getDelegate());
     jsonObject.put("dup", mqttPublishMessage.isDup());
     jsonObject.put("retain", mqttPublishMessage.isRetain());
     jsonObject.put("properties", MqttPropertiesUtil.encode(mqttPublishMessage.properties()));
