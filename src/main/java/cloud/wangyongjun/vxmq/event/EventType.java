@@ -23,6 +23,7 @@ public enum EventType {
 
   NOTHING(EBAddress.EVENT_NOTHING),
   EVENT_MQTT_CONNECTED(EBAddress.EVENT_MQTT_CONNECTED),
+  EVENT_MQTT_SESSION_TAKEN_OVER(EBAddress.EVENT_MQTT_SESSION_TAKEN_OVER),
   EVENT_MQTT_ENDPOINT_CLOSED(EBAddress.EVENT_MQTT_ENDPOINT_CLOSED),
   EVENT_MQTT_DISCONNECTED(EBAddress.EVENT_MQTT_DISCONNECTED),
   EVENT_MQTT_PING(EBAddress.EVENT_MQTT_PING),
@@ -46,6 +47,7 @@ public enum EventType {
     return switch (this){
       case NOTHING -> null;
       case EVENT_MQTT_CONNECTED -> new MqttConnectedEvent().fromJson(data);
+      case EVENT_MQTT_SESSION_TAKEN_OVER -> new MqttSessionTakenOverEvent().fromJson(data);
       case EVENT_MQTT_ENDPOINT_CLOSED -> new MqttEndpointClosedEvent().fromJson(data);
       case EVENT_MQTT_DISCONNECTED -> new MqttDisconnectedEvent().fromJson(data);
       case EVENT_MQTT_PING -> new MqttPingEvent().fromJson(data);
