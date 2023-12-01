@@ -66,6 +66,8 @@ import java.util.stream.Collectors;
 public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
   private final static String CONTEXT_KEY_SESSION_PRESENT = "sessionPresent";
+  private final static String CONTEXT_KEY_SESSION_TAKEN_OVER = "sessionTakenOver";
+  private final static String CONTEXT_KEY_SESSION_TAKEN_OVER_OLD_SESSION = "sessionTakenOverOldSession";
 
   private final static Logger LOGGER = LoggerFactory.getLogger(MqttEndpointHandler.class);
 
@@ -123,14 +125,15 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> obtainClientLock(mqttEndpoint.clientIdentifier()))
       .onItem().transformToUni(v -> authenticate(mqttEndpoint))
-      .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint))
+      .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint, context))
       .onItem().transformToUni(v -> registerHandler(mqttEndpoint))
       .onItem().transformToUni(v -> computeSessionPresent(mqttEndpoint, context))
       .onItem().transformToUni(v -> deployClientVerticle(mqttEndpoint))
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
+      .onItem().call(session -> publishMqttSessionTakenOverEvent(session, context))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
-      .onItem().call(v -> publishEvent(mqttEndpoint))
+      .onItem().call(v -> publishMqttConnectedEvent(mqttEndpoint))
       .onItemOrFailure().call((v, t) -> releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(context, v -> {
         boolean sessionPresent = getSessionPresentFromContext(context);
@@ -250,7 +253,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @param mqttEndpoint mqttEndpoint
    * @return Void
    */
-  private Uni<Void> kickOffExistingConnection(MqttEndpoint mqttEndpoint) {
+  private Uni<Void> kickOffExistingConnection(MqttEndpoint mqttEndpoint, Context context) {
     return Uni.createFrom().emitter(uniEmitter ->
       sessionService.getSession(mqttEndpoint.clientIdentifier())
         .onItem().transformToUni(session -> {
@@ -281,6 +284,10 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                 } else {
                   return clientService.disconnect(session.getVerticleId(), new DisconnectRequest(MqttDisconnectReasonCode.SESSION_TAKEN_OVER, MqttProperties.NO_PROPERTIES));
                 }
+              })
+              .onItem().invoke(() -> {
+                context.put(CONTEXT_KEY_SESSION_TAKEN_OVER, true);
+                context.put(CONTEXT_KEY_SESSION_TAKEN_OVER_OLD_SESSION, session);
               });
           } else {
             uniEmitter.complete(null);
@@ -411,6 +418,21 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     });
   }
 
+  public Uni<Void> publishMqttSessionTakenOverEvent(Session newSession, Context context){
+    boolean sessionTakenOver = context.getOrElse(CONTEXT_KEY_SESSION_TAKEN_OVER, () -> false);
+    if (sessionTakenOver){
+      Session oldSession = context.get(CONTEXT_KEY_SESSION_TAKEN_OVER_OLD_SESSION);
+      String oldSessionId = oldSession != null ? oldSession.getSessionId() : "";
+      Event event = new MqttSessionTakenOverEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx), newSession.getClientId(), oldSessionId, newSession.getSessionId());
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Publishing event: {}, ", event.toJson());
+      }
+      return eventService.publishEvent(event);
+    } else {
+      return Uni.createFrom().voidItem();
+    }
+  }
+
   /**
    * Handle will
    *
@@ -453,7 +475,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     }
   }
 
-  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint) {
+  private Uni<Void> publishMqttConnectedEvent(MqttEndpoint mqttEndpoint) {
     Event event = new MqttConnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
       mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
       mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",

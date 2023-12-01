@@ -24,6 +24,7 @@ public class EBAddress {
 
   public static final String EVENT_NOTHING = "event.nothing";
   public static final String EVENT_MQTT_CONNECTED = "event.mqtt.connected";
+  public static final String EVENT_MQTT_SESSION_TAKEN_OVER = "event.mqtt.session.taken-over";
   public static final String EVENT_MQTT_ENDPOINT_CLOSED = "event.mqtt.endpoint-closed";
   public static final String EVENT_MQTT_DISCONNECTED = "event.mqtt.disconnected";
   public static final String EVENT_MQTT_PING = "event.mqtt.ping";

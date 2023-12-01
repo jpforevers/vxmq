@@ -44,7 +44,6 @@ services:
       vxmq.rule.static.ReadMqttPublishFromKafka.enable: true
       vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers: vxmq-kafka:9092
     volumes:
-      - vxmq1-log-volume:/vxmq/logs
       - vxmq1-ignite-volume:/vxmq/ignite
     networks:
       - vxmq
@@ -68,7 +67,6 @@ services:
       vxmq.rule.static.ReadMqttPublishFromKafka.enable: true
       vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers: vxmq-kafka:9092
     volumes:
-      - vxmq2-log-volume:/vxmq/logs
       - vxmq2-ignite-volume:/vxmq/ignite
     networks:
       - vxmq
@@ -92,7 +90,6 @@ services:
       vxmq.rule.static.ReadMqttPublishFromKafka.enable: true
       vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers: vxmq-kafka:9092
     volumes:
-      - vxmq3-log-volume:/vxmq/logs
       - vxmq3-ignite-volume:/vxmq/ignite
     networks:
       - vxmq
