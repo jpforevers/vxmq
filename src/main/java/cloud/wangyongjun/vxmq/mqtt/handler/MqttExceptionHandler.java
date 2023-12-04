@@ -16,10 +16,17 @@
 
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
+import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.event.MqttProtocolErrorEvent;
+import io.smallrye.mutiny.Uni;
+import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.function.Consumer;
 
 /**
@@ -30,14 +37,30 @@ public class MqttExceptionHandler implements Consumer<Throwable> {
   private final static Logger LOGGER = LoggerFactory.getLogger(MqttExceptionHandler.class);
 
   private final MqttEndpoint mqttEndpoint;
+  private final Vertx vertx;
+  private final EventService eventService;
 
-  public MqttExceptionHandler(MqttEndpoint mqttEndpoint) {
+  public MqttExceptionHandler(MqttEndpoint mqttEndpoint, Vertx vertx, EventService eventService) {
     this.mqttEndpoint = mqttEndpoint;
+    this.vertx = vertx;
+    this.eventService = eventService;
   }
 
   @Override
   public void accept(Throwable throwable) {
     LOGGER.error("Error occurred at protocol level of " + mqttEndpoint.clientIdentifier(), throwable);
+    Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> publishMqttProtocolErrorEvent(mqttEndpoint, throwable))
+      .subscribe().with(v -> {}, t -> LOGGER.error("Error occurred when processing mqtt exception", t));
+  }
+
+  private Uni<Void> publishMqttProtocolErrorEvent(MqttEndpoint mqttEndpoint, Throwable t) {
+    Event event = new MqttProtocolErrorEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+      mqttEndpoint.clientIdentifier(), t.getMessage());
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }
