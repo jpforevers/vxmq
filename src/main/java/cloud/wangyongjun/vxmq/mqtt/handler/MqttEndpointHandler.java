@@ -147,6 +147,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         }
       }, t -> {
         LOGGER.error("Error occurred when processing CONNECT from " + mqttEndpoint.clientIdentifier(), t);
+        publishMqttConnectFailedEvent(mqttEndpoint, t).subscribe().with(v -> {}, tt -> LOGGER.error("Error occurred when publishing mqtt connect failed event", tt));
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           if (t instanceof MqttAuthFailedException e) {
             mqttEndpoint.reject(e.getCode());
@@ -308,7 +309,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
     mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
     mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, vertx, sessionService, eventService));
-    mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint));
+    mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint, vertx, eventService));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
     mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));
     mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, vertx, msgService, sessionService, retainService, compositeService, eventService));
@@ -480,6 +481,15 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       mqttEndpoint.clientIdentifier(), mqttEndpoint.protocolVersion(),
       mqttEndpoint.auth() != null ? mqttEndpoint.auth().getUsername() : "",
       mqttEndpoint.auth() != null ? mqttEndpoint.auth().getPassword() : "");
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
+  }
+
+  private Uni<Void> publishMqttConnectFailedEvent(MqttEndpoint mqttEndpoint, Throwable t) {
+    Event event = new MqttConnectFailedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+      mqttEndpoint.clientIdentifier(), t.getMessage());
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("Publishing event: {}, ", event.toJson());
     }

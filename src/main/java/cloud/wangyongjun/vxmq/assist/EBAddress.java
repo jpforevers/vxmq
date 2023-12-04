@@ -25,6 +25,8 @@ public class EBAddress {
   public static final String EVENT_NOTHING = "event.nothing";
   public static final String EVENT_MQTT_CONNECTED = "event.mqtt.connected";
   public static final String EVENT_MQTT_SESSION_TAKEN_OVER = "event.mqtt.session.taken-over";
+  public static final String EVENT_MQTT_CONNECT_FAILED = "event.mqtt.connect.failed";
+  public static final String EVENT_MQTT_PROTOCOL_ERROR = "event.mqtt.protocol.error";
   public static final String EVENT_MQTT_ENDPOINT_CLOSED = "event.mqtt.endpoint-closed";
   public static final String EVENT_MQTT_DISCONNECTED = "event.mqtt.disconnected";
   public static final String EVENT_MQTT_PING = "event.mqtt.ping";
