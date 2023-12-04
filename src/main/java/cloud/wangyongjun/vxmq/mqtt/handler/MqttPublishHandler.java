@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttPublishInboundAcceptedEvent;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
@@ -29,6 +30,7 @@ import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgToTopic;
 import cloud.wangyongjun.vxmq.service.retain.Retain;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;
+import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
@@ -84,9 +86,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
       .onItem().transformToUni(v -> authorize(mqttPublishMessage))
       .onItem().transformToUni(v -> handleQos(mqttPublishMessage))
       .onItem().call(v -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-        .onItem().transformToUni(session -> eventService.publishEvent(new MqttPublishInboundAcceptedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-          mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
-          mqttPublishMessage.messageId(), mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain()))))
+        .onItem().transformToUni(session -> publishEvent(session, mqttPublishMessage)))
       .subscribe().with(v -> {
         if (LOGGER.isDebugEnabled()){
           LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
@@ -147,7 +147,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     jsonObject.put("topicName", mqttPublishMessage.topicName());
     jsonObject.put("mqttQoS", mqttPublishMessage.qosLevel());
     jsonObject.put("messageId", mqttPublishMessage.messageId());
-    jsonObject.put("payload", mqttPublishMessage.payload());
+    jsonObject.put("payload", mqttPublishMessage.payload().getDelegate());
     jsonObject.put("dup", mqttPublishMessage.isDup());
     jsonObject.put("retain", mqttPublishMessage.isRetain());
     jsonObject.put("properties", MqttPropertiesUtil.encode(mqttPublishMessage.properties()));
@@ -216,6 +216,16 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
         });
       default -> Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
     };
+  }
+
+  private Uni<Void> publishEvent(Session session, MqttPublishMessage mqttPublishMessage){
+    Event event = new MqttPublishInboundAcceptedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+      mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
+      mqttPublishMessage.messageId(), mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
   /**

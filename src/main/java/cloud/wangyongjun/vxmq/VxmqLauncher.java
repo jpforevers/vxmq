@@ -35,12 +35,16 @@ import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.mutiny.config.ConfigRetriever;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.ignite.IgniteClusterManager;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Arrays;
 
 public class VxmqLauncher {
 
@@ -132,8 +136,6 @@ public class VxmqLauncher {
     loggerContext.reset();
 
     String pattern = "%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC} [%26.26thread] %-5level %-40.40logger{39} : %msg%n";
-    String logDir = Config.getLogsDir(config);
-    String logFile = Config.getLogFile(config);
 
     ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
     consoleAppender.setContext(loggerContext);
@@ -145,30 +147,6 @@ public class VxmqLauncher {
     consoleAppender.setEncoder(consoleEncoder);
     consoleAppender.start();
 
-    RollingFileAppender<ILoggingEvent> rollingFileAppender = new RollingFileAppender<>();
-    rollingFileAppender.setContext(loggerContext);
-    rollingFileAppender.setName("rollingFile");
-    rollingFileAppender.setFile(logFile);
-
-    SizeAndTimeBasedRollingPolicy<ILoggingEvent> sizeAndTimeBasedRollingPolicy = new SizeAndTimeBasedRollingPolicy<>();
-    sizeAndTimeBasedRollingPolicy.setContext(loggerContext);
-    sizeAndTimeBasedRollingPolicy.setParent(rollingFileAppender);
-    sizeAndTimeBasedRollingPolicy.setFileNamePattern(logDir + "/archived/vxmq.%d{yyyy-MM-dd}.%i.log.gz");
-    sizeAndTimeBasedRollingPolicy.setMaxFileSize(FileSize.valueOf("100MB"));
-    sizeAndTimeBasedRollingPolicy.setTotalSizeCap(FileSize.valueOf("100GB"));
-    sizeAndTimeBasedRollingPolicy.setMaxHistory(30);
-    sizeAndTimeBasedRollingPolicy.start();
-
-    PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
-    fileEncoder.setContext(loggerContext);
-    fileEncoder.setPattern(pattern);
-    fileEncoder.start();
-
-    rollingFileAppender.setEncoder(fileEncoder);
-    rollingFileAppender.setRollingPolicy(sizeAndTimeBasedRollingPolicy);
-    rollingFileAppender.setTriggeringPolicy(sizeAndTimeBasedRollingPolicy);
-    rollingFileAppender.start();
-
     ch.qos.logback.classic.Logger igniteLogger = loggerContext.getLogger("org.apache.ignite");
     igniteLogger.setLevel(Level.WARN);
 
@@ -178,10 +156,12 @@ public class VxmqLauncher {
     ch.qos.logback.classic.Logger mqttLogger = loggerContext.getLogger("io.vertx.mqtt");
     mqttLogger.setLevel(Level.WARN);
 
+    ch.qos.logback.classic.Logger vxmqLogger = loggerContext.getLogger("cloud.wangyongjun.vxmq");
+    vxmqLogger.setLevel(Level.toLevel(Config.getLogsLevel(config)));
+
     ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
     rootLogger.setLevel(Level.INFO);
     rootLogger.addAppender(consoleAppender);
-    rootLogger.addAppender(rollingFileAppender);
 
   }
 
@@ -191,16 +171,18 @@ public class VxmqLauncher {
    * @return Vertx
    */
   private static Uni<Vertx> startVertx(JsonObject config) {
-//    TcpDiscoverySpi spi = new TcpDiscoverySpi();
-//    TcpDiscoveryMulticastIpFinder ipFinder = new TcpDiscoveryMulticastIpFinder();
-//    ipFinder.setMulticastGroup("228.10.10.157");
-//    spi.setIpFinder(ipFinder);
+    TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
+    TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
+    tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(config), ",")).toList());
+    tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort(config));
+    tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
 
-    IgniteConfiguration igniteCfg = new IgniteConfiguration();
-    igniteCfg.setGridLogger(new Slf4jLogger());
-    igniteCfg.setWorkDirectory(Config.getIgniteWorkDirectory(config));
-    igniteCfg.setMetricsLogFrequency(0);
-    ClusterManager clusterManager = new IgniteClusterManager(igniteCfg);
+    IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
+    igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);
+    igniteConfiguration.setGridLogger(new Slf4jLogger());
+    igniteConfiguration.setWorkDirectory(Config.getIgniteWorkDirectory(config));
+    igniteConfiguration.setMetricsLogFrequency(0);
+    ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
 
     VertxOptions vertxOptions = new VertxOptions();
     vertxOptions.setClusterManager(clusterManager);

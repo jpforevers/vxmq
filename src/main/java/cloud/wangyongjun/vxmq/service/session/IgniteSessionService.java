@@ -20,6 +20,7 @@ import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
@@ -38,11 +39,11 @@ public class IgniteSessionService implements SessionService {
 
   private static volatile IgniteSessionService igniteSessionService;
 
-  public static IgniteSessionService getSingleton(Vertx vertx) {
+  public static IgniteSessionService getSingleton(Vertx vertx, JsonObject config) {
     if (igniteSessionService == null) {
       synchronized (IgniteSessionService.class) {
         if (igniteSessionService == null) {
-          igniteSessionService = new IgniteSessionService(vertx);
+          igniteSessionService = new IgniteSessionService(vertx, config);
         }
       }
     }
@@ -51,8 +52,8 @@ public class IgniteSessionService implements SessionService {
 
   private final IgniteCache<String, Session> sessionCache;
 
-  private IgniteSessionService(Vertx vertx) {
-    this.sessionCache = IgniteAssist.initSessionCache(IgniteUtil.getIgnite(vertx));
+  private IgniteSessionService(Vertx vertx, JsonObject config) {
+    this.sessionCache = IgniteAssist.initSessionCache(IgniteUtil.getIgnite(vertx), config);
   }
 
   @Override
@@ -101,6 +102,11 @@ public class IgniteSessionService implements SessionService {
   @Override
   public Uni<List<Session>> allSessions() {
     QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(new ScanQuery<>());
+    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
+  }
+
+  public Uni<List<Session>> search(String nodeId) {
+    QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(new ScanQuery<>((k ,v) -> v.getNodeId().equals(nodeId)));
     return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
   }
 

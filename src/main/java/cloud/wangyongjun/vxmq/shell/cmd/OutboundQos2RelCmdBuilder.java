@@ -38,7 +38,7 @@ public class OutboundQos2RelCmdBuilder {
       .setLongName(ShellCmdConstants.COMMAND_OPTION_COUNT_LONG_NAME).setFlag(true)
       .setDescription("Count outboundQos2Rel");
 
-    CLI cli = CLI.create(ShellCmdConstants.COMMAND_OUTBOUNDQOS2REL).setDescription("A command line interface to interact with outboundQos2Rel")
+    CLI cli = CLI.create(ShellCmdConstants.COMMAND_OUTBOUNDQOS2RELS).setDescription("A command line interface to interact with outboundQos2Rel")
       .addOption(helpOption).addOption(listOption).addOption(countOption);
     StringBuilder usageBuilder = new StringBuilder();
     cli.getDelegate().usage(usageBuilder);

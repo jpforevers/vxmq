@@ -29,13 +29,24 @@ public class RuleVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    if (Config.getRuleStaticWriteMqttEventToKafkaEnable(config())) {
-      vertx.setTimer(2000, l -> vertx.deployVerticleAndForget(WriteMqttEventToKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config())));
-    }
-    if (Config.getRuleStaticReadMqttPublishFromKafkaEnable(config())) {
-      vertx.setTimer(2000, l -> vertx.deployVerticleAndForget(ReadMqttPublishFromKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config())));
-    }
-    return Uni.createFrom().voidItem();
+
+    return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> {
+        if (Config.getRuleStaticWriteMqttEventToKafkaEnable(config())) {
+          return vertx.deployVerticle(WriteMqttEventToKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config()))
+            .replaceWithVoid();
+        } else {
+          return Uni.createFrom().voidItem();
+        }
+      })
+      .onItem().transformToUni(v -> {
+        if (Config.getRuleStaticReadMqttPublishFromKafkaEnable(config())) {
+          return vertx.deployVerticle(ReadMqttPublishFromKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config()))
+            .replaceWithVoid();
+        } else {
+          return Uni.createFrom().voidItem();
+        }
+      });
   }
 
   @Override

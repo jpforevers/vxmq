@@ -42,7 +42,7 @@ public class MqttEndpointClosedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_ENDPOINT_CLOSED_EVENT;
+    return EventType.EVENT_MQTT_ENDPOINT_CLOSED;
   }
 
   @Override

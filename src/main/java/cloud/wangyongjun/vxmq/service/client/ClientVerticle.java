@@ -81,7 +81,11 @@ public class ClientVerticle extends AbstractVerticle {
   }
 
   private void handleCloseMqttEndpointAction() {
-    mqttEndpoint.close();
+    if (mqttEndpoint.isConnected()){
+      mqttEndpoint.close();
+    }else {
+      LOGGER.warn("Illegal state, MqttEndpoint already disconnected when try to close it");
+    }
   }
 
   private void handleDisconnectAction(Message<JsonObject> actionMessage) {

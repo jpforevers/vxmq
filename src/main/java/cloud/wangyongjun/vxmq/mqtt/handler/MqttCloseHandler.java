@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
@@ -65,18 +66,55 @@ public class MqttCloseHandler implements Runnable {
 
   @Override
   public void run() {
-    if(LOGGER.isDebugEnabled()){
+    if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("Mqtt endpoint of client {} closed", mqttEndpoint.clientIdentifier());
     }
-    sessionService.getSession(mqttEndpoint.clientIdentifier())
+
+    Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> obtainClientLock(mqttEndpoint.clientIdentifier()))
+      .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
       .onItem().transformToUni(session -> Uni.createFrom().voidItem()
         .onItem().transformToUni(v -> handleWill(session))
         .onItem().transformToUni(v -> undeployClientVerticle(session))
         .onItem().transformToUni(v -> handleSession(session))
         // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
-        .onItem().call(v -> eventService.publishEvent(new MqttEndpointClosedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-          mqttEndpoint.clientIdentifier(), session.getSessionId()))))
+        .onItem().call(v -> publishEvent(mqttEndpoint, session))
+      )
+      .onItemOrFailure().call((v, t) -> releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
+  }
+
+  /**
+   * Get client lock
+   *
+   * @param clientId clientId
+   * @return Void
+   */
+  public Uni<Void> obtainClientLock(String clientId) {
+    return clientService.obtainClientLock(clientId, 2000)
+      .onItem().invoke(lock -> {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Client lock obtained for {}", clientId);
+        }
+      });
+  }
+
+  /**
+   * Release client lock
+   *
+   * @param clientId clientId
+   * @return Void
+   */
+  public Uni<Void> releaseClientLock(String clientId) {
+    vertx.setTimer(500, l -> clientService
+      .releaseClientLock(clientId)
+      .onItem().invoke(v -> {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Client lock released for {}", clientId);
+        }
+      })
+      .subscribe().with(v -> {}, t -> LOGGER.error("Error occurred when release client lock for " + clientId, t)));
+    return Uni.createFrom().voidItem();
   }
 
   /**
@@ -134,13 +172,13 @@ public class MqttCloseHandler implements Runnable {
     if (session != null) {
       if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
         if (session.isCleanSession()) {
-          return compositeService.clearSession(session.getClientId());
+          return compositeService.clearSessionData(session.getClientId());
         } else {
           return sessionService.saveOrUpdateSession(session.copy().setOnline(false).setVerticleId(null).setNodeId(null).setUpdatedTime(Instant.now().toEpochMilli()));
         }
       } else {
         if (session.getSessionExpiryInterval() == null || session.getSessionExpiryInterval() == 0) {
-          return compositeService.clearSession(session.getClientId())
+          return compositeService.clearSessionData(session.getClientId())
             .onItem().transformToUni(v -> compositeService.publishWill(session.getSessionId()));
         } else {
           // 这里暂时放弃实现：
@@ -152,7 +190,7 @@ public class MqttCloseHandler implements Runnable {
               if (sessionX.isOnline()) {
                 return Uni.createFrom().voidItem();
               } else {
-                return compositeService.clearSession(sessionX.getClientId())
+                return compositeService.clearSessionData(sessionX.getClientId())
                   .onItem().transformToUni(v -> compositeService.publishWill(sessionX.getSessionId()));
               }
             })
@@ -163,6 +201,14 @@ public class MqttCloseHandler implements Runnable {
     } else {
       return Uni.createFrom().voidItem();
     }
+  }
+
+  public Uni<Void> publishEvent(MqttEndpoint mqttEndpoint, Session session){
+    Event event = new MqttEndpointClosedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx), mqttEndpoint.clientIdentifier(), session.getSessionId());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }

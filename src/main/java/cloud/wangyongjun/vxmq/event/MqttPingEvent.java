@@ -40,7 +40,7 @@ public class MqttPingEvent implements MqttEvent {
 
   @Override
   public EventType getEventType() {
-    return EventType.MQTT_PING_EVENT;
+    return EventType.EVENT_MQTT_PING;
   }
 
   @Override

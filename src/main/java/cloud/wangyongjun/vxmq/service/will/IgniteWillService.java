@@ -19,6 +19,7 @@ package cloud.wangyongjun.vxmq.service.will;
 import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.cache.query.QueryCursor;
@@ -32,11 +33,11 @@ public class IgniteWillService implements WillService {
 
   private static volatile IgniteWillService igniteWillService;
 
-  public static IgniteWillService getSingleton(Vertx vertx) {
+  public static IgniteWillService getSingleton(Vertx vertx, JsonObject config) {
     if (igniteWillService == null) {
       synchronized (IgniteWillService.class) {
         if (igniteWillService == null) {
-          igniteWillService = new IgniteWillService(vertx);
+          igniteWillService = new IgniteWillService(vertx, config);
         }
       }
     }
@@ -45,8 +46,8 @@ public class IgniteWillService implements WillService {
 
   private final IgniteCache<String, Will> willCache;
 
-  private IgniteWillService(Vertx vertx) {
-    this.willCache = IgniteAssist.initWillCache(IgniteUtil.getIgnite(vertx));
+  private IgniteWillService(Vertx vertx, JsonObject config) {
+    this.willCache = IgniteAssist.initWillCache(IgniteUtil.getIgnite(vertx), config);
   }
 
   @Override

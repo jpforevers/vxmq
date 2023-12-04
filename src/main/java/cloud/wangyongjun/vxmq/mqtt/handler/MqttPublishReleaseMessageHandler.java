@@ -65,13 +65,13 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
   @Override
   public void accept(MqttPubRelMessage mqttPubRelMessage) {
     String clientId = mqttEndpoint.clientIdentifier();
-    if (LOGGER.isDebugEnabled()){
+    if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("PUBREL from {}: {}", clientId, pubRelInfo(mqttPubRelMessage));
     }
 
     MqttProperties pubCompProperties = new MqttProperties();
     sessionService.getSession(clientId)
-      .onItem().transformToUni(session -> msgService.getInboundQos2Pub(session.getSessionId(), mqttPubRelMessage.messageId()))
+      .onItem().transformToUni(session -> msgService.getAndRemoveInboundQos2Pub(session.getSessionId(), mqttPubRelMessage.messageId()))
       .onItem().transformToUni(inboundQos2Pub -> {
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           if (inboundQos2Pub == null) {
@@ -91,8 +91,7 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
       .onItem().transformToUni(inboundQos2Pub -> {
         if (inboundQos2Pub != null) {
           MsgToTopic msgToTopic = new MsgToTopic().setClientId(inboundQos2Pub.getClientId()).setTopic(inboundQos2Pub.getTopic()).setQos(inboundQos2Pub.getQos()).setPayload(inboundQos2Pub.getPayload()).setRetain(inboundQos2Pub.isRetain());
-          return compositeService.forward(msgToTopic)
-            .onItem().call(() -> msgService.removeInboundQos2Pub(inboundQos2Pub.getSessionId(), inboundQos2Pub.getMessageId()));
+          return compositeService.forward(msgToTopic);
         } else {
           return Uni.createFrom().voidItem();
         }

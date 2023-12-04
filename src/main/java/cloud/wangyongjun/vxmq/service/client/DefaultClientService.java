@@ -22,6 +22,10 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.shareddata.Lock;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultClientService implements ClientService {
 
@@ -39,9 +43,27 @@ public class DefaultClientService implements ClientService {
   }
 
   private final Vertx vertx;
+  private final Map<String, Lock> clientLockMap = new ConcurrentHashMap<>();
 
   private DefaultClientService(Vertx vertx) {
     this.vertx = vertx;
+  }
+
+  @Override
+  public Uni<Void> obtainClientLock(String clientId, long timeout) {
+    return vertx.sharedData().getLockWithTimeout(clientId, timeout)
+      .onItem().invoke(lock -> clientLockMap.put(clientId, lock))
+      .replaceWithVoid();
+  }
+
+  @Override
+  public Uni<Void> releaseClientLock(String clientId) {
+    Lock lock = clientLockMap.get(clientId);
+    if (lock != null) {
+      lock.release();
+      clientLockMap.remove(clientId);
+    }
+    return Uni.createFrom().voidItem();
   }
 
   @Override

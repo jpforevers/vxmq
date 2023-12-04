@@ -14,24 +14,5 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.http.api.ping;
-
-import cloud.wangyongjun.vxmq.http.api.AbstractApiJsonResultHandler;
-import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
-import io.vertx.mutiny.core.Vertx;
-import io.vertx.mutiny.ext.web.RoutingContext;
-
-public class PingHandler extends AbstractApiJsonResultHandler {
-
-  public PingHandler(Vertx vertx) {
-    super(vertx);
-  }
-
-  @Override
-  public Uni<Object> computeJsonResult(RoutingContext routingContext) {
-
-    return Uni.createFrom().nullItem();
-  }
-
-}
+@io.vertx.codegen.annotations.ModuleGen(groupPackage = "cloud.wangyongjun.vxmq.service.authentication", name = "AuthenticationService", useFutures = true)
+package cloud.wangyongjun.vxmq.service.authentication;

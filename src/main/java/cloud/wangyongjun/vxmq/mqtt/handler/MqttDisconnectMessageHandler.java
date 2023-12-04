@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttDisconnectedEvent;
 import cloud.wangyongjun.vxmq.service.session.Session;
@@ -67,8 +68,7 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
       .onItem().call(session -> handleWill(session.getProtocolLevel(), session.getSessionId(), mqttDisconnectMessage.code()))
       .onItem().call(session -> processSessionExpiryInterval(mqttDisconnectMessage, session))
       // Publish EVENT_MQTT_DISCONNECTED_EVENT
-      .onItem().call(session -> eventService.publishEvent(new MqttDisconnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-        mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttDisconnectMessage.code())))
+      .onItem().call(session -> publishEvent(mqttEndpoint, session, mqttDisconnectMessage))
       .subscribe().with(v -> {
         if (LOGGER.isDebugEnabled()){
           LOGGER.debug("Mqtt client {} disconnected", mqttEndpoint.clientIdentifier());
@@ -111,6 +111,15 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
         }
       }
     }
+  }
+
+  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint, Session session, MqttDisconnectMessage mqttDisconnectMessage){
+    Event event = new MqttDisconnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
+      mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttDisconnectMessage.code());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }

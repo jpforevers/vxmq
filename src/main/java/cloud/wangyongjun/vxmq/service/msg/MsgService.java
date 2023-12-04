@@ -24,9 +24,7 @@ public interface MsgService {
 
   Uni<Void> saveInboundQos2Pub(InboundQos2Pub inboundQos2Pub);
 
-  Uni<InboundQos2Pub> getInboundQos2Pub(String sessionId, int messageId);
-
-  Uni<Void> removeInboundQos2Pub(String sessionId, int messageId);
+  Uni<InboundQos2Pub> getAndRemoveInboundQos2Pub(String sessionId, int messageId);
 
   Uni<List<InboundQos2Pub>> allInboundQos2Pub();
 
@@ -34,7 +32,7 @@ public interface MsgService {
 
   Uni<Void> saveOutboundQos1Pub(OutboundQos1Pub outboundQos1Pub);
 
-  Uni<Boolean> removeOutboundQos1Pub(String sessionId, int messageId);
+  Uni<OutboundQos1Pub> getAndRemoveOutboundQos1Pub(String sessionId, int messageId);
 
   Uni<List<OutboundQos1Pub>> allOutboundQos1Pub();
 
@@ -44,9 +42,7 @@ public interface MsgService {
 
   Uni<Void> saveOutboundQos2Pub(OutboundQos2Pub outboundQos2Pub);
 
-  Uni<OutboundQos2Pub> getOutboundQos2Pub(String sessionId, int messageId);
-
-  Uni<Void> removeOutboundQos2Pub(String sessionId, int messageId);
+  Uni<OutboundQos2Pub> getAndRemoveOutboundQos2Pub(String sessionId, int messageId);
 
   Uni<List<OutboundQos2Pub>> allOutboundQos2Pub();
 
@@ -56,9 +52,7 @@ public interface MsgService {
 
   Uni<Void> saveOutboundQos2Rel(OutboundQos2Rel outboundQos2Rel);
 
-  Uni<OutboundQos2Rel> getOutboundQos2Rel(String sessionId, int messageId);
-
-  Uni<Void> removeOutboundQos2Rel(String sessionId, int messageId);
+  Uni<OutboundQos2Rel> getAndRemoveOutboundQos2Rel(String sessionId, int messageId);
 
   Uni<List<OutboundQos2Rel>> allOutboundQos2Rel();
 

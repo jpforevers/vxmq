@@ -16,8 +16,11 @@
 
 package cloud.wangyongjun.vxmq.service.composite;
 
+import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
+import cloud.wangyongjun.vxmq.http.api.ApiErrorCode;
+import cloud.wangyongjun.vxmq.http.api.ApiException;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
@@ -31,15 +34,19 @@ import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import cloud.wangyongjun.vxmq.service.will.WillService;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.impl.cpu.CpuCoreSensor;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultCompositeService implements CompositeService {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(DefaultCompositeService.class);
 
   private static volatile DefaultCompositeService defaultCompositeService;
 
@@ -77,10 +84,10 @@ public class DefaultCompositeService implements CompositeService {
   }
 
   @Override
-  public Uni<Void> clearSession(String clientId) {
+  public Uni<Void> clearSessionData(String clientId) {
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> sessionService.getSession(clientId))
-      .onItem().transformToUni(session -> Uni.createFrom().voidItem()
+      .onItem().ifNotNull().transformToUni(session -> Uni.createFrom().voidItem()
         .onItem().transformToUni(v -> msgService.clearMsgs(session.getSessionId()))
         .onItem().transformToUni(v -> subService.clearSubs(session.getSessionId()))
         .onItem().transformToUni(v -> sessionService.removeSession(clientId)));
@@ -193,7 +200,7 @@ public class DefaultCompositeService implements CompositeService {
             unis.add(unix);
           }
         }
-        return unis.size() > 0 ? Uni.combine().all().unis(unis).usingConcurrencyOf(CpuCoreSensor.availableProcessors()).discardItems() : Uni.createFrom().voidItem();
+        return !unis.isEmpty() ? Uni.combine().all().unis(unis).usingConcurrencyOf(Config.AVAILABLE_CPU_CORE_SENSORS * 2).collectFailures().discardItems() : Uni.createFrom().voidItem();
       });
   }
 
@@ -209,6 +216,56 @@ public class DefaultCompositeService implements CompositeService {
     } else {
       return Uni.createFrom().voidItem();
     }
+  }
+
+  @Override
+  public Uni<Void> deleteSession(String clientId) {
+    return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> sessionService.getSession(clientId))
+      .onItem().transformToUni(session -> {
+        if (session == null) {
+          return Uni.createFrom().failure(new ApiException(ApiErrorCode.COMMON_NOT_FOUND, "Client session not found: " + clientId));
+        } else {
+          if (session.isOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
+            return clientService.closeMqttEndpoint(session.getVerticleId());
+          } else {
+            return Uni.createFrom().voidItem()
+              .onItem().transformToUni(vv -> obtainClientLock(clientId))
+              .onItem().transformToUni(vv -> this.clearSessionData(clientId))
+              .onItemOrFailure().call((vv, t) -> releaseClientLock(clientId));
+          }
+        }
+      });
+  }
+
+  /**
+   * Get client lock
+   *
+   * @param clientId clientId
+   * @return Void
+   */
+  private Uni<Void> obtainClientLock(String clientId) {
+    return clientService.obtainClientLock(clientId, 5000)
+      .onItem().invoke(lock -> {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Client lock obtained for {}", clientId);
+        }
+      });
+  }
+
+  /**
+   * Release client lock
+   *
+   * @param clientId clientId
+   * @return Void
+   */
+  private Uni<Void> releaseClientLock(String clientId) {
+    return clientService.releaseClientLock(clientId)
+      .onItem().invoke(v -> {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Client lock released for {}", clientId);
+        }
+      });
   }
 
 }

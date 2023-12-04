@@ -1,0 +1,100 @@
+version: '3'
+
+name: vxmq
+services:
+  vxmq-vxmq1:
+    image: "jpforevers/vxmq:1.5.0"
+    container_name: vxmq-vxmq1
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8060/q/health | jq -e '.status == \"UP\"'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    environment:
+      vxmq.ignite.discovery.tcp.port: 47500
+      vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
+      vxmq.ignite.backups: 0
+      vxmq.logs.level: DEBUG
+      vxmq.mqtt.server.proxy-protocol.enable: true
+    volumes:
+      - vxmq1-ignite-volume:/vxmq/ignite
+    networks:
+      - vxmq
+
+  vxmq-vxmq2:
+    image: "jpforevers/vxmq:1.5.0"
+    container_name: vxmq-vxmq2
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8060/q/health | jq -e '.status == \"UP\"'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    environment:
+      vxmq.ignite.discovery.tcp.port: 47500
+      vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
+      vxmq.ignite.backups: 0
+      vxmq.logs.level: DEBUG
+      vxmq.mqtt.server.proxy-protocol.enable: true
+    volumes:
+      - vxmq2-ignite-volume:/vxmq/ignite
+    networks:
+      - vxmq
+
+  vxmq-vxmq3:
+    image: "jpforevers/vxmq:1.5.0"
+    container_name: vxmq-vxmq3
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:8060/q/health | jq -e '.status == \"UP\"'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    environment:
+      vxmq.ignite.discovery.tcp.port: 47500
+      vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
+      vxmq.ignite.backups: 0
+      vxmq.logs.level: DEBUG
+      vxmq.mqtt.server.proxy-protocol.enable: true
+    volumes:
+      - vxmq3-ignite-volume:/vxmq/ignite
+    networks:
+      - vxmq
+
+  vxmq-haproxy:
+    image: "haproxy:2.8"
+    container_name: vxmq-haproxy
+    restart: always
+    healthcheck:
+      test: [ "CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    ports:
+      - "9999:9999"
+      - "1883:1883"
+      - "8060:8060"
+      - "5000:5000"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - vxmq
+    depends_on:
+      vxmq-vxmq1:
+        condition: service_healthy
+      vxmq-vxmq2:
+        condition: service_healthy
+      vxmq-vxmq3:
+        condition: service_healthy
+
+volumes:
+  vxmq1-log-volume:
+  vxmq2-log-volume:
+  vxmq3-log-volume:
+  vxmq1-ignite-volume:
+  vxmq2-ignite-volume:
+  vxmq3-ignite-volume:
+
+networks:
+  vxmq:

@@ -18,7 +18,12 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
+import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.event.MqttPublishOutboundAckedEvent;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
+import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Pub;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Rel;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.netty.handler.codec.mqtt.MqttProperties;
@@ -26,6 +31,7 @@ import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttPubRelReasonCode;
+import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import io.vertx.mutiny.mqtt.messages.MqttPubRecMessage;
 import org.slf4j.Logger;
@@ -53,11 +59,15 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
   private final MqttEndpoint mqttEndpoint;
   private final SessionService sessionService;
   private final MsgService msgService;
+  private final EventService eventService;
+  private final Vertx vertx;
 
-  public MqttPublishReceivedMessageHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService) {
+  public MqttPublishReceivedMessageHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService, EventService eventService, Vertx vertx) {
     this.mqttEndpoint = mqttEndpoint;
     this.sessionService = sessionService;
     this.msgService = msgService;
+    this.eventService = eventService;
+    this.vertx = vertx;
   }
 
   @Override
@@ -67,7 +77,7 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
     }
     MqttProperties pubRelProperties = new MqttProperties();
     sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.getOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId())
+      .onItem().transformToUni(session -> msgService.getAndRemoveOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId())
         .onItem().transformToUni(outboundQos2Pub -> {
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
             if (outboundQos2Pub == null) {
@@ -76,13 +86,20 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
             mqttEndpoint.publishRelease(mqttPubRecMessage.messageId());
           } else {
             if (outboundQos2Pub == null) {
-              LOGGER.warn("PUBREC from {} withozut having related PUBLISH packet", mqttEndpoint.clientIdentifier());
+              LOGGER.warn("PUBREC from {} without having related PUBLISH packet", mqttEndpoint.clientIdentifier());
               mqttEndpoint.publishRelease(mqttPubRecMessage.messageId(), MqttPubRelReasonCode.PACKET_IDENTIFIER_NOT_FOUND, pubRelProperties);
             } else {
               mqttEndpoint.publishRelease(mqttPubRecMessage.messageId(), MqttPubRelReasonCode.SUCCESS, pubRelProperties);
             }
           }
-          return msgService.removeOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId());
+          return Uni.createFrom().voidItem()
+            .onItem().transformToUni(v -> {
+              if (outboundQos2Pub != null){
+                return publishEvent(outboundQos2Pub);
+              }else {
+                return Uni.createFrom().voidItem();
+              }
+            });
         })
         .onItem().transformToUni(v -> msgService.saveOutboundQos2Rel(new OutboundQos2Rel(session.getSessionId(), mqttEndpoint.clientIdentifier(), mqttPubRecMessage.messageId(), Instant.now().toEpochMilli()))))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBREC from {}", mqttEndpoint.clientIdentifier(), t));
@@ -94,6 +111,17 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
     jsonObject.put("code", mqttPubRecMessage.code());
     jsonObject.put("properties", MqttPropertiesUtil.encode(mqttPubRecMessage.properties()));
     return jsonObject.toString();
+  }
+
+  private Uni<Void> publishEvent(OutboundQos2Pub outboundQos2Pub){
+    Event event = new MqttPublishOutboundAckedEvent(Instant.now().toEpochMilli(),
+      VertxUtil.getNodeId(vertx), outboundQos2Pub.getSessionId(), outboundQos2Pub.getClientId(),
+      outboundQos2Pub.getMessageId(), outboundQos2Pub.getTopic(), outboundQos2Pub.getQos(),
+      outboundQos2Pub.getPayload(), outboundQos2Pub.isDup(), outboundQos2Pub.isRetain());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }

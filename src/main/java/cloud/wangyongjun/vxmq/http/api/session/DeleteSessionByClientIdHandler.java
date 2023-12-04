@@ -18,33 +18,25 @@ package cloud.wangyongjun.vxmq.http.api.session;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.http.api.AbstractApiJsonResultHandler;
-import cloud.wangyongjun.vxmq.http.api.ApiErrorCode;
-import cloud.wangyongjun.vxmq.http.api.ApiException;
-import cloud.wangyongjun.vxmq.service.client.ClientService;
-import cloud.wangyongjun.vxmq.service.session.SessionService;
+import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.RoutingContext;
 
 public class DeleteSessionByClientIdHandler extends AbstractApiJsonResultHandler {
 
-  private final SessionService sessionService;
-  private final ClientService clientService;
+  private final CompositeService compositeService;
 
-  public DeleteSessionByClientIdHandler(Vertx vertx, SessionService sessionService, ClientService clientService) {
+  public DeleteSessionByClientIdHandler(Vertx vertx, CompositeService compositeService) {
     super(vertx);
-    this.sessionService = sessionService;
-    this.clientService = clientService;
+    this.compositeService = compositeService;
   }
 
   @Override
   public Uni<Object> computeJsonResult(RoutingContext routingContext) {
     String clientId = routingContext.pathParam(ModelConstants.FIELD_NAME_CLIENT_ID);
-    return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> sessionService.getSession(clientId))
-      .onItem().transformToUni(session -> session == null ?
-        Uni.createFrom().failure(new ApiException(ApiErrorCode.COMMON_NOT_FOUND, "Client not found: " + clientId))
-        : clientService.closeMqttEndpoint(session.getVerticleId()));
+    return compositeService.deleteSession(clientId).replaceWith(new JsonObject());
   }
 
 }

@@ -19,7 +19,8 @@ package cloud.wangyongjun.vxmq.assist;
 public enum EBServices {
 
   NOTHING_SERVICE(EBAddress.SERVICE_NOTHING_SERVICE),
-  SUB_SERVICE(EBAddress.SERVICE_SUB_SERVICE);
+  SUB_SERVICE(EBAddress.SERVICE_SUB_SERVICE),
+  AUTHENTICATION_SERVICE(EBAddress.SERVICE_AUTHENTICATION_SERVICE);
 
   private final String ebAddress;
 

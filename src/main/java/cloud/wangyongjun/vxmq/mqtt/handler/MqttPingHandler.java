@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.MqttPingEvent;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
@@ -56,8 +57,16 @@ public class MqttPingHandler implements Runnable {
     String clientId = mqttEndpoint.clientIdentifier();
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> sessionService.updateLatestUpdatedTime(clientId, Instant.now().toEpochMilli()))
-      .onItem().transformToUni(v -> eventService.publishEvent(new MqttPingEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx), clientId)))
+      .onItem().transformToUni(v -> publishEvent(mqttEndpoint))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing the PINGREQ from " + clientId, t));
+  }
+
+  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint){
+    Event event = new MqttPingEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx), mqttEndpoint.clientIdentifier());
+    if (LOGGER.isDebugEnabled()){
+      LOGGER.debug("Publishing event: {}, ", event.toJson());
+    }
+    return eventService.publishEvent(event);
   }
 
 }

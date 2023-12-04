@@ -18,10 +18,12 @@ package cloud.wangyongjun.vxmq.assist;
 
 import cloud.wangyongjun.vxmq.event.DefaultEventService;
 import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.DefaultClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.composite.DefaultCompositeService;
+import cloud.wangyongjun.vxmq.service.msg.IgniteAndMapMsgService;
 import cloud.wangyongjun.vxmq.service.msg.IgniteMsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.retain.IgniteRetainService;
@@ -36,8 +38,8 @@ import io.vertx.mutiny.core.Vertx;
 
 public class ServiceFactory {
 
-  public static SessionService sessionService(Vertx vertx) {
-    return IgniteSessionService.getSingleton(vertx);
+  public static SessionService sessionService(Vertx vertx, JsonObject config) {
+    return IgniteSessionService.getSingleton(vertx, config);
   }
 
   public static SubService subService(Vertx vertx) {
@@ -49,23 +51,28 @@ public class ServiceFactory {
   }
 
   public static MsgService msgService(Vertx vertx, JsonObject config) {
-    return IgniteMsgService.getSingleton(vertx, config);
+//    return IgniteMsgService.getSingleton(vertx, config);
+    return IgniteAndMapMsgService.getSingleton(vertx, config);
   }
 
-  public static RetainService retainService(Vertx vertx) {
-    return IgniteRetainService.getSingleton(vertx);
+  public static RetainService retainService(Vertx vertx, JsonObject config) {
+    return IgniteRetainService.getSingleton(vertx, config);
   }
 
-  public static WillService willService(Vertx vertx) {
-    return IgniteWillService.getSingleton(vertx);
+  public static WillService willService(Vertx vertx, JsonObject config) {
+    return IgniteWillService.getSingleton(vertx, config);
   }
 
   public static CompositeService compositeService(Vertx vertx, JsonObject config) {
-    return DefaultCompositeService.getSingleton(vertx, config, sessionService(vertx), subService(vertx), willService(vertx), msgService(vertx, config), retainService(vertx), clientService(vertx));
+    return DefaultCompositeService.getSingleton(vertx, config, sessionService(vertx, config), subService(vertx), willService(vertx, config), msgService(vertx, config), retainService(vertx, config), clientService(vertx));
   }
 
   public static EventService eventService(Vertx vertx){
     return DefaultEventService.getSingleton(vertx);
+  }
+
+  public static AuthenticationService authenticationService(Vertx vertx){
+    return VertxServiceProxyBuilder.buildAuthenticationService(vertx);
   }
 
 }

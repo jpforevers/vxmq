@@ -19,8 +19,6 @@ package cloud.wangyongjun.vxmq.service.msg;
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.json.JsonObject;
 
-import java.time.Instant;
-
 public class OutboundQos2Rel {
 
   private String sessionId;
@@ -42,7 +40,7 @@ public class OutboundQos2Rel {
     this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
     this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
     this.messageId = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_ID);
-    this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
+    this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
   public JsonObject toJson() {
@@ -50,7 +48,7 @@ public class OutboundQos2Rel {
     jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
     jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
     jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_ID, this.messageId);
-    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
 

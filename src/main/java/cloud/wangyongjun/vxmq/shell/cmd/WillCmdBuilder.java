@@ -35,7 +35,7 @@ public class WillCmdBuilder {
     Option countOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_COUNT_SHORT_NAME).setLongName(ShellCmdConstants.COMMAND_OPTION_COUNT_LONG_NAME).setFlag(true)
       .setDescription("Count wills");
 
-    CLI cli = CLI.create(ShellCmdConstants.COMMAND_WILL).setDescription("A command line interface to interact with mqtt will")
+    CLI cli = CLI.create(ShellCmdConstants.COMMAND_WILLS).setDescription("A command line interface to interact with mqtt will")
       .addOption(helpOption).addOption(listOption).addOption(countOption);
     StringBuilder usageBuilder = new StringBuilder();
     cli.getDelegate().usage(usageBuilder);

@@ -6,7 +6,7 @@
 
   <groupId>cloud.wangyongjun</groupId>
   <artifactId>vxmq</artifactId>
-  <version>1.4.0</version>
+  <version>1.5.999-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,20 +16,20 @@
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-    <vertx.version>4.4.1</vertx.version>
-    <junit-jupiter.version>5.7.0</junit-jupiter.version>
+    <vertx.version>4.4.4</vertx.version>
+    <junit-jupiter.version>5.9.1</junit-jupiter.version>
 
-    <slf4j.version>2.0.4</slf4j.version>
-    <logback.version>1.4.6</logback.version>
-    <smallrye-mutiny-vertx.version>3.3.0</smallrye-mutiny-vertx.version>
+    <slf4j.version>2.0.7</slf4j.version>
+    <logback.version>1.4.8</logback.version>
+    <smallrye-mutiny-vertx.version>3.5.0</smallrye-mutiny-vertx.version>
     <commons-lang3.version>3.12.0</commons-lang3.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-codec.version>1.15</commons-codec.version>
     <java-uuid-generator.version>4.1.0</java-uuid-generator.version>
     <asciitable.version>0.3.2</asciitable.version>
-    <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
+    <jib-maven-plugin.version>3.3.2</jib-maven-plugin.version>
 
-    <ignite.version>2.14.0</ignite.version>
+    <ignite.version>2.15.0</ignite.version>
 
     <launcher.class>cloud.wangyongjun.vxmq.VxmqLauncher</launcher.class>
   </properties>
@@ -88,7 +88,7 @@
     <!-- Health check -->
     <dependency>
       <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-mutiny-health-check</artifactId>
+      <artifactId>smallrye-mutiny-vertx-health-check</artifactId>
       <version>${smallrye-mutiny-vertx.version}</version>
     </dependency>
 
@@ -135,6 +135,13 @@
       <version>${smallrye-mutiny-vertx.version}</version>
     </dependency>
 
+    <!-- Auth -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-auth-properties</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
     <!-- Apache Util -->
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -164,6 +171,12 @@
       <groupId>de.vandermeer</groupId>
       <artifactId>asciitable</artifactId>
       <version>${asciitable.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-haproxy</artifactId>
+      <!--<version>Should align with netty version that Vert.x uses</version>-->
     </dependency>
 
     <dependency>
@@ -242,7 +255,7 @@
         <configuration>
           <allowInsecureRegistries>true</allowInsecureRegistries>
           <from>
-            <image>docker.io/jpforevers/myjavabase:17-alpine</image>
+            <image>jpforevers/myjavabase:17</image>
           </from>
           <to>
             <image>jpforevers/${project.artifactId}</image>
@@ -250,6 +263,15 @@
               <tag>${project.version}</tag>
             </tags>
           </to>
+          <extraDirectories>
+            <paths>
+              <path>
+                <from>src/main/docker</from>
+                <into>/root/.ssh/</into>
+                <includes>config</includes>
+              </path>
+            </paths>
+          </extraDirectories>
           <container>
             <mainClass>${launcher.class}</mainClass>
             <appRoot>/vxmq/app</appRoot>
@@ -264,6 +286,8 @@
               <jvmFlag>--add-opens=java.base/java.io=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvmFlag>
             </jvmFlags>
@@ -272,6 +296,7 @@
               <port>8060/tcp</port>
               <port>1883/tcp</port>
               <port>5000/tcp</port>
+              <port>47500/tcp</port>
             </ports>
           </container>
         </configuration>
