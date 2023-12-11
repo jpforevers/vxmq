@@ -29,7 +29,7 @@ services:
       - vxmq
 
   vxmq-vxmq1:
-    image: "jpforevers/vxmq:1.5.0"
+    image: "jpforevers/vxmq:1.6.0"
     container_name: vxmq-vxmq1
     restart: always
     healthcheck:
@@ -52,7 +52,7 @@ services:
         condition: service_healthy
 
   vxmq-vxmq2:
-    image: "jpforevers/vxmq:1.5.0"
+    image: "jpforevers/vxmq:1.6.0"
     container_name: vxmq-vxmq2
     restart: always
     healthcheck:
@@ -75,7 +75,7 @@ services:
         condition: service_healthy
 
   vxmq-vxmq3:
-    image: "jpforevers/vxmq:1.5.0"
+    image: "jpforevers/vxmq:1.6.0"
     container_name: vxmq-vxmq3
     restart: always
     healthcheck:
