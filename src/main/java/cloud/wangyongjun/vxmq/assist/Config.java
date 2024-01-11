@@ -59,6 +59,9 @@ public class Config {
   public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "vxmq.ignite.discovery.tcp.addresses";
   public static final String DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "localhost:47500";
 
+  public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE = "vxmq.rule.static.WriteMqttEventToMqtt.enable";
+  public static final boolean DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE = false;
+
   public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE = "vxmq.rule.static.WriteMqttEventToKafka.enable";
   public static final boolean DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE = false;
 
@@ -121,6 +124,10 @@ public class Config {
 
   public static String getLogsLevel(JsonObject config){
     return config.getString(KEY_VXMQ_LOGS_LEVEL, DEFAULT_VXMQ_LOGS_LEVEL);
+  }
+
+  public static boolean getRuleStaticWriteMqttEventToMqttEnable(JsonObject config) {
+    return config.getBoolean(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE, DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE);
   }
 
   public static boolean getRuleStaticWriteMqttEventToKafkaEnable(JsonObject config) {
