@@ -15,7 +15,7 @@ services:
       vxmq.ignite.discovery.tcp.port: 47500
       vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
       vxmq.ignite.backups: 0
-      vxmq.logs.level: DEBUG
+      vxmq.logs.level: INFO
       vxmq.mqtt.server.proxy-protocol.enable: true
       vxmq.rule.static.WriteMqttEventToMqtt.enable: true
     volumes:
@@ -36,7 +36,7 @@ services:
       vxmq.ignite.discovery.tcp.port: 47500
       vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
       vxmq.ignite.backups: 0
-      vxmq.logs.level: DEBUG
+      vxmq.logs.level: INFO
       vxmq.mqtt.server.proxy-protocol.enable: true
       vxmq.rule.static.WriteMqttEventToMqtt.enable: true
     volumes:
@@ -57,7 +57,7 @@ services:
       vxmq.ignite.discovery.tcp.port: 47500
       vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
       vxmq.ignite.backups: 0
-      vxmq.logs.level: DEBUG
+      vxmq.logs.level: INFO
       vxmq.mqtt.server.proxy-protocol.enable: true
       vxmq.rule.static.WriteMqttEventToMqtt.enable: true
     volumes:
