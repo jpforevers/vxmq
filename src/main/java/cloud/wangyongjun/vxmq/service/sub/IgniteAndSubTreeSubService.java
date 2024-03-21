@@ -21,7 +21,6 @@ import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import cloud.wangyongjun.vxmq.assist.TopicUtil;
 import cloud.wangyongjun.vxmq.service.sub.tree.SubTree;
-import io.smallrye.mutiny.Uni;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
@@ -68,11 +67,11 @@ public class IgniteAndSubTreeSubService implements SubService {
     Ignite ignite = IgniteUtil.getIgnite(vertx);
     this.exactSubscriptionCache = IgniteAssist.initExactSubscriptionCache(ignite, config);
     this.wildcardSubscriptionCache = IgniteAssist.initWildcardSubscriptionCache(ignite, config);
-    vertx.executeBlocking(Uni.createFrom().emitter(uniEmitter -> {
+    vertx.<Void>executeBlocking(() -> {
       loadSubsToSubTreeAndInitContinuousQuery(exactSubscriptionCache);
       loadSubsToSubTreeAndInitContinuousQuery(wildcardSubscriptionCache);
-      uniEmitter.complete(null);
-    })).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when load subscriptions to sub tree and init continuous query", t));
+      return null;
+    }).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when load subscriptions to sub tree and init continuous query", t));
   }
 
   private void loadSubsToSubTreeAndInitContinuousQuery(IgniteCache<SubscriptionKey, Subscription> subCache) {
