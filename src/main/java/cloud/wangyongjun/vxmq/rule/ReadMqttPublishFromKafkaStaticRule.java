@@ -18,7 +18,7 @@ package cloud.wangyongjun.vxmq.rule;
 
 import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
-import cloud.wangyongjun.vxmq.assist.ServiceFactory;
+import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.msg.MsgToTopic;
 import io.smallrye.mutiny.Uni;

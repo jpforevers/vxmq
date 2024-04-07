@@ -1,5 +1,6 @@
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
 
+import cloud.wangyongjun.vxmq.event.EventType;
 import io.vertx.core.json.JsonObject;
 
 public class MqttProtocolErrorEvent implements MqttEvent{

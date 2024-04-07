@@ -17,7 +17,7 @@
 package cloud.wangyongjun.vxmq.shell;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.assist.ServiceFactory;
+import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
