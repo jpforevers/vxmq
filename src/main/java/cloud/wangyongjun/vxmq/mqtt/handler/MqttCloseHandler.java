@@ -20,7 +20,7 @@ import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.session.Session;

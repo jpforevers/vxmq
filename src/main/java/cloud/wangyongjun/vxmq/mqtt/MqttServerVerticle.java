@@ -17,7 +17,7 @@
 package cloud.wangyongjun.vxmq.mqtt;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.assist.ServiceFactory;
+import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.mqtt.handler.MqttEndpointHandler;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;

@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.assist;
+package cloud.wangyongjun.vxmq.service;
 
+import cloud.wangyongjun.vxmq.assist.EBServices;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.mutiny.core.Vertx;
 
-public class VertxServiceProxyBuilder {
+class VertxServiceProxyBuilder {
 
-  public static SubService buildSubService(Vertx vertx) {
+  static SubService buildSubService(Vertx vertx) {
     io.vertx.serviceproxy.ServiceProxyBuilder builder = new io.vertx.serviceproxy.ServiceProxyBuilder(vertx.getDelegate())
       .setAddress(EBServices.SUB_SERVICE.getEbAddress())
       .setOptions(new DeliveryOptions().setLocalOnly(true));
@@ -31,7 +32,7 @@ public class VertxServiceProxyBuilder {
     return SubService.newInstance(subService);
   }
 
-  public static AuthenticationService buildAuthenticationService(Vertx vertx){
+  static AuthenticationService buildAuthenticationService(Vertx vertx){
     io.vertx.serviceproxy.ServiceProxyBuilder builder = new io.vertx.serviceproxy.ServiceProxyBuilder(vertx.getDelegate())
       .setAddress(EBServices.AUTHENTICATION_SERVICE.getEbAddress())
       .setOptions(new DeliveryOptions().setLocalOnly(true));

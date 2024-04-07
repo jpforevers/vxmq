@@ -17,7 +17,7 @@
 package cloud.wangyongjun.vxmq.http.api;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
-import cloud.wangyongjun.vxmq.assist.ServiceFactory;
+import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.http.api.session.DeleteSessionByClientIdHandler;
 import cloud.wangyongjun.vxmq.http.api.test.TestHandler;
 import io.vertx.core.json.JsonObject;

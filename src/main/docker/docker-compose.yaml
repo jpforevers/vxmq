@@ -17,7 +17,7 @@ services:
       vxmq.ignite.backups: 0
       vxmq.logs.level: INFO
       vxmq.mqtt.server.proxy-protocol.enable: true
-      vxmq.rule.static.WriteMqttEventToMqtt.enable: true
+      vxmq.rule.static.WriteMqttEventToMqtt.enable: false
     volumes:
       - vxmq1-ignite-volume:/vxmq/ignite
     networks:
@@ -38,7 +38,7 @@ services:
       vxmq.ignite.backups: 0
       vxmq.logs.level: INFO
       vxmq.mqtt.server.proxy-protocol.enable: true
-      vxmq.rule.static.WriteMqttEventToMqtt.enable: true
+      vxmq.rule.static.WriteMqttEventToMqtt.enable: false
     volumes:
       - vxmq2-ignite-volume:/vxmq/ignite
     networks:
@@ -59,7 +59,7 @@ services:
       vxmq.ignite.backups: 0
       vxmq.logs.level: INFO
       vxmq.mqtt.server.proxy-protocol.enable: true
-      vxmq.rule.static.WriteMqttEventToMqtt.enable: true
+      vxmq.rule.static.WriteMqttEventToMqtt.enable: false
     volumes:
       - vxmq3-ignite-volume:/vxmq/ignite
     networks:

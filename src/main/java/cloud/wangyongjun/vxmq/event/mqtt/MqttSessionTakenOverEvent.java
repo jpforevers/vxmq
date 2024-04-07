@@ -1,22 +1,25 @@
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
 
+import cloud.wangyongjun.vxmq.event.EventType;
 import io.vertx.core.json.JsonObject;
 
-public class MqttConnectFailedEvent implements MqttEvent{
+public class MqttSessionTakenOverEvent implements MqttEvent{
 
   private long time;
   private String nodeId;
   private String clientId;
-  private String reason;
+  private String oldSessionId;
+  private String newSessionId;
 
-  public MqttConnectFailedEvent() {
+  public MqttSessionTakenOverEvent() {
   }
 
-  public MqttConnectFailedEvent(long time, String nodeId, String clientId, String reason) {
+  public MqttSessionTakenOverEvent(long time, String nodeId, String clientId, String oldSessionId, String newSessionId) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
-    this.reason = reason;
+    this.oldSessionId = oldSessionId;
+    this.newSessionId = newSessionId;
   }
 
   @Override
@@ -27,16 +30,18 @@ public class MqttConnectFailedEvent implements MqttEvent{
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
-    jsonObject.put("reason", reason);
+    jsonObject.put("oldSessionId", oldSessionId);
+    jsonObject.put("newSessionId", newSessionId);
     return jsonObject;
   }
 
   @Override
-  public MqttConnectFailedEvent fromJson(JsonObject jsonObject) {
+  public MqttSessionTakenOverEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
-    this.reason = jsonObject.getString("reason");
+    this.oldSessionId = jsonObject.getString("oldSessionId");
+    this.newSessionId = jsonObject.getString("newSessionId");
     return this;
   }
 
@@ -47,7 +52,7 @@ public class MqttConnectFailedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.EVENT_MQTT_CONNECT_FAILED;
+    return EventType.EVENT_MQTT_SESSION_TAKEN_OVER;
   }
 
   @Override
@@ -60,8 +65,12 @@ public class MqttConnectFailedEvent implements MqttEvent{
     return clientId;
   }
 
-  public String getReason() {
-    return reason;
+  public String getOldSessionId() {
+    return oldSessionId;
+  }
+
+  public String getNewSessionId() {
+    return newSessionId;
   }
 
 }

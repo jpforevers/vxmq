@@ -21,7 +21,7 @@ import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.MqttPublishOutboundAckedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttPublishOutboundAckedEvent;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Pub;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Rel;

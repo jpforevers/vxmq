@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.assist;
+package cloud.wangyongjun.vxmq.service;
 
 import cloud.wangyongjun.vxmq.event.DefaultEventService;
 import cloud.wangyongjun.vxmq.event.EventService;
@@ -24,7 +24,6 @@ import cloud.wangyongjun.vxmq.service.client.DefaultClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.composite.DefaultCompositeService;
 import cloud.wangyongjun.vxmq.service.msg.IgniteAndMapMsgService;
-import cloud.wangyongjun.vxmq.service.msg.IgniteMsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.retain.IgniteRetainService;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;

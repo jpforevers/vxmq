@@ -20,7 +20,7 @@ import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.MqttDisconnectedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttDisconnectedEvent;
 import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.service.will.WillService;

@@ -14,25 +14,29 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
 
+import cloud.wangyongjun.vxmq.event.EventType;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 
-public class MqttEndpointClosedEvent implements MqttEvent{
+public class MqttDisconnectedEvent implements MqttEvent {
 
   private long time;
   private String nodeId;
   private String clientId;
   private String sessionId;
+  private MqttDisconnectReasonCode code;
 
-  public MqttEndpointClosedEvent() {
+  public MqttDisconnectedEvent() {
   }
 
-  public MqttEndpointClosedEvent(long time, String nodeId, String clientId, String sessionId) {
+  public MqttDisconnectedEvent(long time, String nodeId, String clientId, String sessionId, MqttDisconnectReasonCode code) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
     this.sessionId = sessionId;
+    this.code = code;
   }
 
   @Override
@@ -42,7 +46,7 @@ public class MqttEndpointClosedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.EVENT_MQTT_ENDPOINT_CLOSED;
+    return EventType.EVENT_MQTT_DISCONNECTED;
   }
 
   @Override
@@ -54,21 +58,16 @@ public class MqttEndpointClosedEvent implements MqttEvent{
     jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
     jsonObject.put("sessionId", sessionId);
+    jsonObject.put("code", code);
     return jsonObject;
   }
 
   @Override
-  public MqttEndpointClosedEvent fromJson(JsonObject jsonObject) {
+  public MqttDisconnectedEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
-    this.clientId = jsonObject.getString("clientId");
     this.nodeId = jsonObject.getString("nodeId");
-    this.sessionId = jsonObject.getString("sessionId");
+    this.clientId = jsonObject.getString("clientId");
     return this;
-  }
-
-  @Override
-  public String getNodeId() {
-    return nodeId;
   }
 
   @Override
@@ -79,4 +78,14 @@ public class MqttEndpointClosedEvent implements MqttEvent{
   public String getSessionId() {
     return sessionId;
   }
+
+  public MqttDisconnectReasonCode getCode() {
+    return code;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
+  }
+
 }

@@ -18,6 +18,10 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
 import cloud.wangyongjun.vxmq.event.*;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectFailedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttSessionTakenOverEvent;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttAuthFailedException;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;

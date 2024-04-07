@@ -14,23 +14,30 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
 
+import cloud.wangyongjun.vxmq.event.EventType;
 import io.vertx.core.json.JsonObject;
 
-public class MqttPingEvent implements MqttEvent {
+public class MqttConnectedEvent implements MqttEvent {
 
   private long time;
   private String nodeId;
   private String clientId;
+  private int protocolVersion;
+  private String username;
+  private String password;
 
-  public MqttPingEvent() {
+  public MqttConnectedEvent() {
   }
 
-  public MqttPingEvent(long time, String nodeId, String clientId) {
+  public MqttConnectedEvent(long time, String nodeId, String clientId, int protocolVersion, String username, String password) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
+    this.protocolVersion = protocolVersion;
+    this.username = username;
+    this.password = password;
   }
 
   @Override
@@ -40,12 +47,7 @@ public class MqttPingEvent implements MqttEvent {
 
   @Override
   public EventType getEventType() {
-    return EventType.EVENT_MQTT_PING;
-  }
-
-  @Override
-  public String getNodeId() {
-    return nodeId;
+    return EventType.EVENT_MQTT_CONNECTED;
   }
 
   @Override
@@ -56,20 +58,43 @@ public class MqttPingEvent implements MqttEvent {
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
+    jsonObject.put("protocolVersion", protocolVersion);
+    jsonObject.put("username", username);
+    jsonObject.put("password", password);
     return jsonObject;
   }
 
   @Override
-  public MqttPingEvent fromJson(JsonObject jsonObject) {
+  public MqttConnectedEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
+    this.protocolVersion = jsonObject.getInteger("protocolVersion");
+    this.username = jsonObject.getString("username");
+    this.password = jsonObject.getString("password");
     return this;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
   }
 
   @Override
   public String getClientId() {
     return clientId;
+  }
+
+  public int getProtocolVersion() {
+    return protocolVersion;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getPassword() {
+    return password;
   }
 
 }
