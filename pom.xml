@@ -277,19 +277,30 @@
             <appRoot>/vxmq/app</appRoot>
             <!-- From https://ignite.apache.org/docs/latest/quick-start/java#running-ignite-with-java-11-or-later -->
             <jvmFlags>
-              <jvmFlag>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/jdk.internal.access=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/sun.util.calendar=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.io=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.net=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.math=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.sql/java.sql=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.time=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.text=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.management/sun.management=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.desktop/java.awt.font=ALL-UNNAMED</jvmFlag>
             </jvmFlags>
             <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
             <ports>
