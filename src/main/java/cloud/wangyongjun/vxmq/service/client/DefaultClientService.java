@@ -20,10 +20,14 @@ import cloud.wangyongjun.vxmq.assist.EBHeader;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.impl.Deployment;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.shareddata.Lock;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
@@ -99,6 +103,19 @@ public class DefaultClientService implements ClientService {
   public Uni<Void> sendPublish(String clientVerticleId, MsgToClient msgToClient) {
     DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader(EBHeader.ACTION.name(), ClientVerticleAction.SEND_PUBLISH.name());
     return vertx.eventBus().sender(clientVerticleId, deliveryOptions).write(msgToClient.toJson());
+  }
+
+  @Override
+  public List<String> verticleIds() {
+    List<String> verticleIds = new ArrayList<>();
+    for (String id : vertx.deploymentIDs()) {
+      VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
+      Deployment deployment = vertxInternal.getDeployment(id);
+      if (deployment.verticleIdentifier().contains(ClientVerticle.class.getSimpleName())) {
+        verticleIds.add(id);
+      }
+    }
+    return verticleIds;
   }
 
 }
