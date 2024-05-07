@@ -230,40 +230,10 @@ public class DefaultCompositeService implements CompositeService {
             return clientService.closeMqttEndpoint(session.getVerticleId());
           } else {
             return Uni.createFrom().voidItem()
-              .onItem().transformToUni(vv -> obtainClientLock(clientId))
+              .onItem().transformToUni(vv -> clientService.obtainClientLock(clientId, 5000))
               .onItem().transformToUni(vv -> this.clearSessionData(clientId))
-              .onItemOrFailure().call((vv, t) -> releaseClientLock(clientId));
+              .eventually(() -> clientService.releaseClientLock(clientId));
           }
-        }
-      });
-  }
-
-  /**
-   * Get client lock
-   *
-   * @param clientId clientId
-   * @return Void
-   */
-  private Uni<Void> obtainClientLock(String clientId) {
-    return clientService.obtainClientLock(clientId, 5000)
-      .onItem().invoke(lock -> {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Client lock obtained for {}", clientId);
-        }
-      });
-  }
-
-  /**
-   * Release client lock
-   *
-   * @param clientId clientId
-   * @return Void
-   */
-  private Uni<Void> releaseClientLock(String clientId) {
-    return clientService.releaseClientLock(clientId)
-      .onItem().invoke(v -> {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Client lock released for {}", clientId);
         }
       });
   }
