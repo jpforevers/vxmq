@@ -73,13 +73,18 @@ public class MqttCloseHandler implements Runnable {
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> clientService.obtainClientLock(mqttEndpoint.clientIdentifier(), 2000))
       .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
-      .onItem().transformToUni(session -> Uni.createFrom().voidItem()
-        .onItem().transformToUni(v -> handleWill(session))
-        .onItem().transformToUni(v -> undeployClientVerticle(session))
-        .onItem().transformToUni(v -> handleSession(session))
-        // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
-        .onItem().call(v -> publishEvent(mqttEndpoint, session))
-      )
+      .onItem().transformToUni(session -> {
+        if (session != null) {
+          return Uni.createFrom().voidItem()
+            .onItem().transformToUni(v -> handleWill(session))
+            .onItem().transformToUni(v -> undeployClientVerticle(session))
+            .onItem().transformToUni(v -> handleSession(session))
+            // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
+            .onItem().call(v -> publishEvent(mqttEndpoint, session));
+        } else {
+          return Uni.createFrom().voidItem();
+        }
+      })
       .eventually(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
   }

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +112,8 @@ public class DefaultClientService implements ClientService {
     for (String id : vertx.deploymentIDs()) {
       VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
       Deployment deployment = vertxInternal.getDeployment(id);
-      if (deployment.verticleIdentifier().contains(ClientVerticle.class.getSimpleName())) {
+      String verticleIdentifier = deployment.verticleIdentifier();  // like "java:cloud.wangyongjun.vxmq.service.client.ClientVerticle"
+      if (StringUtils.substringAfter(verticleIdentifier, ":").equals(ClientVerticle.class.getName())) {
         verticleIds.add(id);
       }
     }
