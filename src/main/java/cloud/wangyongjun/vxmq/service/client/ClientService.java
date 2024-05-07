@@ -32,9 +32,8 @@ public interface ClientService {
   /**
    * Release client lock
    * @param clientId clientId
-   * @return Void
    */
-  Uni<Void> releaseClientLock(String clientId);
+  void releaseClientLock(String clientId);
 
   /**
    * Close {@link io.vertx.mqtt.MqttEndpoint}.

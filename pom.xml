@@ -25,7 +25,7 @@
     <commons-lang3.version>3.14.0</commons-lang3.version>
     <commons-collections4.version>4.4</commons-collections4.version>
     <commons-codec.version>1.16.0</commons-codec.version>
-    <java-uuid-generator.version>4.1.0</java-uuid-generator.version>
+    <java-uuid-generator.version>5.0.0</java-uuid-generator.version>
     <asciitable.version>0.3.2</asciitable.version>
     <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
 

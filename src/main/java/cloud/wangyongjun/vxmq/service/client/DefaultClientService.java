@@ -26,8 +26,12 @@ import io.vertx.mutiny.core.shareddata.Lock;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultClientService implements ClientService {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(DefaultClientService.class);
 
   private static volatile DefaultClientService defaultClientService;
 
@@ -53,17 +57,24 @@ public class DefaultClientService implements ClientService {
   public Uni<Void> obtainClientLock(String clientId, long timeout) {
     return vertx.sharedData().getLockWithTimeout(clientId, timeout)
       .onItem().invoke(lock -> clientLockMap.put(clientId, lock))
+      .onItem().invoke(lock -> {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Client lock obtained for {}", clientId);
+        }
+      })
       .replaceWithVoid();
   }
 
   @Override
-  public Uni<Void> releaseClientLock(String clientId) {
+  public void releaseClientLock(String clientId) {
     Lock lock = clientLockMap.get(clientId);
     if (lock != null) {
       lock.release();
       clientLockMap.remove(clientId);
     }
-    return Uni.createFrom().voidItem();
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Client lock released for {}", clientId);
+    }
   }
 
   @Override
