@@ -65,14 +65,6 @@ public class MainVerticle extends AbstractVerticle {
   private Uni<Void> deployVerticle() {
 
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", HttpServerVerticle.class.getSimpleName()))
-
-      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", MqttServerVerticle.class.getSimpleName()))
-
-      .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle::new, new DeploymentOptions().setConfig(config())))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", ShellServerVerticle.class.getSimpleName()))
 
       .onItem().transformToUni(s -> vertx.deployVerticle(RuleVerticle::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", RuleVerticle.class.getSimpleName()))
@@ -85,6 +77,15 @@ public class MainVerticle extends AbstractVerticle {
 
       .onItem().transformToUni(s -> vertx.deployVerticle(DirtyClientVerticleCleaner::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", DirtyClientVerticleCleaner.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle::new, new DeploymentOptions().setConfig(config())))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", ShellServerVerticle.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", HttpServerVerticle.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", MqttServerVerticle.class.getSimpleName()))
 
       .replaceWithVoid();
   }
