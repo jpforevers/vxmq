@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.http.api;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.http.api.session.GetAllSessionsHandler;
 import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.http.api.session.DeleteSessionByClientIdHandler;
 import cloud.wangyongjun.vxmq.http.api.test.TestHandler;
@@ -34,6 +35,9 @@ public class ApiRouterFactory {
 
     apiRouter.delete(ApiConstants.API_PREFIX_SESSION + "/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
       .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.compositeService(vertx, config)));
+
+    apiRouter.get(ApiConstants.API_PREFIX_SESSION)
+      .handler(new GetAllSessionsHandler(vertx, ServiceFactory.sessionService(vertx, config)));
 
     return apiRouter;
   }
