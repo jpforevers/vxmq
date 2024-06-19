@@ -38,7 +38,7 @@ public abstract class AbstractHandler implements Consumer<RoutingContext> {
   @Override
   public void accept(RoutingContext routingContext) {
     if (logger.isDebugEnabled()){
-      logger.debug("Request from {} to {}", routingContext.request().remoteAddress(), routingContext.request().uri());
+      logger.debug("{} request from {} to {}", routingContext.request().method(), routingContext.request().remoteAddress(), routingContext.request().uri());
     }
     handleRequest(routingContext).subscribe().with(ConsumerUtil.nothingToDo(), routingContext::fail);
   }
