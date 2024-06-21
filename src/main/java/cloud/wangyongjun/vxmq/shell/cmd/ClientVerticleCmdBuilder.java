@@ -21,9 +21,7 @@ import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
-import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
 import io.vertx.core.cli.Option;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.cli.CLI;
 import io.vertx.mutiny.core.cli.CommandLine;
@@ -54,8 +52,7 @@ public class ClientVerticleCmdBuilder {
       if (commandLine.isFlagEnabled(helpOption.getName())) {
         process.write(usageBuilder.toString()).end();
       } else if (commandLine.isFlagEnabled(countOption.getName())) {
-        VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
-        long count = vertx.deploymentIDs().stream().filter(id -> vertxInternal.getDeployment(id).verticleIdentifier().contains(ClientVerticle.class.getSimpleName())).count();
+        long count = clientService.verticleIds().size();
         process.write(count + "\n").end();
       } else if (commandLine.isFlagEnabled(listOption.getName())) {
         List<String> verticleIds = clientService.verticleIds();
