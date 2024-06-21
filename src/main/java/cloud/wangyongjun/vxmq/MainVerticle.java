@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.assist.Config;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
 import cloud.wangyongjun.vxmq.mqtt.DirtyClientVerticleCleaner;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
@@ -96,7 +97,7 @@ public class MainVerticle extends AbstractVerticle {
    * @return void
    */
   private Uni<Void> printServers() {
-    VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
+    VertxInternal vertxInternal = VertxUtil.getVertxInternal(vertx);
     LOGGER.info("Net Servers:");
     for (Map.Entry<ServerID, NetServerImpl> server : vertxInternal.sharedNetServers().entrySet()) {
       LOGGER.info(server.getKey().host + ":" + server.getKey().port);

@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.service.client;
 
 import cloud.wangyongjun.vxmq.assist.EBHeader;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -110,7 +111,7 @@ public class DefaultClientService implements ClientService {
   public List<String> verticleIds() {
     List<String> verticleIds = new ArrayList<>();
     for (String id : vertx.deploymentIDs()) {
-      VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
+      VertxInternal vertxInternal = VertxUtil.getVertxInternal(vertx);
       Deployment deployment = vertxInternal.getDeployment(id);
       String verticleIdentifier = deployment.verticleIdentifier();  // like "java:cloud.wangyongjun.vxmq.service.client.ClientVerticle"
       if (StringUtils.substringAfter(verticleIdentifier, ":").equals(ClientVerticle.class.getName())) {
