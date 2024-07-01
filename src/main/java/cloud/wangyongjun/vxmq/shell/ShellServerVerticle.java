@@ -17,7 +17,8 @@
 package cloud.wangyongjun.vxmq.shell;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.assist.ServiceFactory;
+import cloud.wangyongjun.vxmq.service.ServiceFactory;
+import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
@@ -44,6 +45,7 @@ public class ShellServerVerticle extends AbstractVerticle {
     SubService subService = ServiceFactory.subService(vertx);
     MsgService msgService = ServiceFactory.msgService(vertx, config());
     CompositeService compositeService = ServiceFactory.compositeService(vertx, config());
+    ClientService clientService = ServiceFactory.clientService(vertx);
 
     CommandRegistry commandRegistry = CommandRegistry.getShared(vertx);
     String banner = vertx.fileSystem().readFileBlocking("banner.txt").toString(StandardCharsets.UTF_8);
@@ -68,7 +70,7 @@ public class ShellServerVerticle extends AbstractVerticle {
       .onItem().transformToUni(v -> commandRegistry.registerCommand(SessionCmdBuilder.build(vertx, sessionService, compositeService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(WillCmdBuilder.build(vertx, willService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(SubsCmdBuilder.build(vertx, subService)))
-      .onItem().transformToUni(v -> commandRegistry.registerCommand(ClientVerticleCmdBuilder.build(vertx)))
+      .onItem().transformToUni(v -> commandRegistry.registerCommand(ClientVerticleCmdBuilder.build(vertx, clientService, sessionService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(InboundQos2PubCmdBuilder.build(vertx, msgService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos1PubCmdBuilder.build(vertx, msgService)))
       .onItem().transformToUni(v -> commandRegistry.registerCommand(OutboundQos2PubCmdBuilder.build(vertx, msgService)))

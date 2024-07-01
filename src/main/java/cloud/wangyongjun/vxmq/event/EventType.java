@@ -17,6 +17,17 @@
 package cloud.wangyongjun.vxmq.event;
 
 import cloud.wangyongjun.vxmq.assist.EBAddress;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectFailedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttDisconnectedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttPingEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttProtocolErrorEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttPublishInboundAcceptedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttPublishOutboundAckedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttSessionTakenOverEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttSubscribedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttUnsubscribedEvent;
 import io.vertx.core.json.JsonObject;
 
 public enum EventType {

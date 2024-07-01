@@ -26,9 +26,11 @@ import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
 import ch.qos.logback.core.util.FileSize;
 import cloud.wangyongjun.vxmq.assist.Config;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.vertx.UniHelper;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.cluster.ClusterManager;
@@ -185,8 +187,9 @@ public class VxmqLauncher {
     ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
 
     VertxOptions vertxOptions = new VertxOptions();
-    vertxOptions.setClusterManager(clusterManager);
-    return Vertx.clusteredVertx(vertxOptions);
+    Future<io.vertx.core.Vertx> vertxFuture = io.vertx.core.Vertx.builder().with(vertxOptions).withClusterManager(clusterManager).buildClustered();
+    return UniHelper.toUni(vertxFuture)
+      .onItem().transform(Vertx::newInstance);
   }
 
 }

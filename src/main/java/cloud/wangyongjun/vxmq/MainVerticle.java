@@ -17,9 +17,10 @@
 package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.assist.Config;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.http.HttpServerVerticle;
+import cloud.wangyongjun.vxmq.mqtt.DirtyClientVerticleCleaner;
 import cloud.wangyongjun.vxmq.mqtt.MqttServerVerticle;
-import cloud.wangyongjun.vxmq.mqtt.SessionCheckerVerticle;
 import cloud.wangyongjun.vxmq.service.authentication.AuthenticationVerticle;
 import cloud.wangyongjun.vxmq.service.sub.SubVerticle;
 import cloud.wangyongjun.vxmq.rule.RuleVerticle;
@@ -65,17 +66,6 @@ public class MainVerticle extends AbstractVerticle {
   private Uni<Void> deployVerticle() {
 
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", HttpServerVerticle.class.getSimpleName()))
-
-      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", MqttServerVerticle.class.getSimpleName()))
-
-      .onItem().transformToUni(s -> vertx.deployVerticle(SessionCheckerVerticle::new, new DeploymentOptions().setConfig(config()).setWorker(true)))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", SessionCheckerVerticle.class.getSimpleName()))
-
-      .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle::new, new DeploymentOptions().setConfig(config())))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", ShellServerVerticle.class.getSimpleName()))
 
       .onItem().transformToUni(s -> vertx.deployVerticle(RuleVerticle::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", RuleVerticle.class.getSimpleName()))
@@ -86,6 +76,18 @@ public class MainVerticle extends AbstractVerticle {
       .onItem().transformToUni(s -> vertx.deployVerticle(AuthenticationVerticle::new, new DeploymentOptions().setConfig(config())))
       .onItem().invoke(s -> LOGGER.info("{} deployed", AuthenticationVerticle.class.getSimpleName()))
 
+      .onItem().transformToUni(s -> vertx.deployVerticle(DirtyClientVerticleCleaner::new, new DeploymentOptions().setConfig(config())))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", DirtyClientVerticleCleaner.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle::new, new DeploymentOptions().setConfig(config())))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", ShellServerVerticle.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", HttpServerVerticle.class.getSimpleName()))
+
+      .onItem().transformToUni(s -> vertx.deployVerticle(MqttServerVerticle::new, new DeploymentOptions().setConfig(config()).setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
+      .onItem().invoke(s -> LOGGER.info("{} deployed", MqttServerVerticle.class.getSimpleName()))
+
       .replaceWithVoid();
   }
 
@@ -95,7 +97,7 @@ public class MainVerticle extends AbstractVerticle {
    * @return void
    */
   private Uni<Void> printServers() {
-    VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
+    VertxInternal vertxInternal = VertxUtil.getVertxInternal(vertx);
     LOGGER.info("Net Servers:");
     for (Map.Entry<ServerID, NetServerImpl> server : vertxInternal.sharedNetServers().entrySet()) {
       LOGGER.info(server.getKey().host + ":" + server.getKey().port);

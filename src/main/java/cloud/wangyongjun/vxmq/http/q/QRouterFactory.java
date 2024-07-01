@@ -40,7 +40,6 @@ public class QRouterFactory {
   private static void pingHandler(RoutingContext routingContext) {
     JsonObject result = new JsonObject();
 
-    result.put("host", routingContext.request().host());
     result.put("path", routingContext.request().path());
     result.put("method", routingContext.request().method().name());
     result.put("headers", multiMapToJsonArray(routingContext.request().headers()));

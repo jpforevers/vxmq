@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.service.client;
 
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import io.smallrye.mutiny.Uni;
+import java.util.List;
 
 public interface ClientService {
 
@@ -32,9 +33,8 @@ public interface ClientService {
   /**
    * Release client lock
    * @param clientId clientId
-   * @return Void
    */
-  Uni<Void> releaseClientLock(String clientId);
+  void releaseClientLock(String clientId);
 
   /**
    * Close {@link io.vertx.mqtt.MqttEndpoint}.
@@ -69,5 +69,7 @@ public interface ClientService {
    * @return Void
    */
   Uni<Void> sendPublish(String clientVerticleId, MsgToClient msgToClient);
+
+  List<String> verticleIds();
 
 }

@@ -14,29 +14,24 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
 
+import cloud.wangyongjun.vxmq.event.EventType;
 import io.vertx.core.json.JsonObject;
 
-public class MqttSubscribedEvent implements MqttEvent{
+public class MqttPingEvent implements MqttEvent {
 
   private long time;
   private String nodeId;
   private String clientId;
-  private String sessionId;
-  private String topic;
-  private int qos;
 
-  public MqttSubscribedEvent() {
+  public MqttPingEvent() {
   }
 
-  public MqttSubscribedEvent(long time, String nodeId, String clientId, String sessionId, String topic, int qos) {
+  public MqttPingEvent(long time, String nodeId, String clientId) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
-    this.sessionId = sessionId;
-    this.topic = topic;
-    this.qos = qos;
   }
 
   @Override
@@ -46,7 +41,12 @@ public class MqttSubscribedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.EVENT_MQTT_SUBSCRIBED;
+    return EventType.EVENT_MQTT_PING;
+  }
+
+  @Override
+  public String getNodeId() {
+    return nodeId;
   }
 
   @Override
@@ -57,43 +57,20 @@ public class MqttSubscribedEvent implements MqttEvent{
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
-    jsonObject.put("sessionId", sessionId);
-    jsonObject.put("topic", topic);
-    jsonObject.put("qos", qos);
     return jsonObject;
   }
 
   @Override
-  public MqttSubscribedEvent fromJson(JsonObject jsonObject) {
+  public MqttPingEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
-    this.sessionId = jsonObject.getString("sessionId");
-    this.topic = jsonObject.getString("topic");
-    this.qos = jsonObject.getInteger("qos");
     return this;
-  }
-
-  @Override
-  public String getNodeId() {
-    return nodeId;
   }
 
   @Override
   public String getClientId() {
     return clientId;
-  }
-
-  public String getTopic() {
-    return topic;
-  }
-
-  public int getQos() {
-    return qos;
-  }
-
-  public String getSessionId() {
-    return sessionId;
   }
 
 }

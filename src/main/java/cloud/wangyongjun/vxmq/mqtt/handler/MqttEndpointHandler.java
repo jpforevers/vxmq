@@ -18,6 +18,10 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 
 import cloud.wangyongjun.vxmq.assist.*;
 import cloud.wangyongjun.vxmq.event.*;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectFailedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttSessionTakenOverEvent;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttAuthFailedException;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
@@ -123,7 +127,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
     Context context = Context.empty();
     Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> obtainClientLock(mqttEndpoint.clientIdentifier()))
+      .onItem().transformToUni(v -> clientService.obtainClientLock(mqttEndpoint.clientIdentifier(), 2000))
       .onItem().transformToUni(v -> authenticate(mqttEndpoint))
       .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint, context))
       .onItem().transformToUni(v -> registerHandler(mqttEndpoint))
@@ -134,7 +138,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
       .onItem().call(v -> publishMqttConnectedEvent(mqttEndpoint))
-      .onItemOrFailure().call((v, t) -> releaseClientLock(mqttEndpoint.clientIdentifier()))
+      .eventually(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(context, v -> {
         boolean sessionPresent = getSessionPresentFromContext(context);
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -165,40 +169,6 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         }
       });
 
-  }
-
-  /**
-   * Get client lock
-   *
-   * @param clientId clientId
-   * @return Void
-   */
-  public Uni<Void> obtainClientLock(String clientId) {
-    return clientService.obtainClientLock(clientId, 2000)
-      .onItem().invoke(lock -> {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Client lock obtained for {}", clientId);
-        }
-      });
-  }
-
-  /**
-   * Release client lock
-   *
-   * @param clientId clientId
-   * @return Void
-   */
-  public Uni<Void> releaseClientLock(String clientId) {
-    vertx.setTimer(500, l -> clientService
-      .releaseClientLock(clientId)
-      .onItem().invoke(v -> {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Client lock released for {}", clientId);
-        }
-      })
-      .subscribe().with(v -> {
-      }, t -> LOGGER.error("Error occurred when release client lock for " + clientId, t)));
-    return Uni.createFrom().voidItem();
   }
 
   /**
@@ -264,7 +234,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
             long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
             AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
             return Uni.createFrom().voidItem()
-              .onItem().transformToUni(v -> releaseClientLock(mqttEndpoint.clientIdentifier()))
+              .onItem().invoke(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
               .onItem().transformToUni(v -> eventService
                 .consumeEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED, data -> {
                   if (LOGGER.isDebugEnabled()) {

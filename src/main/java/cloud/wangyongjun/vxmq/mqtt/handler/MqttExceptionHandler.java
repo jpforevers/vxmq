@@ -19,7 +19,7 @@ package cloud.wangyongjun.vxmq.mqtt.handler;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.MqttProtocolErrorEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttProtocolErrorEvent;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;

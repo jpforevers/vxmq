@@ -32,6 +32,14 @@ public class RuleVerticle extends AbstractVerticle {
 
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> {
+        if (Config.getRuleStaticWriteMqttEventToMqttEnable(config())) {
+          return vertx.deployVerticle(WriteMqttEventToMqttStaticRule.class.getName(), new DeploymentOptions().setConfig(config()))
+            .replaceWithVoid();
+        } else {
+          return Uni.createFrom().voidItem();
+        }
+      })
+      .onItem().transformToUni(v -> {
         if (Config.getRuleStaticWriteMqttEventToKafkaEnable(config())) {
           return vertx.deployVerticle(WriteMqttEventToKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config()))
             .replaceWithVoid();

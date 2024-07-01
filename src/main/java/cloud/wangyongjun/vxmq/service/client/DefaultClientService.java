@@ -17,17 +17,27 @@
 package cloud.wangyongjun.vxmq.service.client;
 
 import cloud.wangyongjun.vxmq.assist.EBHeader;
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.impl.Deployment;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.shareddata.Lock;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultClientService implements ClientService {
+
+  private final static Logger LOGGER = LoggerFactory.getLogger(DefaultClientService.class);
 
   private static volatile DefaultClientService defaultClientService;
 
@@ -53,17 +63,24 @@ public class DefaultClientService implements ClientService {
   public Uni<Void> obtainClientLock(String clientId, long timeout) {
     return vertx.sharedData().getLockWithTimeout(clientId, timeout)
       .onItem().invoke(lock -> clientLockMap.put(clientId, lock))
+      .onItem().invoke(lock -> {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Client lock obtained for {}", clientId);
+        }
+      })
       .replaceWithVoid();
   }
 
   @Override
-  public Uni<Void> releaseClientLock(String clientId) {
+  public void releaseClientLock(String clientId) {
     Lock lock = clientLockMap.get(clientId);
     if (lock != null) {
       lock.release();
       clientLockMap.remove(clientId);
     }
-    return Uni.createFrom().voidItem();
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Client lock released for {}", clientId);
+    }
   }
 
   @Override
@@ -88,6 +105,20 @@ public class DefaultClientService implements ClientService {
   public Uni<Void> sendPublish(String clientVerticleId, MsgToClient msgToClient) {
     DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader(EBHeader.ACTION.name(), ClientVerticleAction.SEND_PUBLISH.name());
     return vertx.eventBus().sender(clientVerticleId, deliveryOptions).write(msgToClient.toJson());
+  }
+
+  @Override
+  public List<String> verticleIds() {
+    List<String> verticleIds = new ArrayList<>();
+    for (String id : vertx.deploymentIDs()) {
+      VertxInternal vertxInternal = VertxUtil.getVertxInternal(vertx);
+      Deployment deployment = vertxInternal.getDeployment(id);
+      String verticleIdentifier = deployment.verticleIdentifier();  // like "java:cloud.wangyongjun.vxmq.service.client.ClientVerticle"
+      if (StringUtils.substringAfter(verticleIdentifier, ":").equals(ClientVerticle.class.getName())) {
+        verticleIds.add(id);
+      }
+    }
+    return verticleIds;
   }
 
 }

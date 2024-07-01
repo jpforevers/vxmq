@@ -6,7 +6,7 @@
 
   <groupId>cloud.wangyongjun</groupId>
   <artifactId>vxmq</artifactId>
-  <version>1.5.0</version>
+  <version>1.6.999-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,20 +16,20 @@
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-    <vertx.version>4.4.4</vertx.version>
+    <vertx.version>4.5.8</vertx.version>
     <junit-jupiter.version>5.9.1</junit-jupiter.version>
 
-    <slf4j.version>2.0.7</slf4j.version>
-    <logback.version>1.4.8</logback.version>
-    <smallrye-mutiny-vertx.version>3.5.0</smallrye-mutiny-vertx.version>
-    <commons-lang3.version>3.12.0</commons-lang3.version>
+    <slf4j.version>2.0.13</slf4j.version>
+    <logback.version>1.5.6</logback.version>
+    <smallrye-mutiny-vertx.version>3.13.1</smallrye-mutiny-vertx.version>
+    <commons-lang3.version>3.14.0</commons-lang3.version>
     <commons-collections4.version>4.4</commons-collections4.version>
-    <commons-codec.version>1.15</commons-codec.version>
-    <java-uuid-generator.version>4.1.0</java-uuid-generator.version>
+    <commons-codec.version>1.16.0</commons-codec.version>
+    <java-uuid-generator.version>5.0.0</java-uuid-generator.version>
     <asciitable.version>0.3.2</asciitable.version>
-    <jib-maven-plugin.version>3.3.2</jib-maven-plugin.version>
+    <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
 
-    <ignite.version>2.15.0</ignite.version>
+    <ignite.version>2.16.0</ignite.version>
 
     <launcher.class>cloud.wangyongjun.vxmq.VxmqLauncher</launcher.class>
   </properties>
@@ -277,19 +277,30 @@
             <appRoot>/vxmq/app</appRoot>
             <!-- From https://ignite.apache.org/docs/latest/quick-start/java#running-ignite-with-java-11-or-later -->
             <jvmFlags>
-              <jvmFlag>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/jdk.internal.access=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/sun.util.calendar=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.io=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.net=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmFlag>
               <jvmFlag>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.math=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.sql/java.sql=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.time=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.text=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.management/sun.management=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.desktop/java.awt.font=ALL-UNNAMED</jvmFlag>
             </jvmFlags>
             <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
             <ports>

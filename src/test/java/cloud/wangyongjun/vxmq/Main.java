@@ -19,6 +19,8 @@ package cloud.wangyongjun.vxmq;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import io.smallrye.mutiny.Context;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.mqtt.MqttClientOptions;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttClient;
@@ -27,28 +29,22 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 
-public class Main {
+public class Main extends AbstractVerticle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
+  @Override
+  public Uni<Void> asyncStart() {
+    return Uni.createFrom().failure(new RuntimeException("dasdas"));
+  }
+
   public static void main(String[] args) {
     Vertx vertx = Vertx.vertx();
-    MqttClientOptions mqttClientOptions = new MqttClientOptions();
-    mqttClientOptions.setAutoAck(false);
-    mqttClientOptions.setClientId("d1");
-    mqttClientOptions.setCleanSession(false);
-
-    MqttClient mqttClient1 = MqttClient.create(vertx, mqttClientOptions);
-    mqttClient1.publishHandler(mqttPublishMessage -> {
-      System.out.println("Publish: " + mqttPublishMessage.topicName() + " " + mqttPublishMessage.qosLevel() + " " + mqttPublishMessage.payload().toString());
-//      mqttPublishMessage.ack();
-    });
-    mqttClient1.connect(1883, "localhost")
-      .onItem().invoke(mqttConnAckMessage -> System.out.println("client1: " + mqttConnAckMessage.code()))
-      .replaceWithVoid()
-      .onItem().transformToUni(v -> mqttClient1.subscribe("t", 1))
-      .onItem().invoke(i -> System.out.println("Subscribe result: " + i))
-      .subscribe().with(v -> {}, Throwable::printStackTrace);
+    vertx.deployVerticle(new Main())
+      .subscribe().with(v -> {}, t -> {
+        Uni.createFrom().voidItem().invoke(() -> System.out.println(123)).subscribe().with(x -> {}, Throwable::printStackTrace);
+        t.printStackTrace();
+      });
   }
 
 }

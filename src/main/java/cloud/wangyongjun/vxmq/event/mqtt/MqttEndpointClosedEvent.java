@@ -14,29 +14,26 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
 
+import cloud.wangyongjun.vxmq.event.EventType;
 import io.vertx.core.json.JsonObject;
 
-public class MqttConnectedEvent implements MqttEvent {
+public class MqttEndpointClosedEvent implements MqttEvent{
 
   private long time;
   private String nodeId;
   private String clientId;
-  private int protocolVersion;
-  private String username;
-  private String password;
+  private String sessionId;
 
-  public MqttConnectedEvent() {
+  public MqttEndpointClosedEvent() {
   }
 
-  public MqttConnectedEvent(long time, String nodeId, String clientId, int protocolVersion, String username, String password) {
+  public MqttEndpointClosedEvent(long time, String nodeId, String clientId, String sessionId) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
-    this.protocolVersion = protocolVersion;
-    this.username = username;
-    this.password = password;
+    this.sessionId = sessionId;
   }
 
   @Override
@@ -46,7 +43,7 @@ public class MqttConnectedEvent implements MqttEvent {
 
   @Override
   public EventType getEventType() {
-    return EventType.EVENT_MQTT_CONNECTED;
+    return EventType.EVENT_MQTT_ENDPOINT_CLOSED;
   }
 
   @Override
@@ -57,20 +54,16 @@ public class MqttConnectedEvent implements MqttEvent {
     jsonObject.put("nodeId", nodeId);
     jsonObject.put("local", isLocal());
     jsonObject.put("clientId", clientId);
-    jsonObject.put("protocolVersion", protocolVersion);
-    jsonObject.put("username", username);
-    jsonObject.put("password", password);
+    jsonObject.put("sessionId", sessionId);
     return jsonObject;
   }
 
   @Override
-  public MqttConnectedEvent fromJson(JsonObject jsonObject) {
+  public MqttEndpointClosedEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
-    this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
-    this.protocolVersion = jsonObject.getInteger("protocolVersion");
-    this.username = jsonObject.getString("username");
-    this.password = jsonObject.getString("password");
+    this.nodeId = jsonObject.getString("nodeId");
+    this.sessionId = jsonObject.getString("sessionId");
     return this;
   }
 
@@ -84,16 +77,7 @@ public class MqttConnectedEvent implements MqttEvent {
     return clientId;
   }
 
-  public int getProtocolVersion() {
-    return protocolVersion;
+  public String getSessionId() {
+    return sessionId;
   }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
 }

@@ -16,20 +16,25 @@
 
 package cloud.wangyongjun.vxmq.shell.cmd;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.service.client.ClientService;
+import cloud.wangyongjun.vxmq.service.session.Session;
+import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
-import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
 import io.vertx.core.cli.Option;
-import io.vertx.core.impl.Deployment;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.cli.CLI;
 import io.vertx.mutiny.core.cli.CommandLine;
 import io.vertx.mutiny.ext.shell.command.Command;
 import io.vertx.mutiny.ext.shell.command.CommandBuilder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class ClientVerticleCmdBuilder {
 
-  public static Command build(Vertx vertx) {
+  public static Command build(Vertx vertx, ClientService clientService, SessionService sessionService) {
     Option helpOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_HELP_SHORT_NAME).setLongName(ShellCmdConstants.COMMAND_OPTION_HELP_LONG_NAME).setFlag(true)
       .setDescription("Help information");
     Option listOption = new Option().setShortName(ShellCmdConstants.COMMAND_OPTION_LIST_SHORT_NAME).setLongName(ShellCmdConstants.COMMAND_OPTION_LIST_LONG_NAME).setFlag(true)
@@ -47,18 +52,26 @@ public class ClientVerticleCmdBuilder {
       if (commandLine.isFlagEnabled(helpOption.getName())) {
         process.write(usageBuilder.toString()).end();
       } else if (commandLine.isFlagEnabled(countOption.getName())) {
-        VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
-        long count = vertx.deploymentIDs().stream().filter(id -> vertxInternal.getDeployment(id).verticleIdentifier().contains(ClientVerticle.class.getSimpleName())).count();
+        long count = clientService.verticleIds().size();
         process.write(count + "\n").end();
       } else if (commandLine.isFlagEnabled(listOption.getName())) {
-        for (String id : vertx.deploymentIDs()) {
-          VertxInternal vertxInternal = (VertxInternal) vertx.getDelegate();
-          Deployment deployment = vertxInternal.getDeployment(id);
-          if (deployment.verticleIdentifier().contains(ClientVerticle.class.getSimpleName())) {
-            process.write(id + ": " + ((ClientVerticle) deployment.getVerticles().stream().findFirst().get()).getClientId() + "\n");
-          }
-        }
-        process.end();
+        List<String> verticleIds = clientService.verticleIds();
+        sessionService.allSessions()
+          .onItem().invoke(sessions -> {
+            List<String> headers = List.of(ModelConstants.FIELD_NAME_VERTICLE_ID, ModelConstants.FIELD_NAME_CLIENT_ID);
+            List<List<String>> rows = new ArrayList<>();
+            for (String verticleId : verticleIds) {
+              Optional<Session> sessionOptional = sessions.stream().filter(session -> Objects.equals(verticleId, session.getVerticleId())).findAny();
+              String clientId = sessionOptional.map(Session::getClientId).orElse("");
+              List<String> row = new ArrayList<>();
+              row.add(verticleId);
+              row.add(clientId);
+              rows.add(row);
+            }
+            process.write(AsciiTableUtil.format(headers, rows)).write("\n").end();
+          })
+          .replaceWithVoid()
+          .subscribe().with(v -> {}, t -> process.write(t.getMessage()).end());
       } else {
         process.write("Command wrong!\n").end();
       }

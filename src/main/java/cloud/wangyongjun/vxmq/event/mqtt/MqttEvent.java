@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
+
+import cloud.wangyongjun.vxmq.event.Event;
 
 public interface MqttEvent extends Event {
 

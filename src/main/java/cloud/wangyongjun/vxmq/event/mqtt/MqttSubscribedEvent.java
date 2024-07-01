@@ -14,27 +14,30 @@
  * limitations under the License.
  */
 
-package cloud.wangyongjun.vxmq.event;
+package cloud.wangyongjun.vxmq.event.mqtt;
 
+import cloud.wangyongjun.vxmq.event.EventType;
 import io.vertx.core.json.JsonObject;
 
-public class MqttUnsubscribedEvent implements MqttEvent{
+public class MqttSubscribedEvent implements MqttEvent{
 
   private long time;
   private String nodeId;
   private String clientId;
   private String sessionId;
   private String topic;
+  private int qos;
 
-  public MqttUnsubscribedEvent() {
+  public MqttSubscribedEvent() {
   }
 
-  public MqttUnsubscribedEvent(long time, String nodeId, String clientId, String sessionId, String topic) {
+  public MqttSubscribedEvent(long time, String nodeId, String clientId, String sessionId, String topic, int qos) {
     this.time = time;
     this.nodeId = nodeId;
     this.clientId = clientId;
     this.sessionId = sessionId;
     this.topic = topic;
+    this.qos = qos;
   }
 
   @Override
@@ -44,7 +47,7 @@ public class MqttUnsubscribedEvent implements MqttEvent{
 
   @Override
   public EventType getEventType() {
-    return EventType.EVENT_MQTT_UNSUBSCRIBED;
+    return EventType.EVENT_MQTT_SUBSCRIBED;
   }
 
   @Override
@@ -57,16 +60,18 @@ public class MqttUnsubscribedEvent implements MqttEvent{
     jsonObject.put("clientId", clientId);
     jsonObject.put("sessionId", sessionId);
     jsonObject.put("topic", topic);
+    jsonObject.put("qos", qos);
     return jsonObject;
   }
 
   @Override
-  public MqttUnsubscribedEvent fromJson(JsonObject jsonObject) {
+  public MqttSubscribedEvent fromJson(JsonObject jsonObject) {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
     this.sessionId = jsonObject.getString("sessionId");
     this.topic = jsonObject.getString("topic");
+    this.qos = jsonObject.getInteger("qos");
     return this;
   }
 
@@ -84,7 +89,12 @@ public class MqttUnsubscribedEvent implements MqttEvent{
     return topic;
   }
 
+  public int getQos() {
+    return qos;
+  }
+
   public String getSessionId() {
     return sessionId;
   }
+
 }

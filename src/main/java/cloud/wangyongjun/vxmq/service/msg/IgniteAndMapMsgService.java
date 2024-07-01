@@ -192,7 +192,7 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<Void> clearMsgs(String sessionId) {
-    return vertx.executeBlocking(Uni.createFrom().emitter(uniEmitter -> {
+    return vertx.executeBlocking(() -> {
       for (InboundQos2PubKey inboundQos2PubKey : inboundQos2PubCache.keySet()) {
         if (inboundQos2PubKey.getSessionId().equals(sessionId)) {
           inboundQos2PubCache.remove(inboundQos2PubKey);
@@ -218,8 +218,8 @@ public class IgniteAndMapMsgService implements MsgService {
       }
 
       IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId, config).close();
-      uniEmitter.complete(null);
-    }), false);
+      return null;
+    }, false);
   }
 
 }

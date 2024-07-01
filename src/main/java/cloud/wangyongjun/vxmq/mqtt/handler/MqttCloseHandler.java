@@ -20,7 +20,7 @@ import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
-import cloud.wangyongjun.vxmq.event.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.session.Session;
@@ -71,50 +71,22 @@ public class MqttCloseHandler implements Runnable {
     }
 
     Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> obtainClientLock(mqttEndpoint.clientIdentifier()))
+      .onItem().transformToUni(v -> clientService.obtainClientLock(mqttEndpoint.clientIdentifier(), 2000))
       .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
-      .onItem().transformToUni(session -> Uni.createFrom().voidItem()
-        .onItem().transformToUni(v -> handleWill(session))
-        .onItem().transformToUni(v -> undeployClientVerticle(session))
-        .onItem().transformToUni(v -> handleSession(session))
-        // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
-        .onItem().call(v -> publishEvent(mqttEndpoint, session))
-      )
-      .onItemOrFailure().call((v, t) -> releaseClientLock(mqttEndpoint.clientIdentifier()))
-      .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
-  }
-
-  /**
-   * Get client lock
-   *
-   * @param clientId clientId
-   * @return Void
-   */
-  public Uni<Void> obtainClientLock(String clientId) {
-    return clientService.obtainClientLock(clientId, 2000)
-      .onItem().invoke(lock -> {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Client lock obtained for {}", clientId);
-        }
-      });
-  }
-
-  /**
-   * Release client lock
-   *
-   * @param clientId clientId
-   * @return Void
-   */
-  public Uni<Void> releaseClientLock(String clientId) {
-    vertx.setTimer(500, l -> clientService
-      .releaseClientLock(clientId)
-      .onItem().invoke(v -> {
-        if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Client lock released for {}", clientId);
+      .onItem().transformToUni(session -> {
+        if (session != null) {
+          return Uni.createFrom().voidItem()
+            .onItem().transformToUni(v -> handleWill(session))
+            .onItem().transformToUni(v -> undeployClientVerticle(session))
+            .onItem().transformToUni(v -> handleSession(session))
+            // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
+            .onItem().call(v -> publishEvent(mqttEndpoint, session));
+        } else {
+          return Uni.createFrom().voidItem();
         }
       })
-      .subscribe().with(v -> {}, t -> LOGGER.error("Error occurred when release client lock for " + clientId, t)));
-    return Uni.createFrom().voidItem();
+      .eventually(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
+      .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
   }
 
   /**
