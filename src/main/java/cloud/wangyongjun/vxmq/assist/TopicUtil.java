@@ -33,17 +33,18 @@ public class TopicUtil {
   private static final int GROUP_INDEX = 2;
   private static final int TOPIC_INDEX = 3;
 
-  public static final char MULTI_LEVEL_WILDCARD = '#';
-  public static final char SINGLE_LEVEL_WILDCARD = '+';
+  public static final String MULTI_LEVEL_WILDCARD = "#";
+  public static final String SINGLE_LEVEL_WILDCARD = "+";
+  public static final String SYSTEM = "$";
 
   private static final Pattern SHARED_SUBSCRIPTION_PATTERN = Pattern.compile("\\$share(/(.*?)/(.*))");
 
   public static boolean isSingleLevelWildcardToken(String token) {
-    return token.equals(String.valueOf(SINGLE_LEVEL_WILDCARD));
+    return token.equals(SINGLE_LEVEL_WILDCARD);
   }
 
   public static boolean isMultiLevelWildcardToken(String token) {
-    return token.equals(String.valueOf(MULTI_LEVEL_WILDCARD));
+    return token.equals(MULTI_LEVEL_WILDCARD);
   }
 
   public static String[] parseTokens(String topic) {
@@ -268,8 +269,8 @@ public class TopicUtil {
    * @return true if it contains a wildcard character, else false.
    */
   public static boolean containsWildcard(final String topic) {
-    return (topic.indexOf(MULTI_LEVEL_WILDCARD) != -1) ||
-      (topic.indexOf(SINGLE_LEVEL_WILDCARD) != -1);
+    return (topic.contains(MULTI_LEVEL_WILDCARD)) ||
+      (topic.contains(SINGLE_LEVEL_WILDCARD));
   }
 
   public static void main(String[] args) {
