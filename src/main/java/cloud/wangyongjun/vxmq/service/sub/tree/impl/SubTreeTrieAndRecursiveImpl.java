@@ -64,8 +64,8 @@ public class SubTreeTrieAndRecursiveImpl implements SubTree {
     if (tokenIndex == tokens.length) {
       consumer.accept(node);
       // “sport/#” also matches the singular “sport”, since # includes the parent level.
-      if (node.childrenContains(String.valueOf(TopicUtil.MULTI_LEVEL_WILDCARD))) {
-        consumer.accept(node.getChild(String.valueOf(TopicUtil.MULTI_LEVEL_WILDCARD)));
+      if (node.childrenContains(TopicUtil.MULTI_LEVEL_WILDCARD)) {
+        consumer.accept(node.getChild(TopicUtil.MULTI_LEVEL_WILDCARD));
       }
       return;
     }
@@ -74,17 +74,28 @@ public class SubTreeTrieAndRecursiveImpl implements SubTree {
       // Exact match
       findAllMatchNodesRecursive(node.getChild(token), tokens, tokenIndex + 1, consumer);
     }
-    if (node.childrenContains(String.valueOf(TopicUtil.SINGLE_LEVEL_WILDCARD))) {
+    boolean ifTopicNameStartWith$AndTokenIndexIsZero = tokenIndex == 0 && token.contains(TopicUtil.SYSTEM);
+    if (node.childrenContains(TopicUtil.SINGLE_LEVEL_WILDCARD)) {
+      // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901246
+      // A subscription to “+/monitor/Clients” will not receive any messages published to “$SYS/monitor/Clients”
+      if (ifTopicNameStartWith$AndTokenIndexIsZero) {
+        return;
+      }
       // Single level wildcard match
-      findAllMatchNodesRecursive(node.getChild(String.valueOf(TopicUtil.SINGLE_LEVEL_WILDCARD)), tokens, tokenIndex + 1, consumer);
+      findAllMatchNodesRecursive(node.getChild(TopicUtil.SINGLE_LEVEL_WILDCARD), tokens, tokenIndex + 1, consumer);
     }
-    if (node.childrenContains(String.valueOf(TopicUtil.MULTI_LEVEL_WILDCARD))) {
+    if (node.childrenContains(TopicUtil.MULTI_LEVEL_WILDCARD)) {
+      // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901246
+      // A subscription to “#” will not receive any messages published to a topic beginning with a $
+      if (ifTopicNameStartWith$AndTokenIndexIsZero) {
+        return;
+      }
       // Multi level wildcard match
       if (tokenIndex == tokens.length - 1) {
-        findAllMatchNodesRecursive(node.getChild(String.valueOf(TopicUtil.MULTI_LEVEL_WILDCARD)), tokens, tokenIndex + 1, consumer);
+        findAllMatchNodesRecursive(node.getChild(TopicUtil.MULTI_LEVEL_WILDCARD), tokens, tokenIndex + 1, consumer);
       } else {
         for (int i = tokenIndex; i < tokens.length; i++) {
-          findAllMatchNodesRecursive(node.getChild(String.valueOf(TopicUtil.MULTI_LEVEL_WILDCARD)), tokens, i + 1, consumer);
+          findAllMatchNodesRecursive(node.getChild(TopicUtil.MULTI_LEVEL_WILDCARD), tokens, i + 1, consumer);
         }
       }
     }
@@ -132,7 +143,7 @@ public class SubTreeTrieAndRecursiveImpl implements SubTree {
   public static void main(String[] args) {
     Subscription s1 = new Subscription().setSessionId("s1").setClientId("c1").setTopicFilter("abc/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
     Subscription s2 = new Subscription().setSessionId("s2").setClientId("c2").setTopicFilter("+/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-    Subscription s3 = new Subscription().setSessionId("s1").setClientId("c1").setTopicFilter("abc/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
+    Subscription s3 = new Subscription().setSessionId("s3").setClientId("c3").setTopicFilter("abc/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
     Subscription s4 = new Subscription().setSessionId("s4").setClientId("c4").setTopicFilter("abc/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
     Subscription s5 = new Subscription().setSessionId("s5").setClientId("c5").setTopicFilter("#").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
     Subscription s6 = new Subscription().setSessionId("s6").setClientId("c6").setTopicFilter("abc/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
