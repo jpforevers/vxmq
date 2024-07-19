@@ -28,6 +28,7 @@
     <java-uuid-generator.version>5.0.0</java-uuid-generator.version>
     <asciitable.version>0.3.2</asciitable.version>
     <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
+    <json-path.version>2.9.0</json-path.version>
 
     <ignite.version>2.16.0</ignite.version>
 
@@ -83,6 +84,10 @@
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-config</artifactId>
       <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config-yaml</artifactId>
     </dependency>
 
     <!-- Health check -->
@@ -171,6 +176,13 @@
       <groupId>de.vandermeer</groupId>
       <artifactId>asciitable</artifactId>
       <version>${asciitable.version}</version>
+    </dependency>
+
+    <!-- Json Path -->
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>${json-path.version}</version>
     </dependency>
 
     <dependency>

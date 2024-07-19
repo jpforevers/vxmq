@@ -1,0 +1,45 @@
+
+# 这是一个YAML配置文件
+
+vxmq:
+  rule:
+    static:
+      ReadMqttPublishFromKafka:
+        kafka:
+          servers: localhost:9094
+        enable: false
+      WriteMqttEventToKafka:
+        kafka:
+          servers: localhost:9094
+        enable: false
+      WriteMqttEventToMqtt:
+        enable: false
+  ignite:
+    backups: 0
+    discovery:
+      tcp:
+        addresses: localhost:47500
+        port: 47500
+    work-dir:
+  logs:
+    level: DEBUG
+  session:
+    # Max offline message amount, 0 for no limit.
+    queued-message:
+      max: 1000
+  shell:
+    server:
+      port: 5000
+  mqtt:
+    auth:
+      webhook:
+        url: http://localhost:8080/webhook/vxmq/authenticate
+      # NONE, WEBHOOK
+      type: NONE
+    server:
+      proxy-protocol:
+        enable: false
+      port: 1883
+  http:
+    server:
+      port: 8060
