@@ -33,11 +33,11 @@ public class IgniteWillService implements WillService {
 
   private static volatile IgniteWillService igniteWillService;
 
-  public static IgniteWillService getSingleton(Vertx vertx, JsonObject config) {
+  public static IgniteWillService getSingleton(Vertx vertx) {
     if (igniteWillService == null) {
       synchronized (IgniteWillService.class) {
         if (igniteWillService == null) {
-          igniteWillService = new IgniteWillService(vertx, config);
+          igniteWillService = new IgniteWillService(vertx);
         }
       }
     }
@@ -46,8 +46,8 @@ public class IgniteWillService implements WillService {
 
   private final IgniteCache<String, Will> willCache;
 
-  private IgniteWillService(Vertx vertx, JsonObject config) {
-    this.willCache = IgniteAssist.initWillCache(IgniteUtil.getIgnite(vertx), config);
+  private IgniteWillService(Vertx vertx) {
+    this.willCache = IgniteAssist.initWillCache(IgniteUtil.getIgnite(vertx));
   }
 
   @Override

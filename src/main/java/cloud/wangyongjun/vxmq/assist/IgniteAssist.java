@@ -84,29 +84,29 @@ public class IgniteAssist {
     return ignite.getOrCreateCache(outboundQos2RelCacheConfiguration);
   }
 
-  public static IgniteQueue<MsgToClient> getOfflineMsgQueueOfSession(Ignite ignite, String sessionId, JsonObject config) {
+  public static IgniteQueue<MsgToClient> getOfflineMsgQueueOfSession(Ignite ignite, String sessionId) {
     CollectionConfiguration colCfg = new CollectionConfiguration();
     colCfg.setCollocated(true);
-    colCfg.setBackups(Config.getIgniteBackups(config));
-    return ignite.queue(IgniteAssist.OFFLINE_MSG_QUEUE_PREFIX + sessionId, Config.getSessionQueuedMessageMax(config), colCfg);
+    colCfg.setBackups(Config.getIgniteBackups());
+    return ignite.queue(IgniteAssist.OFFLINE_MSG_QUEUE_PREFIX + sessionId, Config.getSessionQueuedMessageMax(), colCfg);
   }
 
-  public static IgniteCache<String, Retain> initRetainCache(Ignite ignite, JsonObject config) {
+  public static IgniteCache<String, Retain> initRetainCache(Ignite ignite) {
     CacheConfiguration<String, Retain> retainCacheConfiguration = new CacheConfiguration<>();
     retainCacheConfiguration.setName(IgniteAssist.RETAIN_CACHE_NAME);
     retainCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     retainCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
-    retainCacheConfiguration.setBackups(Config.getIgniteBackups(config));
+    retainCacheConfiguration.setBackups(Config.getIgniteBackups());
     retainCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
     return ignite.getOrCreateCache(retainCacheConfiguration);
   }
 
-  public static IgniteCache<String, Session> initSessionCache(Ignite ignite, JsonObject config) {
+  public static IgniteCache<String, Session> initSessionCache(Ignite ignite) {
     CacheConfiguration<String, Session> sessionCacheConfiguration = new CacheConfiguration<>();
     sessionCacheConfiguration.setName(IgniteAssist.SESSION_CACHE_NAME);
     sessionCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     sessionCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
-    sessionCacheConfiguration.setBackups(Config.getIgniteBackups(config));
+    sessionCacheConfiguration.setBackups(Config.getIgniteBackups());
     sessionCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
 
     NearCacheConfiguration<String, Session> sessionNearCacheConfiguration = new NearCacheConfiguration<>();
@@ -117,32 +117,32 @@ public class IgniteAssist {
     return ignite.getOrCreateCache(sessionCacheConfiguration);
   }
 
-  public static IgniteCache<SubscriptionKey, Subscription> initExactSubscriptionCache(Ignite ignite, JsonObject config) {
+  public static IgniteCache<SubscriptionKey, Subscription> initExactSubscriptionCache(Ignite ignite) {
     CacheConfiguration<SubscriptionKey, Subscription> exactSubscriptionCacheConfiguration = new CacheConfiguration<>();
     exactSubscriptionCacheConfiguration.setName(IgniteAssist.EXACT_SUBSCRIPTION_CACHE_NAME);
     exactSubscriptionCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     exactSubscriptionCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
     exactSubscriptionCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
-    exactSubscriptionCacheConfiguration.setBackups(Config.getIgniteBackups(config));
+    exactSubscriptionCacheConfiguration.setBackups(Config.getIgniteBackups());
     return ignite.getOrCreateCache(exactSubscriptionCacheConfiguration);
   }
 
-  public static IgniteCache<SubscriptionKey, Subscription> initWildcardSubscriptionCache(Ignite ignite, JsonObject config) {
+  public static IgniteCache<SubscriptionKey, Subscription> initWildcardSubscriptionCache(Ignite ignite) {
     CacheConfiguration<SubscriptionKey, Subscription> wildcardSubscriptionCacheConfiguration = new CacheConfiguration<>();
     wildcardSubscriptionCacheConfiguration.setName(IgniteAssist.WILDCARD_SUBSCRIPTION_CACHE_NAME);
     wildcardSubscriptionCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     wildcardSubscriptionCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
     wildcardSubscriptionCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
-    wildcardSubscriptionCacheConfiguration.setBackups(Config.getIgniteBackups(config));
+    wildcardSubscriptionCacheConfiguration.setBackups(Config.getIgniteBackups());
     return ignite.getOrCreateCache(wildcardSubscriptionCacheConfiguration);
   }
 
-  public static IgniteCache<String, Will> initWillCache(Ignite ignite, JsonObject config) {
+  public static IgniteCache<String, Will> initWillCache(Ignite ignite) {
     CacheConfiguration<String, Will> willCacheConfiguration = new CacheConfiguration<>();
     willCacheConfiguration.setName(IgniteAssist.WILL_CACHE_NAME);
     willCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     willCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
-    willCacheConfiguration.setBackups(Config.getIgniteBackups(config));
+    willCacheConfiguration.setBackups(Config.getIgniteBackups());
     willCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
     return ignite.getOrCreateCache(willCacheConfiguration);
   }

@@ -40,18 +40,18 @@ public class ShellServerVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    SessionService sessionService = ServiceFactory.sessionService(vertx, config());
-    WillService willService = ServiceFactory.willService(vertx, config());
+    SessionService sessionService = ServiceFactory.sessionService(vertx);
+    WillService willService = ServiceFactory.willService(vertx);
     SubService subService = ServiceFactory.subService(vertx);
-    MsgService msgService = ServiceFactory.msgService(vertx, config());
-    CompositeService compositeService = ServiceFactory.compositeService(vertx, config());
+    MsgService msgService = ServiceFactory.msgService(vertx);
+    CompositeService compositeService = ServiceFactory.compositeService(vertx);
     ClientService clientService = ServiceFactory.clientService(vertx);
 
     CommandRegistry commandRegistry = CommandRegistry.getShared(vertx);
     String banner = vertx.fileSystem().readFileBlocking("banner.txt").toString(StandardCharsets.UTF_8);
 
     SSHTermOptions sshTermOptions = new SSHTermOptions();
-    sshTermOptions.setPort(Config.getShellServerPort(config()));
+    sshTermOptions.setPort(Config.getShellServerPort());
     sshTermOptions.setKeyPairOptions(new JksOptions().
       setPath("shell-ssh.jks").
       setPassword("123456"));

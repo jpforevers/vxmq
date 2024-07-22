@@ -51,7 +51,7 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    String servers = Config.getRuleStaticWriteMqttEventToKafkaKafkaServers(config());
+    String servers = Config.getRuleStaticWriteMqttEventToKafkaKafkaServers();
 
     eventService = ServiceFactory.eventService(vertx);
     Map<String, String> kafkaConfig = new HashMap<>();
