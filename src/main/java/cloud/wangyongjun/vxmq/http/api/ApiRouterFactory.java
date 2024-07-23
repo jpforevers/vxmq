@@ -21,23 +21,22 @@ import cloud.wangyongjun.vxmq.http.api.session.GetAllSessionsHandler;
 import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.http.api.session.DeleteSessionByClientIdHandler;
 import cloud.wangyongjun.vxmq.http.api.test.TestHandler;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.Router;
 
 public class ApiRouterFactory {
 
-  public static Router router(Vertx vertx, JsonObject config) {
+  public static Router router(Vertx vertx) {
     Router apiRouter = Router.router(vertx);
 
     apiRouter.get(ApiConstants.API_PREFIX_TEST)
       .handler(new TestHandler(vertx));
 
     apiRouter.delete(ApiConstants.API_PREFIX_SESSION + "/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
-      .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.compositeService(vertx, config)));
+      .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.compositeService(vertx)));
 
     apiRouter.get(ApiConstants.API_PREFIX_SESSION)
-      .handler(new GetAllSessionsHandler(vertx, ServiceFactory.sessionService(vertx, config)));
+      .handler(new GetAllSessionsHandler(vertx, ServiceFactory.sessionService(vertx)));
 
     return apiRouter;
   }

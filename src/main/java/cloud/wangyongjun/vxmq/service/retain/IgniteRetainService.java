@@ -20,7 +20,6 @@ import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.TopicUtil;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.cache.query.QueryCursor;
@@ -34,11 +33,11 @@ public class IgniteRetainService implements RetainService {
 
   private static volatile IgniteRetainService igniteRetainService;
 
-  public static IgniteRetainService getSingleton(Vertx vertx, JsonObject config) {
+  public static IgniteRetainService getSingleton(Vertx vertx) {
     if (igniteRetainService == null) {
       synchronized (IgniteRetainService.class) {
         if (igniteRetainService == null) {
-          igniteRetainService = new IgniteRetainService(vertx, config);
+          igniteRetainService = new IgniteRetainService(vertx);
         }
       }
     }
@@ -47,8 +46,8 @@ public class IgniteRetainService implements RetainService {
 
   private final IgniteCache<String, Retain> retainCache;
 
-  private IgniteRetainService(Vertx vertx, JsonObject config) {
-    this.retainCache = IgniteAssist.initRetainCache(IgniteUtil.getIgnite(vertx), config);
+  private IgniteRetainService(Vertx vertx) {
+    this.retainCache = IgniteAssist.initRetainCache(IgniteUtil.getIgnite(vertx));
   }
 
   @Override

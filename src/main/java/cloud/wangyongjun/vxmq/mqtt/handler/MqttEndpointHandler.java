@@ -76,7 +76,6 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final static Logger LOGGER = LoggerFactory.getLogger(MqttEndpointHandler.class);
 
   private final Vertx vertx;
-  private final JsonObject config;
   private final SessionService sessionService;
   private final MsgService msgService;
   private final WillService willService;
@@ -87,7 +86,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final EventService eventService;
   private final AuthenticationService authenticationService;
 
-  public MqttEndpointHandler(Vertx vertx, JsonObject config,
+  public MqttEndpointHandler(Vertx vertx,
                              SessionService sessionService,
                              MsgService msgService,
                              WillService willService,
@@ -98,7 +97,6 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              EventService eventService,
                              AuthenticationService authenticationService) {
     this.vertx = vertx;
-    this.config = config;
     this.sessionService = sessionService;
     this.msgService = msgService;
     this.willService = willService;
@@ -325,7 +323,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    */
   private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint) {
     ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService);
-    return vertx.deployVerticle(clientVerticle, new DeploymentOptions().setConfig(config));
+    return vertx.deployVerticle(clientVerticle, new DeploymentOptions());
   }
 
   /**

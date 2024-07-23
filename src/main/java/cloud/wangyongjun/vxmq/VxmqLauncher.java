@@ -21,20 +21,11 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy;
-import ch.qos.logback.core.util.FileSize;
 import cloud.wangyongjun.vxmq.assist.Config;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.vertx.UniHelper;
-import io.vertx.config.ConfigRetrieverOptions;
-import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.mutiny.config.ConfigRetriever;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.ignite.IgniteClusterManager;
 import org.apache.commons.lang3.StringUtils;
@@ -59,40 +50,13 @@ public class VxmqLauncher {
   public static void main(String[] args) {
     Instant start = Instant.now();
     Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> retrieveConfig())
-      .onItem().transformToUni(config -> Uni.createFrom().voidItem()
-        .onItem().invoke(() -> configLog(config))
-        .onItem().transformToUni(v -> startVertx(config))
-        .onItem().call(vertx -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions().setConfig(config))))
+      .onItem().invoke(VxmqLauncher::configLog)
+      .onItem().transformToUni(v -> startVertx())
+      .onItem().transformToUni(vertx -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
       .subscribe().with(v -> LOGGER.info("VXMQ started in {} ms", Instant.now().toEpochMilli() - start.toEpochMilli()), t -> LOGGER.error("Error occurred when starting VXMQ", t));
   }
 
-  /**
-   * Retrieve config
-   *
-   * @return config
-   */
-  private static Uni<JsonObject> retrieveConfig() {
-    ConfigRetrieverOptions configRetrieverOptions = new ConfigRetrieverOptions();
-    // File application.properties config
-    ConfigStoreOptions fileStore = new ConfigStoreOptions().setOptional(true).setType("file").setFormat("properties")
-      .setConfig(new JsonObject().put("cache", false).put("path", "application.properties"));
-    configRetrieverOptions.addStore(fileStore);
-    //System property config
-    ConfigStoreOptions sysStore = new ConfigStoreOptions().setOptional(true).setType("sys").setConfig(new JsonObject().put("cache", false));
-    configRetrieverOptions.addStore(sysStore);
-    // Environment variable config
-    ConfigStoreOptions envStore = new ConfigStoreOptions().setOptional(true).setType("env");
-    configRetrieverOptions.addStore(envStore);
-
-    Vertx vertxTemp = Vertx.vertx();
-    ConfigRetriever configRetriever = ConfigRetriever.create(vertxTemp, configRetrieverOptions);
-    return configRetriever.getConfig()
-      .onItem().invoke(config -> LOGGER.debug("Application config: {}", config.toString()))
-      .eventually(vertxTemp::close);
-  }
-
-  private static void configLog(JsonObject config){
+  private static void configLog() {
     String s = """
       <configuration scan="true" scanPeriod="60 seconds">
 
@@ -159,7 +123,7 @@ public class VxmqLauncher {
     mqttLogger.setLevel(Level.WARN);
 
     ch.qos.logback.classic.Logger vxmqLogger = loggerContext.getLogger("cloud.wangyongjun.vxmq");
-    vxmqLogger.setLevel(Level.toLevel(Config.getLogsLevel(config)));
+    vxmqLogger.setLevel(Level.toLevel(Config.getLogsLevel()));
 
     ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
     rootLogger.setLevel(Level.INFO);
@@ -172,24 +136,22 @@ public class VxmqLauncher {
    *
    * @return Vertx
    */
-  private static Uni<Vertx> startVertx(JsonObject config) {
+  private static Uni<Vertx> startVertx() {
     TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
     TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
-    tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(config), ",")).toList());
-    tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort(config));
+    tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(), ",")).toList());
+    tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort());
     tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
 
     IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
     igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);
     igniteConfiguration.setGridLogger(new Slf4jLogger());
-    igniteConfiguration.setWorkDirectory(Config.getIgniteWorkDirectory(config));
+    igniteConfiguration.setWorkDirectory(Config.getIgniteWorkDirectory());
     igniteConfiguration.setMetricsLogFrequency(0);
     ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
 
     VertxOptions vertxOptions = new VertxOptions();
-    Future<io.vertx.core.Vertx> vertxFuture = io.vertx.core.Vertx.builder().with(vertxOptions).withClusterManager(clusterManager).buildClustered();
-    return UniHelper.toUni(vertxFuture)
-      .onItem().transform(Vertx::newInstance);
+    return Vertx.builder().with(vertxOptions).withClusterManager(clusterManager).buildClustered();
   }
 
 }

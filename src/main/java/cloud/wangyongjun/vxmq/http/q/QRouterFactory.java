@@ -15,15 +15,15 @@ import java.util.Map;
 
 public class QRouterFactory {
 
-  public static Router router(Vertx vertx, JsonObject config) {
+  public static Router router(Vertx vertx) {
     Router qRouter = Router.router(vertx);
 
     qRouter.route(ApiConstants.Q_PREFIX_PING).handler(QRouterFactory::pingHandler);
 
-    qRouter.get(ApiConstants.Q_PREFIX_HEALTH).handler(HealthCheckFactory.healthCheckHandler(vertx, config));
-    qRouter.get(ApiConstants.Q_PREFIX_HEALTH + "/started").handler(HealthCheckFactory.startedHealthCheckHandler(vertx, config));
-    qRouter.get(ApiConstants.Q_PREFIX_HEALTH + "/live").handler(HealthCheckFactory.liveHealthCheckHandler(vertx, config));
-    qRouter.get(ApiConstants.Q_PREFIX_HEALTH + "/ready").handler(HealthCheckFactory.readyHealthCheckHandler(vertx, config));
+    qRouter.get(ApiConstants.Q_PREFIX_HEALTH).handler(HealthCheckFactory.healthCheckHandler(vertx));
+    qRouter.get(ApiConstants.Q_PREFIX_HEALTH + "/started").handler(HealthCheckFactory.startedHealthCheckHandler(vertx));
+    qRouter.get(ApiConstants.Q_PREFIX_HEALTH + "/live").handler(HealthCheckFactory.liveHealthCheckHandler(vertx));
+    qRouter.get(ApiConstants.Q_PREFIX_HEALTH + "/ready").handler(HealthCheckFactory.readyHealthCheckHandler(vertx));
 
     return qRouter;
   }

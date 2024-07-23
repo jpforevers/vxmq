@@ -23,7 +23,7 @@ public class WriteMqttEventToMqttStaticRule extends AbstractVerticle {
   @Override
   public Uni<Void> asyncStart() {
     EventService eventService = ServiceFactory.eventService(vertx);
-    CompositeService compositeService = ServiceFactory.compositeService(vertx, config());
+    CompositeService compositeService = ServiceFactory.compositeService(vertx);
 
     List<Uni<Void>> consumeEventUnis = new ArrayList<>();
     for (EventType value : EventType.values()) {

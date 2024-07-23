@@ -25,7 +25,7 @@ public class DirtyClientVerticleCleaner extends AbstractVerticle {
   @Override
   public Uni<Void> asyncStart() {
     clientService = ServiceFactory.clientService(vertx);
-    sessionService = ServiceFactory.sessionService(vertx, config());
+    sessionService = ServiceFactory.sessionService(vertx);
 
     vertx.setPeriodic(60 * 1000L, l -> {
       sessionService.allSessions()
