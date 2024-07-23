@@ -44,9 +44,9 @@ public class ReadMqttPublishFromKafkaStaticRule extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    String servers = Config.getRuleStaticReadMqttPublishFromKafkaKafkaServers(config());
+    String servers = Config.getRuleStaticReadMqttPublishFromKafkaKafkaServers();
 
-    CompositeService compositeService = ServiceFactory.compositeService(vertx, config());
+    CompositeService compositeService = ServiceFactory.compositeService(vertx);
     Map<String, String> kafkaConfig = new HashMap<>();
     kafkaConfig.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
     kafkaConfig.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());

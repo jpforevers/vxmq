@@ -28,6 +28,7 @@
     <java-uuid-generator.version>5.0.0</java-uuid-generator.version>
     <asciitable.version>0.3.2</asciitable.version>
     <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
+    <smallrye-config.version>3.9.0</smallrye-config.version>
 
     <ignite.version>2.16.0</ignite.version>
 
@@ -80,9 +81,14 @@
 
     <!-- Config -->
     <dependency>
-      <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-mutiny-vertx-config</artifactId>
-      <version>${smallrye-mutiny-vertx.version}</version>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config</artifactId>
+      <version>${smallrye-config.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config-source-yaml</artifactId>
+      <version>${smallrye-config.version}</version>
     </dependency>
 
     <!-- Health check -->

@@ -38,15 +38,15 @@ public class HttpServerVerticle extends AbstractVerticle {
     rootRouter.allowForward(AllowForwardHeaders.ALL);
 
     rootRouter.route(ApiConstants.Q_URL_PREFIX + "/*")
-      .subRouter(QRouterFactory.router(vertx, config()));
+      .subRouter(QRouterFactory.router(vertx));
 
     rootRouter.route(ApiConstants.API_URL_PREFIX_V1 + "/*")
       .failureHandler(new ApiFailureHandler())
-      .subRouter(ApiRouterFactory.router(vertx, config()));
+      .subRouter(ApiRouterFactory.router(vertx));
 
     return vertx.createHttpServer().requestHandler(rootRouter)
       .exceptionHandler(t -> LOGGER.error("Error occurred at http server layer", t))
-      .listen(Config.getHttpServerPort(config()))
+      .listen(Config.getHttpServerPort())
       .replaceWithVoid();
   }
 

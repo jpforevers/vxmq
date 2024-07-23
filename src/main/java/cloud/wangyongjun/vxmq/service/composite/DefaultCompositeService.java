@@ -34,7 +34,6 @@ import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import cloud.wangyongjun.vxmq.service.will.WillService;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -50,12 +49,12 @@ public class DefaultCompositeService implements CompositeService {
 
   private static volatile DefaultCompositeService defaultCompositeService;
 
-  public static DefaultCompositeService getSingleton(Vertx vertx, JsonObject config, SessionService sessionService, SubService subService, WillService willService,
+  public static DefaultCompositeService getSingleton(Vertx vertx, SessionService sessionService, SubService subService, WillService willService,
                                                      MsgService msgService, RetainService retainService, ClientService clientService) {
     if (defaultCompositeService == null) {
       synchronized (DefaultCompositeService.class) {
         if (defaultCompositeService == null) {
-          defaultCompositeService = new DefaultCompositeService(vertx, config, sessionService, subService, willService, msgService, retainService, clientService);
+          defaultCompositeService = new DefaultCompositeService(vertx, sessionService, subService, willService, msgService, retainService, clientService);
         }
       }
     }
@@ -63,7 +62,6 @@ public class DefaultCompositeService implements CompositeService {
   }
 
   private final Vertx vertx;
-  private final JsonObject config;
   private final SessionService sessionService;
   private final SubService subService;
   private final WillService willService;
@@ -71,10 +69,9 @@ public class DefaultCompositeService implements CompositeService {
   private final RetainService retainService;
   private final ClientService clientService;
 
-  private DefaultCompositeService(Vertx vertx, JsonObject config, SessionService sessionService, SubService subService, WillService willService,
+  private DefaultCompositeService(Vertx vertx, SessionService sessionService, SubService subService, WillService willService,
                                   MsgService msgService, RetainService retainService, ClientService clientService) {
     this.vertx = vertx;
-    this.config = config;
     this.sessionService = sessionService;
     this.subService = subService;
     this.willService = willService;
@@ -207,7 +204,7 @@ public class DefaultCompositeService implements CompositeService {
   // Send offline messages sequentially through recursion!
   @Override
   public Uni<Void> sendOfflineMsg(String sessionId) {
-    MsgToClient msgToClient = IgniteAssist.getOfflineMsgQueueOfSession(IgniteUtil.getIgnite(vertx), sessionId, config).poll();
+    MsgToClient msgToClient = IgniteAssist.getOfflineMsgQueueOfSession(IgniteUtil.getIgnite(vertx), sessionId).poll();
     if (msgToClient != null) {
       return Uni.createFrom().voidItem()
         .onItem().transformToUni(v -> sessionService.getSession(msgToClient.getClientId()))

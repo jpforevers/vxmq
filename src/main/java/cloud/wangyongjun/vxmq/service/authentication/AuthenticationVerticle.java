@@ -32,13 +32,13 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    MqttAuthType mqttAuthType = Config.getMqttAuthType(config());
+    MqttAuthType mqttAuthType = Config.getMqttAuthType();
     LOGGER.info("Mqtt auth type: " + mqttAuthType);
     AuthenticationService authenticationService;
     switch (mqttAuthType){
-      case NONE -> authenticationService = AuthenticationServiceNoneImpl.getInstance(vertx, config());
-      case WEBHOOK -> authenticationService = AuthenticationServiceWebHookImpl.getInstance(vertx, config());
-      default -> authenticationService = AuthenticationServiceNoneImpl.getInstance(vertx, config());
+      case NONE -> authenticationService = AuthenticationServiceNoneImpl.getInstance(vertx);
+      case WEBHOOK -> authenticationService = AuthenticationServiceWebHookImpl.getInstance(vertx);
+      default -> authenticationService = AuthenticationServiceNoneImpl.getInstance(vertx);
     }
     new ServiceBinder(vertx.getDelegate()).setAddress(EBServices.AUTHENTICATION_SERVICE.getEbAddress())
       .registerLocal(AuthenticationService.class, authenticationService);

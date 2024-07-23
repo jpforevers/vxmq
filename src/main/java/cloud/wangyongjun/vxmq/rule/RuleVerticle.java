@@ -32,24 +32,24 @@ public class RuleVerticle extends AbstractVerticle {
 
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> {
-        if (Config.getRuleStaticWriteMqttEventToMqttEnable(config())) {
-          return vertx.deployVerticle(WriteMqttEventToMqttStaticRule.class.getName(), new DeploymentOptions().setConfig(config()))
+        if (Config.getRuleStaticWriteMqttEventToMqttEnable()) {
+          return vertx.deployVerticle(WriteMqttEventToMqttStaticRule.class.getName(), new DeploymentOptions())
             .replaceWithVoid();
         } else {
           return Uni.createFrom().voidItem();
         }
       })
       .onItem().transformToUni(v -> {
-        if (Config.getRuleStaticWriteMqttEventToKafkaEnable(config())) {
-          return vertx.deployVerticle(WriteMqttEventToKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config()))
+        if (Config.getRuleStaticWriteMqttEventToKafkaEnable()) {
+          return vertx.deployVerticle(WriteMqttEventToKafkaStaticRule.class.getName(), new DeploymentOptions())
             .replaceWithVoid();
         } else {
           return Uni.createFrom().voidItem();
         }
       })
       .onItem().transformToUni(v -> {
-        if (Config.getRuleStaticReadMqttPublishFromKafkaEnable(config())) {
-          return vertx.deployVerticle(ReadMqttPublishFromKafkaStaticRule.class.getName(), new DeploymentOptions().setConfig(config()))
+        if (Config.getRuleStaticReadMqttPublishFromKafkaEnable()) {
+          return vertx.deployVerticle(ReadMqttPublishFromKafkaStaticRule.class.getName(), new DeploymentOptions())
             .replaceWithVoid();
         } else {
           return Uni.createFrom().voidItem();

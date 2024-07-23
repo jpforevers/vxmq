@@ -20,7 +20,6 @@ import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
@@ -39,11 +38,11 @@ public class IgniteSessionService implements SessionService {
 
   private static volatile IgniteSessionService igniteSessionService;
 
-  public static IgniteSessionService getSingleton(Vertx vertx, JsonObject config) {
+  public static IgniteSessionService getSingleton(Vertx vertx) {
     if (igniteSessionService == null) {
       synchronized (IgniteSessionService.class) {
         if (igniteSessionService == null) {
-          igniteSessionService = new IgniteSessionService(vertx, config);
+          igniteSessionService = new IgniteSessionService(vertx);
         }
       }
     }
@@ -52,8 +51,8 @@ public class IgniteSessionService implements SessionService {
 
   private final IgniteCache<String, Session> sessionCache;
 
-  private IgniteSessionService(Vertx vertx, JsonObject config) {
-    this.sessionCache = IgniteAssist.initSessionCache(IgniteUtil.getIgnite(vertx), config);
+  private IgniteSessionService(Vertx vertx) {
+    this.sessionCache = IgniteAssist.initSessionCache(IgniteUtil.getIgnite(vertx));
   }
 
   @Override

@@ -22,7 +22,6 @@ import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import cloud.wangyongjun.vxmq.assist.TopicUtil;
 import cloud.wangyongjun.vxmq.service.sub.tree.SubTree;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
@@ -47,11 +46,11 @@ public class IgniteAndSubTreeSubService implements SubService {
 
   private static volatile IgniteAndSubTreeSubService igniteAndSubTreeSubService;
 
-  public static IgniteAndSubTreeSubService getInstance(Vertx vertx, JsonObject config) {
+  public static IgniteAndSubTreeSubService getInstance(Vertx vertx) {
     if (igniteAndSubTreeSubService == null) {
       synchronized (IgniteAndSubTreeSubService.class) {
         if (igniteAndSubTreeSubService == null) {
-          igniteAndSubTreeSubService = new IgniteAndSubTreeSubService(vertx, config);
+          igniteAndSubTreeSubService = new IgniteAndSubTreeSubService(vertx);
         }
       }
     }
@@ -62,11 +61,11 @@ public class IgniteAndSubTreeSubService implements SubService {
   private final IgniteCache<SubscriptionKey, Subscription> exactSubscriptionCache;
   private final IgniteCache<SubscriptionKey, Subscription> wildcardSubscriptionCache;
 
-  private IgniteAndSubTreeSubService(Vertx vertx, JsonObject config) {
+  private IgniteAndSubTreeSubService(Vertx vertx) {
     this.subTree = SubTree.subTree();
     Ignite ignite = IgniteUtil.getIgnite(vertx);
-    this.exactSubscriptionCache = IgniteAssist.initExactSubscriptionCache(ignite, config);
-    this.wildcardSubscriptionCache = IgniteAssist.initWildcardSubscriptionCache(ignite, config);
+    this.exactSubscriptionCache = IgniteAssist.initExactSubscriptionCache(ignite);
+    this.wildcardSubscriptionCache = IgniteAssist.initWildcardSubscriptionCache(ignite);
     vertx.<Void>executeBlocking(() -> {
       loadSubsToSubTreeAndInitContinuousQuery(exactSubscriptionCache);
       loadSubsToSubTreeAndInitContinuousQuery(wildcardSubscriptionCache);

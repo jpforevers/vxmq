@@ -19,7 +19,6 @@ package cloud.wangyongjun.vxmq.service.msg;
 import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
@@ -35,11 +34,11 @@ public class IgniteMsgService implements MsgService {
 
   private static volatile IgniteMsgService igniteMsgService;
 
-  public static IgniteMsgService getSingleton(Vertx vertx, JsonObject config) {
+  public static IgniteMsgService getSingleton(Vertx vertx) {
     if (igniteMsgService == null) {
       synchronized (IgniteMsgService.class) {
         if (igniteMsgService == null) {
-          igniteMsgService = new IgniteMsgService(vertx, config);
+          igniteMsgService = new IgniteMsgService(vertx);
         }
       }
     }
@@ -48,16 +47,14 @@ public class IgniteMsgService implements MsgService {
 
   private final Vertx vertx;
   private final Ignite ignite;
-  private final JsonObject config;
   private final IgniteCache<InboundQos2PubKey, InboundQos2Pub> inboundQos2PubCache;
   private final IgniteCache<OutboundQos1PubKey, OutboundQos1Pub> outboundQos1PubCache;
   private final IgniteCache<OutboundQos2PubKey, OutboundQos2Pub> outboundQos2PubCache;
   private final IgniteCache<OutboundQos2RelKey, OutboundQos2Rel> outboundQos2RelCache;
 
-  private IgniteMsgService(Vertx vertx, JsonObject config) {
+  private IgniteMsgService(Vertx vertx) {
     this.vertx = vertx;
     this.ignite = IgniteUtil.getIgnite(vertx);
-    this.config = config;
     this.inboundQos2PubCache = IgniteAssist.initInboundQos2PubCache(ignite);
     this.outboundQos1PubCache = IgniteAssist.initOutboundQos1PubCache(ignite);
     this.outboundQos2PubCache = IgniteAssist.initOutboundQos2PubCache(ignite);
@@ -177,13 +174,13 @@ public class IgniteMsgService implements MsgService {
 
   @Override
   public Uni<Void> saveOfflineMsg(MsgToClient msgToClient) {
-    IgniteAssist.getOfflineMsgQueueOfSession(ignite, msgToClient.getSessionId(), config).add(msgToClient);
+    IgniteAssist.getOfflineMsgQueueOfSession(ignite, msgToClient.getSessionId()).add(msgToClient);
     return Uni.createFrom().voidItem();
   }
 
   @Override
   public Uni<List<MsgToClient>> allOfflineMsgOfSession(String sessionId) {
-    return Uni.createFrom().item(new ArrayList<>(IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId, config)));
+    return Uni.createFrom().item(new ArrayList<>(IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId)));
   }
 
   @Override
@@ -213,7 +210,7 @@ public class IgniteMsgService implements MsgService {
         }
       }
 
-      IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId, config).close();
+      IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId).close();
       return null;
     }, false);
   }
