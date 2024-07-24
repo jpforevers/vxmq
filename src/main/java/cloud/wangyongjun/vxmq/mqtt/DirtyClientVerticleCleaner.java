@@ -28,7 +28,7 @@ public class DirtyClientVerticleCleaner extends AbstractVerticle {
     sessionService = ServiceFactory.sessionService(vertx);
 
     vertx.setPeriodic(60 * 1000L, l -> {
-      sessionService.allSessions()
+      vertx.executeBlocking(sessionService.allSessions()
         .onItem().invoke(sessions -> {
           List<String> verticleIds = clientService.verticleIds();
           for (String verticleId : verticleIds) {
@@ -38,8 +38,7 @@ public class DirtyClientVerticleCleaner extends AbstractVerticle {
               vertx.undeployAndForget(verticleId);
             }
           }
-        })
-        .replaceWithVoid()
+        }), true)
         .subscribe().with(v -> {}, Throwable::printStackTrace);
     });
     return Uni.createFrom().voidItem();
