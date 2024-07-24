@@ -16,11 +16,6 @@
 
 package cloud.wangyongjun.vxmq;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.ConsoleAppender;
 import cloud.wangyongjun.vxmq.assist.Config;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
@@ -50,85 +45,9 @@ public class VxmqLauncher {
   public static void main(String[] args) {
     Instant start = Instant.now();
     Uni.createFrom().voidItem()
-      .onItem().invoke(VxmqLauncher::configLog)
       .onItem().transformToUni(v -> startVertx())
       .onItem().transformToUni(vertx -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
       .subscribe().with(v -> LOGGER.info("VXMQ started in {} ms", Instant.now().toEpochMilli() - start.toEpochMilli()), t -> LOGGER.error("Error occurred when starting VXMQ", t));
-  }
-
-  private static void configLog() {
-    String s = """
-      <configuration scan="true" scanPeriod="60 seconds">
-
-        <property name="PATTERN"
-                  value="%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC} [%26.26thread] %-5level %-40.40logger{39} : %msg%n"/>
-        <property name="LOG_DIR" value="${vxmq.logs.dir:-/vxmq/logs}"/>
-        <property name="LOG_FILE" value="${LOG_DIR}/vxmq.log"/>
-
-        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-          <encoder>
-            <pattern>${PATTERN}</pattern>
-          </encoder>
-        </appender>
-
-        <!-- From https://mkyong.com/logging/slf4j-logback-tutorial/ -->
-        <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-          <file>${LOG_FILE}</file>
-          <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/archived/vxmq.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <!-- each archived file, size max 10MB -->
-            <maxFileSize>100MB</maxFileSize>
-            <!-- total size of all archive files, if total size > 20GB, it will delete old archived file -->
-            <totalSizeCap>100GB</totalSizeCap>
-            <!-- 30 days to keep -->
-            <maxHistory>30</maxHistory>
-          </rollingPolicy>
-          <encoder>
-            <pattern>${PATTERN}</pattern>
-          </encoder>
-        </appender>
-
-        <logger name="org.apache.ignite" level="warn"/>
-
-        <root level="info">
-          <appender-ref ref="STDOUT"/>
-          <appender-ref ref="FILE-ROLLING"/>
-        </root>
-
-      </configuration>
-      """;
-    // 等价于上面xml配置的代码配置：
-    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-    loggerContext.reset();
-
-    String pattern = "%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC} [%26.26thread] %-5level %-40.40logger{39} : %msg%n";
-
-    ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
-    consoleAppender.setContext(loggerContext);
-    consoleAppender.setName("console");
-    PatternLayoutEncoder consoleEncoder = new PatternLayoutEncoder();
-    consoleEncoder.setContext(loggerContext);
-    consoleEncoder.setPattern(pattern);
-    consoleEncoder.start();
-    consoleAppender.setEncoder(consoleEncoder);
-    consoleAppender.start();
-
-    ch.qos.logback.classic.Logger igniteLogger = loggerContext.getLogger("org.apache.ignite");
-    igniteLogger.setLevel(Level.WARN);
-
-    ch.qos.logback.classic.Logger kafkaLogger = loggerContext.getLogger("org.apache.kafka");
-    kafkaLogger.setLevel(Level.WARN);
-
-    ch.qos.logback.classic.Logger mqttLogger = loggerContext.getLogger("io.vertx.mqtt");
-    mqttLogger.setLevel(Level.WARN);
-
-    ch.qos.logback.classic.Logger vxmqLogger = loggerContext.getLogger("cloud.wangyongjun.vxmq");
-    vxmqLogger.setLevel(Level.toLevel(Config.getLogsLevel()));
-
-    ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
-    rootLogger.setLevel(Level.INFO);
-    rootLogger.addAppender(consoleAppender);
-
   }
 
   /**

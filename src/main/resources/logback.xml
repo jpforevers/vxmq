@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+  <!-- 定义日志输出格式 -->
+  <property name="LOG_PATTERN" value="%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC} [%26.26thread] %-5level %-40.40logger{39} : %msg%n" />
+
+  <!-- Console Appender 配置 -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 设置 org.apache.ignite 的日志级别为 WARN -->
+  <logger name="org.apache.ignite" level="WARN" />
+
+  <!-- 设置 org.apache.kafka 的日志级别为 WARN -->
+  <logger name="org.apache.kafka" level="WARN" />
+
+  <!-- 设置 io.vertx.mqtt 的日志级别为 WARN -->
+  <logger name="io.vertx.mqtt" level="WARN" />
+
+  <!-- 设置 cloud.wangyongjun.vxmq 的日志级别，使用环境变量 LOGS_LEVEL，如果未设置则默认为 INFO -->
+  <logger name="cloud.wangyongjun.vxmq" level="${VXMQ_LOGS_LEVEL:-INFO}" />
+
+  <!-- Root Logger 配置 -->
+  <root level="INFO">
+    <appender-ref ref="CONSOLE" />
+  </root>
+</configuration>
