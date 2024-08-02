@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.assist.Config;
+import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
@@ -43,11 +44,17 @@ public class VxmqLauncher {
   private static final Logger LOGGER = LoggerFactory.getLogger(VxmqLauncher.class);
 
   public static void main(String[] args) {
+    new VxmqLauncher().start().subscribe().with(ConsumerUtil.nothingToDo(), ConsumerUtil.nothingToDo());
+  }
+
+  public Uni<Void> start() {
     Instant start = Instant.now();
-    Uni.createFrom().voidItem()
+    return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> startVertx())
-      .onItem().transformToUni(vertx -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
-      .subscribe().with(v -> LOGGER.info("VXMQ started in {} ms", Instant.now().toEpochMilli() - start.toEpochMilli()), t -> LOGGER.error("Error occurred when starting VXMQ", t));
+      .onItem().call(vertx -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
+      .onItem().invoke(v -> LOGGER.info("VXMQ started in {} ms", Instant.now().toEpochMilli() - start.toEpochMilli()))
+      .onFailure().invoke(t -> LOGGER.error("Error occurred when starting VXMQ", t))
+      .replaceWithVoid();
   }
 
   /**
