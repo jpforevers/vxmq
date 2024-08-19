@@ -59,6 +59,7 @@ public class WriteMqttEventToKafkaStaticRule extends AbstractVerticle {
     kafkaConfig.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
     kafkaConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonObjectSerializer.class.getName());
     kafkaConfig.put(ProducerConfig.ACKS_CONFIG, "1");
+    kafkaConfig.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, "104857600"); // Default 1M, change to 100M
     kafkaProducer = KafkaProducer.createShared(vertx, "vxmq.rule.static.WriteMqttEventToKafka", kafkaConfig);
 
     List<Uni<Void>> consumeEventUnis = new ArrayList<>();
