@@ -4,81 +4,59 @@ import cloud.wangyongjun.vxmq.service.sub.Subscription;
 import cloud.wangyongjun.vxmq.service.sub.tree.SubTree;
 import cloud.wangyongjun.vxmq.service.sub.tree.impl.SubTreeTrieAndRecursiveImpl;
 import io.smallrye.mutiny.Uni;
-import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(VertxExtension.class)
-public class TestSubTree {
+public class TestSubTree extends BaseTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestSubTree.class);
 
   @Test
   void testSaveOrUpdateSub(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> {
-        Subscription s1 = new Subscription().setSessionId("s1").setClientId("c1").setTopicFilter("abc/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s2 = new Subscription().setSessionId("s2").setClientId("c2").setTopicFilter("+/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s3 = new Subscription().setSessionId("s3").setClientId("c3").setTopicFilter("abc/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s4 = new Subscription().setSessionId("s4").setClientId("c4").setTopicFilter("abc/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s5 = new Subscription().setSessionId("s5").setClientId("c5").setTopicFilter("#").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s6 = new Subscription().setSessionId("s6").setClientId("c6").setTopicFilter("abc/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s7 = new Subscription().setSessionId("s7").setClientId("c7").setTopicFilter("abc/def/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s8 = new Subscription().setSessionId("s8").setClientId("c8").setTopicFilter("abc/def/123/#").setQos(0).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s9 = new Subscription().setSessionId("s9").setClientId("c9").setTopicFilter("+/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s10 = new Subscription().setSessionId("s10").setClientId("c10").setTopicFilter("abc/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s11 = new Subscription().setSessionId("s11").setClientId("c11").setTopicFilter("+/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s12 = new Subscription().setSessionId("s12").setClientId("c12").setTopicFilter("+/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-
         SubTree subTree = new SubTreeTrieAndRecursiveImpl();
-        subTree.saveOrUpdateSubscription(s1);subTree.saveOrUpdateSubscription(s2);subTree.saveOrUpdateSubscription(s3);
-        subTree.saveOrUpdateSubscription(s4);subTree.saveOrUpdateSubscription(s5);subTree.saveOrUpdateSubscription(s6);
-        subTree.saveOrUpdateSubscription(s7);subTree.saveOrUpdateSubscription(s8);subTree.saveOrUpdateSubscription(s9);
-        subTree.saveOrUpdateSubscription(s10);subTree.saveOrUpdateSubscription(s11);subTree.saveOrUpdateSubscription(s12);
+        for (Subscription subscription : TestConstants.SUBSCRIPTIONS) {
+          subTree.saveOrUpdateSubscription(subscription);
+        }
 
-        subTree.saveOrUpdateSubscription(s10);subTree.saveOrUpdateSubscription(s11);subTree.saveOrUpdateSubscription(s12);
+        subTree.saveOrUpdateSubscription(TestConstants.SUBSCRIPTIONS.get(9));
+        subTree.saveOrUpdateSubscription(TestConstants.SUBSCRIPTIONS.get(10));
+        subTree.saveOrUpdateSubscription(TestConstants.SUBSCRIPTIONS.get(11));
 
-        assertEquals(Set.of(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12), new HashSet<>(subTree.allSubs()));
+        assertEquals(new HashSet<>(TestConstants.SUBSCRIPTIONS), new HashSet<>(subTree.allSubs()));
+        LOGGER.info("All subscriptions saved successfully");
         return Uni.createFrom().voidItem();
       })
-      .subscribe().with(v -> testContext.completeNow(), Throwable::printStackTrace);
+      .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
   }
 
   @Test
   void testMatchRule(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> {
-        Subscription s1 = new Subscription().setSessionId("s1").setClientId("c1").setTopicFilter("abc/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s2 = new Subscription().setSessionId("s2").setClientId("c2").setTopicFilter("+/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s3 = new Subscription().setSessionId("s3").setClientId("c3").setTopicFilter("abc/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s4 = new Subscription().setSessionId("s4").setClientId("c4").setTopicFilter("abc/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s5 = new Subscription().setSessionId("s5").setClientId("c5").setTopicFilter("#").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s6 = new Subscription().setSessionId("s6").setClientId("c6").setTopicFilter("abc/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s7 = new Subscription().setSessionId("s7").setClientId("c7").setTopicFilter("abc/def/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s8 = new Subscription().setSessionId("s8").setClientId("c8").setTopicFilter("abc/def/123/#").setQos(0).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s9 = new Subscription().setSessionId("s9").setClientId("c9").setTopicFilter("+/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s10 = new Subscription().setSessionId("s10").setClientId("c10").setTopicFilter("abc/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s11 = new Subscription().setSessionId("s11").setClientId("c11").setTopicFilter("+/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s12 = new Subscription().setSessionId("s12").setClientId("c12").setTopicFilter("+/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-
         SubTree subTree = new SubTreeTrieAndRecursiveImpl();
-        subTree.saveOrUpdateSubscription(s1);subTree.saveOrUpdateSubscription(s2);subTree.saveOrUpdateSubscription(s3);
-        subTree.saveOrUpdateSubscription(s4);subTree.saveOrUpdateSubscription(s5);subTree.saveOrUpdateSubscription(s6);
-        subTree.saveOrUpdateSubscription(s7);subTree.saveOrUpdateSubscription(s8);subTree.saveOrUpdateSubscription(s9);
-        subTree.saveOrUpdateSubscription(s10);subTree.saveOrUpdateSubscription(s11);subTree.saveOrUpdateSubscription(s12);
+        for (Subscription subscription : TestConstants.SUBSCRIPTIONS) {
+          subTree.saveOrUpdateSubscription(subscription);
+        }
 
-        Set<Subscription> allMatch = new HashSet<>(subTree.findAllMatch("abc/def/123", false));
-        System.out.println(allMatch);
-        assertEquals(Set.of(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12), allMatch);
+        String topicName = "abc/def/123";
+        Set<Subscription> allMatch = new HashSet<>(subTree.findAllMatch(topicName, false));
+
+        assertEquals(new HashSet<>(TestConstants.SUBSCRIPTIONS), allMatch);
+        LOGGER.info("All subscriptions matching {}", topicName);
         return Uni.createFrom().voidItem();
       })
-      .subscribe().with(v -> testContext.completeNow(), Throwable::printStackTrace);
+      .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
   }
 
 
@@ -106,79 +84,56 @@ public class TestSubTree {
         subTree.saveOrUpdateSubscription(s4);
 
         Set<Subscription> allMatch = new HashSet<>(subTree.findAllMatch("$SYS/monitor/Clients", false));
-        System.out.println(allMatch);
         assertEquals(Set.of(s3, s4), allMatch);
         return Uni.createFrom().voidItem();
       })
-      .subscribe().with(v -> testContext.completeNow(), Throwable::printStackTrace);
+      .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
   }
 
   @Test
   void testRemoveSub(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> {
-        Subscription s1 = new Subscription().setSessionId("s1").setClientId("c1").setTopicFilter("abc/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s2 = new Subscription().setSessionId("s2").setClientId("c2").setTopicFilter("+/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s3 = new Subscription().setSessionId("s3").setClientId("c3").setTopicFilter("abc/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s4 = new Subscription().setSessionId("s4").setClientId("c4").setTopicFilter("abc/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s5 = new Subscription().setSessionId("s5").setClientId("c5").setTopicFilter("#").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s6 = new Subscription().setSessionId("s6").setClientId("c6").setTopicFilter("abc/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s7 = new Subscription().setSessionId("s7").setClientId("c7").setTopicFilter("abc/def/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s8 = new Subscription().setSessionId("s8").setClientId("c8").setTopicFilter("abc/def/123/#").setQos(0).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s9 = new Subscription().setSessionId("s9").setClientId("c9").setTopicFilter("+/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s10 = new Subscription().setSessionId("s10").setClientId("c10").setTopicFilter("abc/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s11 = new Subscription().setSessionId("s11").setClientId("c11").setTopicFilter("+/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s12 = new Subscription().setSessionId("s12").setClientId("c12").setTopicFilter("+/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-
         SubTree subTree = new SubTreeTrieAndRecursiveImpl();
-        subTree.saveOrUpdateSubscription(s1);subTree.saveOrUpdateSubscription(s2);subTree.saveOrUpdateSubscription(s3);
-        subTree.saveOrUpdateSubscription(s4);subTree.saveOrUpdateSubscription(s5);subTree.saveOrUpdateSubscription(s6);
-        subTree.saveOrUpdateSubscription(s7);subTree.saveOrUpdateSubscription(s8);subTree.saveOrUpdateSubscription(s9);
-        subTree.saveOrUpdateSubscription(s10);subTree.saveOrUpdateSubscription(s11);subTree.saveOrUpdateSubscription(s12);
+        for (Subscription subscription : TestConstants.SUBSCRIPTIONS) {
+          subTree.saveOrUpdateSubscription(subscription);
+        }
 
-        subTree.removeSubscription(s1.getSessionId(), s1.getTopicFilter());
-        subTree.removeSubscription(s12.getSessionId(), s12.getTopicFilter());
+        subTree.removeSubscription(TestConstants.SUBSCRIPTIONS.get(0).getSessionId(), TestConstants.SUBSCRIPTIONS.get(0).getTopicFilter());
+        subTree.removeSubscription(TestConstants.SUBSCRIPTIONS.get(11).getSessionId(), TestConstants.SUBSCRIPTIONS.get(11).getTopicFilter());
 
-        assertEquals(Set.of(s2, s3, s4, s5, s6, s7, s8, s9, s10, s11), new HashSet<>(subTree.allSubs()));
+        assertEquals(Set.of(TestConstants.SUBSCRIPTIONS.get(1), TestConstants.SUBSCRIPTIONS.get(2), TestConstants.SUBSCRIPTIONS.get(3),
+          TestConstants.SUBSCRIPTIONS.get(4), TestConstants.SUBSCRIPTIONS.get(5), TestConstants.SUBSCRIPTIONS.get(6),
+          TestConstants.SUBSCRIPTIONS.get(7), TestConstants.SUBSCRIPTIONS.get(8), TestConstants.SUBSCRIPTIONS.get(9),
+          TestConstants.SUBSCRIPTIONS.get(10)), new HashSet<>(subTree.allSubs()));
         return Uni.createFrom().voidItem();
       })
-      .subscribe().with(v -> testContext.completeNow(), Throwable::printStackTrace);
+      .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
   }
 
   @Test
   void testClearSub(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> {
-        Subscription s1 = new Subscription().setSessionId("s1").setClientId("c1").setTopicFilter("abc/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s2 = new Subscription().setSessionId("s2").setClientId("c2").setTopicFilter("+/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s3 = new Subscription().setSessionId("s3").setClientId("c3").setTopicFilter("abc/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s4 = new Subscription().setSessionId("s4").setClientId("c4").setTopicFilter("abc/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s5 = new Subscription().setSessionId("s5").setClientId("c5").setTopicFilter("#").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s6 = new Subscription().setSessionId("s6").setClientId("c6").setTopicFilter("abc/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s7 = new Subscription().setSessionId("s7").setClientId("c7").setTopicFilter("abc/def/#").setQos(2).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s8 = new Subscription().setSessionId("s8").setClientId("c8").setTopicFilter("abc/def/123/#").setQos(0).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s9 = new Subscription().setSessionId("s9").setClientId("c9").setTopicFilter("+/+/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s10 = new Subscription().setSessionId("s10").setClientId("c10").setTopicFilter("abc/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s11 = new Subscription().setSessionId("s11").setClientId("c11").setTopicFilter("+/def/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
-        Subscription s12 = new Subscription().setSessionId("s12").setClientId("c12").setTopicFilter("+/+/+").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
+        SubTree subTree = new SubTreeTrieAndRecursiveImpl();
+        for (Subscription subscription : TestConstants.SUBSCRIPTIONS) {
+          subTree.saveOrUpdateSubscription(subscription);
+        }
 
         Subscription s13 = new Subscription().setSessionId("s13").setClientId("c13").setTopicFilter("abc/def/123").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
         Subscription s14 = new Subscription().setSessionId("s13").setClientId("c13").setTopicFilter("abc/def/456").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
         Subscription s15 = new Subscription().setSessionId("s13").setClientId("c13").setTopicFilter("abc/def/789").setQos(1).setCreatedTime(Instant.now().toEpochMilli());
 
-        SubTree subTree = new SubTreeTrieAndRecursiveImpl();
-        subTree.saveOrUpdateSubscription(s1);subTree.saveOrUpdateSubscription(s2);subTree.saveOrUpdateSubscription(s3);
-        subTree.saveOrUpdateSubscription(s4);subTree.saveOrUpdateSubscription(s5);subTree.saveOrUpdateSubscription(s6);
-        subTree.saveOrUpdateSubscription(s7);subTree.saveOrUpdateSubscription(s8);subTree.saveOrUpdateSubscription(s9);
-        subTree.saveOrUpdateSubscription(s10);subTree.saveOrUpdateSubscription(s11);subTree.saveOrUpdateSubscription(s12);
-        subTree.saveOrUpdateSubscription(s13);subTree.saveOrUpdateSubscription(s14);subTree.saveOrUpdateSubscription(s15);
+        subTree.saveOrUpdateSubscription(s13);
+        subTree.saveOrUpdateSubscription(s14);
+        subTree.saveOrUpdateSubscription(s15);
 
         subTree.clearSubscription(s13.getSessionId());
 
-        assertEquals(Set.of(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12), new HashSet<>(subTree.allSubs()));
+        assertEquals(new HashSet<>(TestConstants.SUBSCRIPTIONS), new HashSet<>(subTree.allSubs()));
         return Uni.createFrom().voidItem();
       })
-      .subscribe().with(v -> testContext.completeNow(), Throwable::printStackTrace);
+      .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
   }
 
 }
