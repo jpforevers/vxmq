@@ -207,15 +207,19 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .password(mqttAuth == null ? null : mqttAuth.getPassword().getBytes(StandardCharsets.UTF_8))
       .build();
     LOGGER.debug("Mqtt auth data: {}", mqttAuthData.toJson());
-    return authenticationService.authenticate(mqttAuthData)
-      .onItem().invoke(mqttAuthResult -> LOGGER.debug("Mqtt auth result: {}", mqttAuthResult.toJson()))
-      .onItem().transformToUni(mqttAuthResult -> {
-        if (MqttConnectReturnCode.CONNECTION_ACCEPTED.equals(mqttAuthResult.getCode())) {
-          return Uni.createFrom().voidItem();
-        } else {
-          return Uni.createFrom().failure(new MqttAuthFailedException(mqttAuthResult.getCode(), mqttAuthResult.getReason()));
-        }
-      });
+    if (Config.getMqttAuthWhitelist(config).contains(mqttEndpoint.clientIdentifier())) {
+      return Uni.createFrom().voidItem();
+    } else {
+      return authenticationService.authenticate(mqttAuthData)
+        .onItem().invoke(mqttAuthResult -> LOGGER.debug("Mqtt auth result: {}", mqttAuthResult.toJson()))
+        .onItem().transformToUni(mqttAuthResult -> {
+          if (MqttConnectReturnCode.CONNECTION_ACCEPTED.equals(mqttAuthResult.getCode())) {
+            return Uni.createFrom().voidItem();
+          } else {
+            return Uni.createFrom().failure(new MqttAuthFailedException(mqttAuthResult.getCode(), mqttAuthResult.getReason()));
+          }
+        });
+    }
   }
 
   /**
