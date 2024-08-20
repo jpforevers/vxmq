@@ -19,7 +19,11 @@ package cloud.wangyongjun.vxmq.assist;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthType;
 import io.vertx.core.impl.cpu.CpuCoreSensor;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Config {
 
@@ -33,6 +37,8 @@ public class Config {
   public static final int DEFAULT_VXMQ_MQTT_SERVER_PORT = 1883;
   public static final String KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = "vxmq.mqtt.server.proxy-protocol.enable";
   public static final boolean DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = false;
+  public static final String KEY_VXMQ_MQTT_AUTH_WHITELIST = "vxmq.mqtt.auth.whitelist";
+  public static final Set<String> DEFAULT_VXMQ_MQTT_AUTH_WHITELIST = Set.of();
   public static final String KEY_VXMQ_MQTT_AUTH_TYPE = "vxmq.mqtt.auth.type";
   public static final String DEFAULT_VXMQ_MQTT_AUTH_TYPE = MqttAuthType.NONE.name();
   public static final String KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL = "vxmq.mqtt.auth.webhook.url";
@@ -88,6 +94,11 @@ public class Config {
 
   public static boolean getMqttProxyProtocolEnable(JsonObject config){
     return config.getBoolean(KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE, DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE);
+  }
+
+  public static Set<String> getMqttAuthWhitelist(JsonObject config) {
+    String mqttAuthWhiteListString = config.getString(KEY_VXMQ_MQTT_AUTH_WHITELIST, "");
+    return StringUtils.isNotBlank(mqttAuthWhiteListString) ? Arrays.stream(StringUtils.split(mqttAuthWhiteListString, ',')).collect(Collectors.toSet()) : DEFAULT_VXMQ_MQTT_AUTH_WHITELIST;
   }
 
   public static MqttAuthType getMqttAuthType(JsonObject config){
