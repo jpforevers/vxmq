@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds">
-  <!-- 定义日志输出配置 -->
+  <!-- Log configuration properties -->
   <property name="log_pattern" value="%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC} [%26.26thread] %-5level %-40.40logger{39} : %msg%n" />
   <property name="log_dir" value="${VXMQ_LOGS_DIR:-/vxmq/logs}"/>
   <property name="log_file" value="${log_dir}/vxmq.log"/>
 
-  <!-- Console Appender 配置 -->
+  <!-- Console Appender configuration -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>${log_pattern}</pattern>
     </encoder>
   </appender>
 
-  <!-- File Appender 配置 From https://mkyong.com/logging/slf4j-logback-tutorial/ -->
+  <!-- File Appender configuration from https://mkyong.com/logging/slf4j-logback-tutorial/ -->
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${log_file}</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -29,22 +29,22 @@
     </encoder>
   </appender>
 
-  <!-- 设置 org.apache.ignite 的日志级别为 WARN -->
+  <!-- Set org.apache.ignite log level to WARN -->
   <logger name="org.apache.ignite" level="WARN" />
 
-  <!-- 设置 org.apache.kafka 的日志级别为 WARN -->
+  <!-- Set org.apache.kafka log level to WARN -->
   <logger name="org.apache.kafka" level="WARN" />
 
-  <!-- 设置 io.vertx.mqtt 的日志级别为 WARN -->
+  <!-- Set io.vertx.mqtt log level to WARN -->
   <logger name="io.vertx.mqtt" level="WARN" />
 
-  <!-- 设置 cloud.wangyongjun.vxmq 的日志级别，使用环境变量 LOGS_LEVEL，如果未设置则默认为 INFO -->
+  <!-- Set cloud.wangyongjun.vxmq log level by env LOGS_LEVEL, default to INFO -->
   <logger name="cloud.wangyongjun.vxmq" level="${VXMQ_LOGS_LEVEL:-INFO}" />
 
-  <!-- Root Logger 配置 -->
+  <!-- Root Logger configuration -->
   <root level="INFO">
     <appender-ref ref="CONSOLE" />
-    <!-- 默认不启用File Appender -->
+    <!-- Default not enable File Appender -->
 <!--    <appender-ref ref="FILE" />-->
   </root>
 </configuration>

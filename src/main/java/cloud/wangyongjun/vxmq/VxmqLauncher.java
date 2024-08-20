@@ -43,26 +43,25 @@ public class VxmqLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(VxmqLauncher.class);
 
+  private Vertx vertx;
+
   public static void main(String[] args) {
-    new VxmqLauncher().start().subscribe().with(ConsumerUtil.nothingToDo(), ConsumerUtil.nothingToDo());
+    VxmqLauncher vxmqLauncher = new VxmqLauncher();
+    Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> vxmqLauncher.start())
+      .subscribe().with(ConsumerUtil.nothingToDo(), ConsumerUtil.nothingToDo());
   }
 
   public Uni<Void> start() {
     Instant start = Instant.now();
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> startVertx())
-      .onItem().call(vertx -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
+      .onItem().transformToUni(v -> initVertx())
+      .onItem().transformToUni(v -> deployMainVerticle())
       .onItem().invoke(v -> LOGGER.info("VXMQ started in {} ms", Instant.now().toEpochMilli() - start.toEpochMilli()))
-      .onFailure().invoke(t -> LOGGER.error("Error occurred when starting VXMQ", t))
-      .replaceWithVoid();
+      .onFailure().invoke(t -> LOGGER.error("Error occurred when starting VXMQ", t));
   }
 
-  /**
-   * Start Vertx.
-   *
-   * @return Vertx
-   */
-  private static Uni<Vertx> startVertx() {
+  private Uni<Void> initVertx() {
     TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
     TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
     tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(), ",")).toList());
@@ -77,7 +76,15 @@ public class VxmqLauncher {
     ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
 
     VertxOptions vertxOptions = new VertxOptions();
-    return Vertx.builder().with(vertxOptions).withClusterManager(clusterManager).buildClustered();
+    return Vertx.builder().with(vertxOptions).withClusterManager(clusterManager).buildClustered()
+      .onItem().invoke(vtx -> this.vertx = vtx)
+      .replaceWithVoid();
+  }
+
+  private Uni<Void> deployMainVerticle() {
+    return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
+      .replaceWithVoid();
   }
 
 }
