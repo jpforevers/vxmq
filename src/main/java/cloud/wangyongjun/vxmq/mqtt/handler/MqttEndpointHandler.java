@@ -119,8 +119,13 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     }
 
     MqttProperties connAckProperties = new MqttProperties();
-    if (StringUtils.isBlank(clientIdOriginal) && mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
-      connAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.ASSIGNED_CLIENT_IDENTIFIER.value(), mqttEndpoint.clientIdentifier()));
+    if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+      if (StringUtils.isBlank(clientIdOriginal)) {
+        connAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.ASSIGNED_CLIENT_IDENTIFIER.value(), mqttEndpoint.clientIdentifier()));
+      }
+      // TODO When these MQTT 5 features implemented, change 0 to 1
+      connAckProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER_AVAILABLE.value(), 0));
+      connAckProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SHARED_SUBSCRIPTION_AVAILABLE.value(), 0));
     }
 
     Context context = Context.empty();
