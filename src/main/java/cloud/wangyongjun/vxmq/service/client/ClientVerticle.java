@@ -23,6 +23,7 @@ import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos1Pub;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Pub;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
+import io.micrometer.core.instrument.Counter;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
@@ -46,11 +47,13 @@ public class ClientVerticle extends AbstractVerticle {
   private final SessionService sessionService;
   private final MsgService msgService;
   private int messageIdCounter;
+  private final Counter packetsPublishSentCounter;
 
-  public ClientVerticle(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService) {
+  public ClientVerticle(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService, Counter packetsPublishSentCounter) {
     this.mqttEndpoint = mqttEndpoint;
     this.sessionService = sessionService;
     this.msgService = msgService;
+    this.packetsPublishSentCounter = packetsPublishSentCounter;
   }
 
   @Override
@@ -114,7 +117,12 @@ public class ClientVerticle extends AbstractVerticle {
         };
       })
       .onItem().transformToUni(v -> mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.isDup(), msgToClient.isRetain(), messageId))
-      .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending PUBLISH to client " + mqttEndpoint.clientIdentifier(), t));
+      .onItem().invoke(() -> {
+        if (packetsPublishSentCounter != null) {
+          packetsPublishSentCounter.increment();
+        }
+      })
+      .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending PUBLISH to client {}", mqttEndpoint.clientIdentifier(), t));
   }
 
   public String getClientId() {

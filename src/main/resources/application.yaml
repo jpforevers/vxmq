@@ -56,3 +56,5 @@ vxmq:
   http:
     server:
       port: 8060
+  metrics:
+    enable: false
