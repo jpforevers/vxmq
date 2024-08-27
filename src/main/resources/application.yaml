@@ -45,6 +45,8 @@ vxmq:
       port: 5000
   mqtt:
     auth:
+      # Auth white list, client ids separated by commas
+      whitelist: ""
       webhook:
         url: http://localhost:8080/webhook/vxmq/authenticate
       # NONE, WEBHOOK

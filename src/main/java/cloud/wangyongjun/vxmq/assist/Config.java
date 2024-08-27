@@ -19,8 +19,13 @@ package cloud.wangyongjun.vxmq.assist;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthType;
 import io.smallrye.config.SmallRyeConfig;
 import io.vertx.core.impl.cpu.CpuCoreSensor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.eclipse.microprofile.config.ConfigProvider;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Config {
 
@@ -34,6 +39,8 @@ public class Config {
   public static final int DEFAULT_VXMQ_MQTT_SERVER_PORT = 1883;
   public static final String KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = "vxmq.mqtt.server.proxy-protocol.enable";
   public static final boolean DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = false;
+  public static final String KEY_VXMQ_MQTT_AUTH_WHITELIST = "vxmq.mqtt.auth.whitelist";
+  public static final String DEFAULT_VXMQ_MQTT_AUTH_WHITELIST = "";
   public static final String KEY_VXMQ_MQTT_AUTH_TYPE = "vxmq.mqtt.auth.type";
   public static final String DEFAULT_VXMQ_MQTT_AUTH_TYPE = MqttAuthType.NONE.name();
   public static final String KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL = "vxmq.mqtt.auth.webhook.url";
@@ -88,6 +95,11 @@ public class Config {
 
   public static boolean getMqttProxyProtocolEnable() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE);
+  }
+
+  public static Set<String> getMqttAuthWhitelist() {
+    String mqttAuthWhiteListString = smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_AUTH_WHITELIST, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_WHITELIST);
+    return StringUtils.isNotBlank(mqttAuthWhiteListString) ? Arrays.stream(StringUtils.split(mqttAuthWhiteListString, ',')).collect(Collectors.toSet()) : Set.of();
   }
 
   public static MqttAuthType getMqttAuthType() {
