@@ -29,6 +29,7 @@
     <asciitable.version>0.3.2</asciitable.version>
     <jib-maven-plugin.version>3.4.3</jib-maven-plugin.version>
     <smallrye-config.version>3.9.0</smallrye-config.version>
+    <micrometer.version>1.12.9</micrometer.version>
 
     <ignite.version>2.16.0</ignite.version>
 
@@ -146,6 +147,18 @@
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-auth-properties</artifactId>
       <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
+    <!-- Metrics -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-micrometer-metrics</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>${micrometer.version}</version>
     </dependency>
 
     <!-- Apache Util -->

@@ -32,6 +32,7 @@ import cloud.wangyongjun.vxmq.service.retain.Retain;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;
 import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
+import io.micrometer.core.instrument.Counter;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
@@ -58,9 +59,12 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
   private final RetainService retainService;
   private final CompositeService compositeService;
   private final EventService eventService;
+  private final Counter packetsPublishReceivedCounter;
 
-  public MqttPublishHandler(MqttEndpoint mqttEndpoint, Vertx vertx, MsgService msgService, SessionService sessionService,
-                            RetainService retainService, CompositeService compositeService, EventService eventService) {
+  public MqttPublishHandler(MqttEndpoint mqttEndpoint, Vertx vertx,
+                            MsgService msgService, SessionService sessionService,
+                            RetainService retainService, CompositeService compositeService, EventService eventService,
+                            Counter packetsPublishReceivedCounter) {
     this.mqttEndpoint = mqttEndpoint;
     this.vertx = vertx;
     this.msgService = msgService;
@@ -68,12 +72,17 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     this.retainService = retainService;
     this.compositeService = compositeService;
     this.eventService = eventService;
+    this.packetsPublishReceivedCounter = packetsPublishReceivedCounter;
   }
 
   @Override
   public void accept(MqttPublishMessage mqttPublishMessage) {
     if (LOGGER.isDebugEnabled()){
       LOGGER.debug("PUBLISH from {}: {}", mqttEndpoint.clientIdentifier(), publicationInfo(mqttPublishMessage));
+    }
+
+    if (packetsPublishReceivedCounter != null) {
+      packetsPublishReceivedCounter.increment();
     }
 
     sessionService.updateLatestUpdatedTime(mqttEndpoint.clientIdentifier(), Instant.now().toEpochMilli())

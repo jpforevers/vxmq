@@ -18,10 +18,17 @@ package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
+import cloud.wangyongjun.vxmq.metrics.MetricsFactory;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.ignite.IgniteClusterManager;
 import org.apache.commons.lang3.StringUtils;
@@ -75,10 +82,36 @@ public class VxmqLauncher {
     igniteConfiguration.setMetricsLogFrequency(0);
     ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
 
-    VertxOptions vertxOptions = new VertxOptions();
+    VertxOptions vertxOptions = buildVertxOptions();
     return Vertx.builder().with(vertxOptions).withClusterManager(clusterManager).buildClustered()
       .onItem().invoke(vtx -> this.vertx = vtx)
+      .onItem().invoke(() -> {
+        if (Config.getMetricsEnable()) {
+          MeterRegistry registry = BackendRegistries.getDefaultNow();
+          new UptimeMetrics().bindTo(registry);
+          new FileDescriptorMetrics().bindTo(registry);
+//          new LogbackMetrics().bindTo(registry);
+          new MetricsFactory.PacketsPublishReceivedRateGaugeMetrics(10, vertx, MetricsFactory.getPacketsPublishReceivedCounter()).bindTo(registry);
+          new MetricsFactory.PacketsPublishSentRateGaugeMetrics(10, vertx, MetricsFactory.getPacketsPublishSentCounter()).bindTo(registry);
+        }
+      })
       .replaceWithVoid();
+  }
+
+  private VertxOptions buildVertxOptions() {
+    VertxOptions vertxOptions = new VertxOptions();
+    if (Config.getMetricsEnable()) {
+      VertxPrometheusOptions vertxPrometheusOptions = new VertxPrometheusOptions();
+      vertxPrometheusOptions.setEnabled(true);
+//    vertxPrometheusOptions.setPublishQuantiles(true);
+
+      MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
+      micrometerMetricsOptions.setEnabled(true);
+      micrometerMetricsOptions.setJvmMetricsEnabled(true);
+      micrometerMetricsOptions.setPrometheusOptions(vertxPrometheusOptions);
+      vertxOptions.setMetricsOptions(micrometerMetricsOptions);
+    }
+    return vertxOptions;
   }
 
   private Uni<Void> deployMainVerticle() {

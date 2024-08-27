@@ -75,6 +75,9 @@ public class Config {
   public static final String KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS = "vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers";
   public static final String DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS = "localhost:9094";
 
+  public static final String KEY_VXMQ_METRICS_ENABLE = "vxmq.metrics.enable";
+  public static final boolean DEFAULT_VXMQ_METRICS_ENABLE = false;
+
   public static int getHttpServerPort() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_PORT);
   }
@@ -141,6 +144,10 @@ public class Config {
 
   public static String getRuleStaticReadMqttPublishFromKafkaKafkaServers() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS, String.class).orElse(DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS);
+  }
+
+  public static boolean getMetricsEnable() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_METRICS_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_METRICS_ENABLE);
   }
 
 }

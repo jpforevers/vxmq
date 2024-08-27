@@ -36,6 +36,7 @@ import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
 import cloud.wangyongjun.vxmq.service.will.Will;
 import cloud.wangyongjun.vxmq.service.will.WillService;
+import io.micrometer.core.instrument.Counter;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttQoS;
@@ -85,6 +86,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final CompositeService compositeService;
   private final EventService eventService;
   private final AuthenticationService authenticationService;
+  private final Counter packetsPublishReceivedCounter;
+  private final Counter packetsPublishSentCounter;
 
   public MqttEndpointHandler(Vertx vertx,
                              SessionService sessionService,
@@ -95,7 +98,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              RetainService retainService,
                              CompositeService compositeService,
                              EventService eventService,
-                             AuthenticationService authenticationService) {
+                             AuthenticationService authenticationService,
+                             Counter packetsPublishReceivedCounter,
+                             Counter packetsPublishSentCounter) {
     this.vertx = vertx;
     this.sessionService = sessionService;
     this.msgService = msgService;
@@ -106,6 +111,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.compositeService = compositeService;
     this.eventService = eventService;
     this.authenticationService = authenticationService;
+    this.packetsPublishReceivedCounter = packetsPublishReceivedCounter;
+    this.packetsPublishSentCounter = packetsPublishSentCounter;
   }
 
   @Override
@@ -135,7 +142,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint, context))
       .onItem().transformToUni(v -> registerHandler(mqttEndpoint))
       .onItem().transformToUni(v -> computeSessionPresent(mqttEndpoint, context))
-      .onItem().transformToUni(v -> deployClientVerticle(mqttEndpoint))
+      .onItem().transformToUni(v -> deployClientVerticle(mqttEndpoint, packetsPublishSentCounter))
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().call(session -> publishMqttSessionTakenOverEvent(session, context))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
@@ -285,7 +292,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint, vertx, eventService));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
     mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));
-    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, vertx, msgService, sessionService, retainService, compositeService, eventService));
+    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, vertx, msgService, sessionService, retainService, compositeService, eventService, packetsPublishReceivedCounter));
     mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint, sessionService, msgService, compositeService));
     mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint, sessionService, msgService, eventService, vertx));
     mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint, sessionService, msgService, eventService, vertx));
@@ -326,8 +333,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @param mqttEndpoint mqttEndpoint
    * @return Client verticle deployment id;
    */
-  private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint) {
-    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService);
+  private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint, Counter packetsPublishSentCounter) {
+    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService, packetsPublishSentCounter);
     return vertx.deployVerticle(clientVerticle, new DeploymentOptions());
   }
 

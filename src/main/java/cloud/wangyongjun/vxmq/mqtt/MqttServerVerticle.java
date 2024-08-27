@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.mqtt;
 
 import cloud.wangyongjun.vxmq.assist.Config;
+import cloud.wangyongjun.vxmq.metrics.MetricsFactory;
 import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.mqtt.handler.MqttEndpointHandler;
 import io.smallrye.mutiny.Uni;
@@ -47,7 +48,9 @@ public class MqttServerVerticle extends AbstractVerticle {
       ServiceFactory.retainService(vertx),
       ServiceFactory.compositeService(vertx),
       ServiceFactory.eventService(vertx),
-      ServiceFactory.authenticationService(vertx))
+      ServiceFactory.authenticationService(vertx),
+      MetricsFactory.getPacketsPublishReceivedCounter(),
+      MetricsFactory.getPacketsPublishSentCounter())
     );
     mqttServer.exceptionHandler(t -> LOGGER.error("Error occurred at mqtt server layer", t));
     return mqttServer.listen().replaceWithVoid();

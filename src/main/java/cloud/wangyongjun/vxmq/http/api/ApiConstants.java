@@ -28,5 +28,6 @@ public class ApiConstants {
   public static final String Q_URL_PREFIX = "/q";
   public static final String Q_PREFIX_HEALTH = "/health";
   public static final String Q_PREFIX_PING = "/ping";
+  public static final String Q_PREFIX_METRICS = "/metrics";
 
 }
