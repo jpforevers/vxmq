@@ -64,6 +64,7 @@ public class VxmqLauncher {
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> initVertx())
       .onItem().transformToUni(v -> deployMainVerticle())
+      .onItem().invoke(() -> LOGGER.info("Vertx isNativeTransportEnabled: {}", vertx.isNativeTransportEnabled()))
       .onItem().invoke(v -> LOGGER.info("VXMQ started in {} ms", Instant.now().toEpochMilli() - start.toEpochMilli()))
       .onFailure().invoke(t -> LOGGER.error("Error occurred when starting VXMQ", t));
   }
@@ -111,6 +112,7 @@ public class VxmqLauncher {
       micrometerMetricsOptions.setPrometheusOptions(vertxPrometheusOptions);
       vertxOptions.setMetricsOptions(micrometerMetricsOptions);
     }
+    vertxOptions.setPreferNativeTransport(Config.getVertxPreferNativeTransport());
     return vertxOptions;
   }
 

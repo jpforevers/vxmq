@@ -85,6 +85,9 @@ public class Config {
   public static final String KEY_VXMQ_METRICS_ENABLE = "vxmq.metrics.enable";
   public static final boolean DEFAULT_VXMQ_METRICS_ENABLE = false;
 
+  public static final String KEY_VXMQ_VERTX_PREFER_NATIVE_TRANSPORT = "vxmq.vertx.prefer-native-transport";
+  public static final boolean DEFAULT_VXMQ_VERTX_PREFER_NATIVE_TRANSPORT = false;
+
   public static int getHttpServerPort() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_PORT);
   }
@@ -160,6 +163,10 @@ public class Config {
 
   public static boolean getMetricsEnable() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_METRICS_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_METRICS_ENABLE);
+  }
+
+  public static boolean getVertxPreferNativeTransport() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_VERTX_PREFER_NATIVE_TRANSPORT, Boolean.class).orElse(DEFAULT_VXMQ_VERTX_PREFER_NATIVE_TRANSPORT);
   }
 
 }
