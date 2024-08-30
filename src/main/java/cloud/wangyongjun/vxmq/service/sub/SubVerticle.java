@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.service.sub;
 
 import cloud.wangyongjun.vxmq.assist.EBServices;
+import cloud.wangyongjun.vxmq.service.sub.share.ShareSubscriptionProcessor;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.serviceproxy.ServiceBinder;
@@ -27,7 +28,7 @@ public class SubVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    SubService subService = IgniteAndSubTreeSubService.getInstance(vertx);
+    SubService subService = IgniteAndSubTreeSubService.getInstance(vertx, ShareSubscriptionProcessor.getInstance(vertx));
     new ServiceBinder(vertx.getDelegate()).setAddress(EBServices.SUB_SERVICE.getEbAddress())
       .registerLocal(SubService.class, subService);
     return Uni.createFrom().voidItem();

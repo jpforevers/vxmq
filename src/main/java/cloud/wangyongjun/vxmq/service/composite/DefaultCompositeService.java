@@ -141,33 +141,6 @@ public class DefaultCompositeService implements CompositeService {
 
   @Override
   public Uni<Void> forward(MsgToTopic msgToTopic) {
-//    return Uni.createFrom().emitter(uniEmitter -> {
-//      subService.allMatchSubs(msgToTopic.getTopic(), true)
-//        .onItem().transformToMulti(subscriptions -> Multi.createFrom().items(subscriptions.stream()))
-//        .onItem().call(subscription -> {
-//          if (subscription.getNoLocal() != null && subscription.getNoLocal() && subscription.getClientId().equals(msgToTopic.getClientId())) {
-//            return Uni.createFrom().voidItem();
-//          }else {
-//            return sessionService.getSession(subscription.getClientId())
-//              .onItem().transformToUni(session -> {
-//                MsgToClient msgToClient = new MsgToClient().setSessionId(session.getSessionId()).setClientId(subscription.getClientId())
-//                  .setTopic(msgToTopic.getTopic()).setQos(Math.min(msgToTopic.getQos(), subscription.getQos()))
-//                  .setPayload(msgToTopic.getPayload()).setDup(false).setCreatedTime(Instant.now().toEpochMilli());
-//                if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-//                  // From http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718038
-//                  // When sending a PUBLISH Packet to a Client the Server MUST set the RETAIN flag to 1 if a message is sent as a result of a new subscription being made by a Client [MQTT-3.3.1-8]. It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
-//                  msgToClient.setRetain(false);
-//                } else {
-//                  // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Subscription_Options
-//                  // Bit 3 of the Subscription Options represents the Retain As Published option. If 1, Application Messages forwarded using this subscription keep the RETAIN flag they were published with. If 0, Application Messages forwarded using this subscription have the RETAIN flag set to 0. Retained messages sent when the subscription is established have the RETAIN flag set to 1.
-//                  msgToClient.setRetain(subscription.getRetainAsPublished() && msgToTopic.isRetain());
-//                }
-//                return sendToClient(session, msgToClient);
-//              });
-//          }
-//        }).subscribe().with(ConsumerUtil.nothingToDo(), uniEmitter::fail, () -> uniEmitter.complete(null));
-//    });
-
 
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> subService.allMatchSubs(msgToTopic.getTopic(), true))

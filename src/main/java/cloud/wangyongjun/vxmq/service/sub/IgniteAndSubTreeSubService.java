@@ -20,6 +20,7 @@ import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import cloud.wangyongjun.vxmq.assist.TopicUtil;
+import cloud.wangyongjun.vxmq.service.sub.share.ShareSubscriptionProcessor;
 import cloud.wangyongjun.vxmq.service.sub.tree.SubTree;
 import io.vertx.core.Future;
 import io.vertx.mutiny.core.Vertx;
@@ -32,9 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.cache.Cache;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,11 +45,11 @@ public class IgniteAndSubTreeSubService implements SubService {
 
   private static volatile IgniteAndSubTreeSubService igniteAndSubTreeSubService;
 
-  public static IgniteAndSubTreeSubService getInstance(Vertx vertx) {
+  public static IgniteAndSubTreeSubService getInstance(Vertx vertx, ShareSubscriptionProcessor shareSubscriptionProcessor) {
     if (igniteAndSubTreeSubService == null) {
       synchronized (IgniteAndSubTreeSubService.class) {
         if (igniteAndSubTreeSubService == null) {
-          igniteAndSubTreeSubService = new IgniteAndSubTreeSubService(vertx);
+          igniteAndSubTreeSubService = new IgniteAndSubTreeSubService(vertx, shareSubscriptionProcessor);
         }
       }
     }
@@ -60,12 +59,14 @@ public class IgniteAndSubTreeSubService implements SubService {
   private final SubTree subTree;
   private final IgniteCache<SubscriptionKey, Subscription> exactSubscriptionCache;
   private final IgniteCache<SubscriptionKey, Subscription> wildcardSubscriptionCache;
+  private final ShareSubscriptionProcessor shareSubscriptionProcessor;
 
-  private IgniteAndSubTreeSubService(Vertx vertx) {
+  private IgniteAndSubTreeSubService(Vertx vertx, ShareSubscriptionProcessor shareSubscriptionProcessor) {
     this.subTree = SubTree.subTree();
     Ignite ignite = IgniteUtil.getIgnite(vertx);
     this.exactSubscriptionCache = IgniteAssist.initExactSubscriptionCache(ignite);
     this.wildcardSubscriptionCache = IgniteAssist.initWildcardSubscriptionCache(ignite);
+    this.shareSubscriptionProcessor = shareSubscriptionProcessor;
     vertx.<Void>executeBlocking(() -> {
       loadSubsToSubTreeAndInitContinuousQuery(exactSubscriptionCache);
       loadSubsToSubTreeAndInitContinuousQuery(wildcardSubscriptionCache);
@@ -128,7 +129,8 @@ public class IgniteAndSubTreeSubService implements SubService {
 
   @Override
   public Future<List<Subscription>> allMatchSubs(String topicName, boolean distinct) {
-    return Future.succeededFuture(subTree.findAllMatch(topicName, distinct));
+    List<Subscription> allMatchSubscriptions = subTree.findAllMatch(topicName, distinct);
+    return Future.succeededFuture(shareSubscriptionProcessor.process(allMatchSubscriptions));
   }
 
   @Override
