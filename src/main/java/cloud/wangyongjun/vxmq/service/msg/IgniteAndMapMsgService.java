@@ -98,13 +98,7 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<List<OutboundQos1Pub>> outboundQos1Pub(String sessionId) {
-    List<OutboundQos1Pub> result = new ArrayList<>();
-    for (OutboundQos1PubKey outboundQos1PubKey : outboundQos1PubCache.keySet()) {
-      if (outboundQos1PubKey.getSessionId().equals(sessionId)) {
-        result.add(outboundQos1PubCache.get(outboundQos1PubKey));
-      }
-    }
-    return Uni.createFrom().item(result);
+    return Uni.createFrom().item(outboundQos1PubCache.entrySet().stream().filter(entry -> entry.getKey().getSessionId().equals(sessionId)).map(Map.Entry::getValue).toList());
   }
 
   @Override
@@ -130,13 +124,7 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<List<OutboundQos2Pub>> outboundQos2Pub(String sessionId) {
-    List<OutboundQos2Pub> result = new ArrayList<>();
-    for (OutboundQos2PubKey outboundQos2PubKey : outboundQos2PubCache.keySet()) {
-      if (outboundQos2PubKey.getSessionId().equals(sessionId)) {
-        result.add(outboundQos2PubCache.get(outboundQos2PubKey));
-      }
-    }
-    return Uni.createFrom().item(result);
+    return Uni.createFrom().item(outboundQos2PubCache.entrySet().stream().filter(entry -> entry.getKey().getSessionId().equals(sessionId)).map(Map.Entry::getValue).toList());
   }
 
   @Override
@@ -162,13 +150,7 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<List<OutboundQos2Rel>> outboundQos2Rel(String sessionId) {
-    List<OutboundQos2Rel> result = new ArrayList<>();
-    for (OutboundQos2RelKey outboundQos2RelKey : outboundQos2RelCache.keySet()) {
-      if (outboundQos2RelKey.getSessionId().equals(sessionId)) {
-        result.add(outboundQos2RelCache.get(outboundQos2RelKey));
-      }
-    }
-    return Uni.createFrom().item(result);
+    return Uni.createFrom().item(outboundQos2RelCache.entrySet().stream().filter(entry -> entry.getKey().getSessionId().equals(sessionId)).map(Map.Entry::getValue).toList());
   }
 
   @Override
