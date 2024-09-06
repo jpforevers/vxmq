@@ -126,11 +126,13 @@ public class DefaultCompositeService implements CompositeService {
       } else {
         if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           if (!session.isCleanSession()) {
+            // For MQTT 3.1.1, should saving offline message when the cleanSession is false.
             return msgService.saveOfflineMsg(msgToClient);
           } else {
             return Uni.createFrom().voidItem();
           }
         } else {
+          // From MQTT 5, because of "Session Expiry Interval", should always saving offline message here, and clean it when "Session Expiry Interval" end.
           return msgService.saveOfflineMsg(msgToClient);
         }
       }
