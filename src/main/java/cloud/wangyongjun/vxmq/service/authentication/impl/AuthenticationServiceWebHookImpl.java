@@ -14,11 +14,11 @@ public class AuthenticationServiceWebHookImpl implements AuthenticationService {
 
   private static volatile AuthenticationService authenticationService;
 
-  public static AuthenticationService getInstance(Vertx vertx) {
+  public static AuthenticationService getInstance(Vertx vertx, String webhookUrl) {
     if (authenticationService == null) {
       synchronized (AuthenticationServiceWebHookImpl.class) {
         if (authenticationService == null) {
-          authenticationService = new AuthenticationServiceWebHookImpl(vertx);
+          authenticationService = new AuthenticationServiceWebHookImpl(vertx, webhookUrl);
         }
       }
     }
@@ -28,8 +28,8 @@ public class AuthenticationServiceWebHookImpl implements AuthenticationService {
   private final String webhookUrl;
   private final WebClient webClient;
 
-  private AuthenticationServiceWebHookImpl(Vertx vertx) {
-    this.webhookUrl = Config.getMqttAuthWebhookUrl();
+  private AuthenticationServiceWebHookImpl(Vertx vertx, String webhookUrl) {
+    this.webhookUrl = webhookUrl;
     this.webClient = WebClient.create(vertx.getDelegate(), new WebClientOptions());
   }
 

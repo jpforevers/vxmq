@@ -37,7 +37,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
     AuthenticationService authenticationService;
     switch (mqttAuthType){
       case NONE -> authenticationService = AuthenticationServiceNoneImpl.getInstance(vertx);
-      case WEBHOOK -> authenticationService = AuthenticationServiceWebHookImpl.getInstance(vertx);
+      case WEBHOOK -> authenticationService = AuthenticationServiceWebHookImpl.getInstance(vertx, Config.getMqttAuthWebhookUrl());
       default -> authenticationService = AuthenticationServiceNoneImpl.getInstance(vertx);
     }
     new ServiceBinder(vertx.getDelegate()).setAddress(EBServices.AUTHENTICATION_SERVICE.getEbAddress())
