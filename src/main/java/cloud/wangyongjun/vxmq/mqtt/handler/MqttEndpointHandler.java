@@ -357,7 +357,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       sessionExpiryInterval = null;
     } else {
       MqttProperties.MqttProperty sessionExpiryIntervalMqttProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL.value());
-      sessionExpiryInterval = sessionExpiryIntervalMqttProperty == null ? null : (Integer) sessionExpiryIntervalMqttProperty.value();
+      // From MQTT 5 specification: If the Session Expiry Interval is absent the value 0 is used
+      sessionExpiryInterval = sessionExpiryIntervalMqttProperty == null ? 0 : (Integer) sessionExpiryIntervalMqttProperty.value();
     }
     Instant now = Instant.now();
     return sessionService.getSession(mqttEndpoint.clientIdentifier()).onItem().transformToUni(previousSession -> {
