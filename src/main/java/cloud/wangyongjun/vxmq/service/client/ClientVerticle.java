@@ -116,7 +116,8 @@ public class ClientVerticle extends AbstractVerticle {
           default -> Uni.createFrom().voidItem();
         };
       })
-      .onItem().transformToUni(v -> mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.isDup(), msgToClient.isRetain(), messageId))
+      // From MQTT 3.1.1 specification: The DUP flag MUST be set to 0 for all QoS 0 messages
+      .onItem().transformToUni(v -> mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId))
       .onItem().invoke(() -> {
         if (packetsPublishSentCounter != null) {
           packetsPublishSentCounter.increment();
