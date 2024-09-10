@@ -94,6 +94,9 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
     }
   }
 
+  /**
+   * <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901211">Session expiry in DISCONNECT in MQTT5 specification</a>
+   */
   private Uni<Void> processSessionExpiryInterval(MqttDisconnectMessage mqttDisconnectMessage, Session session) {
     if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
       return Uni.createFrom().voidItem();
@@ -101,6 +104,7 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
       MqttProperties.MqttProperty sessionExpiryIntervalProperty = mqttDisconnectMessage.properties().getProperty(MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL.value());
       Integer sessionExpiryInterval = sessionExpiryIntervalProperty == null ? null : (Integer) sessionExpiryIntervalProperty.value();
       if (session.getSessionExpiryInterval() != null && session.getSessionExpiryInterval() == 0 && sessionExpiryInterval != null && sessionExpiryInterval != 0) {
+        // From MQTT 5 specification: If the Session Expiry Interval in the CONNECT packet was zero, then it is a Protocol Error to set a non-zero Session Expiry Interval in the DISCONNECT packet sent by the Client
         return Uni.createFrom().voidItem();
       } else {
         if (sessionExpiryInterval != null) {

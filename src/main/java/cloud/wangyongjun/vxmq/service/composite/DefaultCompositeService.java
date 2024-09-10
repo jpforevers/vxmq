@@ -132,7 +132,7 @@ public class DefaultCompositeService implements CompositeService {
             return Uni.createFrom().voidItem();
           }
         } else {
-          // From MQTT 5, because of "Session Expiry Interval", should always saving offline message here, and clean it when "Session Expiry Interval" end.
+          // For MQTT 5, because of "Session Expiry Interval", should always saving offline message here, and clean it when "Session Expiry Interval" end.
           return msgService.saveOfflineMsg(msgToClient);
         }
       }

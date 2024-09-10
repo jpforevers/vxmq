@@ -1,11 +1,9 @@
 package cloud.wangyongjun.vxmq.service.authentication.impl;
 
-import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.service.authentication.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthResult;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
