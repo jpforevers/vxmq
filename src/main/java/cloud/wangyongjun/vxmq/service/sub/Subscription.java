@@ -18,7 +18,7 @@ package cloud.wangyongjun.vxmq.service.sub;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.Nullable;
-import cloud.wangyongjun.vxmq.assist.StringPair;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -40,7 +40,7 @@ public class Subscription {
   private Integer retainHandling;
   // MQTT5 MqttProperties
   private Integer subscriptionIdentifier;
-  private List<StringPair> userProperties;
+  private List<MqttProperties.StringPair> userProperties;
   // MQTT5 Shared subscription
   private String shareName;
 
@@ -58,7 +58,11 @@ public class Subscription {
     this.isRetainAsPublished = jsonObject.getBoolean(ModelConstants.FIELD_NAME_IS_RETAIN_AS_PUBLISHED);
     this.retainHandling = jsonObject.getInteger(ModelConstants.FIELD_NAME_RETAIN_HANDLING);
     this.subscriptionIdentifier = jsonObject.getInteger(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER);
-    this.userProperties = jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES) == null ? new ArrayList<>() : jsonObject.getJsonArray("userProperties").stream().map(o -> (JsonObject) o).map(StringPair::new).collect(Collectors.toList());
+    this.userProperties = jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES) == null ? new ArrayList<>() :
+      jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES).stream()
+        .map(o -> (JsonObject) o)
+        .map(j -> new MqttProperties.StringPair(j.getString("key"), j.getString("value")))
+        .collect(Collectors.toList());
     this.shareName = jsonObject.getString(ModelConstants.FIELD_NAME_SHARE_NAME);
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
@@ -73,7 +77,10 @@ public class Subscription {
     jsonObject.put(ModelConstants.FIELD_NAME_IS_RETAIN_AS_PUBLISHED, this.isRetainAsPublished);
     jsonObject.put(ModelConstants.FIELD_NAME_RETAIN_HANDLING, this.retainHandling);
     jsonObject.put(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER, this.subscriptionIdentifier);
-    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, this.userProperties == null ? new JsonArray() : this.userProperties.stream().map(StringPair::toJson).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, this.userProperties == null ? null :
+      this.userProperties.stream()
+        .map(stringPair -> new JsonObject().put("key", stringPair.key).put("value", stringPair.value))
+        .collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
     jsonObject.put(ModelConstants.FIELD_NAME_SHARE_NAME, this.shareName);
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
@@ -164,11 +171,11 @@ public class Subscription {
     return this;
   }
 
-  public List<StringPair> getUserProperties() {
+  public List<MqttProperties.StringPair> getUserProperties() {
     return userProperties;
   }
 
-  public Subscription setUserProperties(List<StringPair> userProperties) {
+  public Subscription setUserProperties(List<MqttProperties.StringPair> userProperties) {
     this.userProperties = userProperties;
     return this;
   }
@@ -177,7 +184,7 @@ public class Subscription {
     if (this.userProperties == null) {
       userProperties = new ArrayList<>();
     }
-    userProperties.add(new StringPair(key, value));
+    userProperties.add(new MqttProperties.StringPair(key, value));
     return this;
   }
 

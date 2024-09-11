@@ -63,7 +63,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * If an MQTT client connect to the server a new MqttEndpoint instance will be created and passed to the handler.
@@ -435,20 +434,13 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           .setWillMessage(mqttEndpoint.will().getWillMessage()).setWillQos(mqttEndpoint.will().getWillQos()).setWillRetain(mqttEndpoint.will().isWillRetain())
           .setCreatedTime(Instant.now().toEpochMilli());
       } else {
-        MqttProperties.MqttProperty willDelayIntervalProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.WILL_DELAY_INTERVAL.value());
-        Integer willDelayInterval = willDelayIntervalProperty == null ? null : (Integer) willDelayIntervalProperty.value();
-        MqttProperties.MqttProperty payloadFormatIndicatorProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR.value());
-        Integer payloadFormatIndicator = payloadFormatIndicatorProperty == null ? null : (Integer) payloadFormatIndicatorProperty.value();
-        MqttProperties.MqttProperty messageExpiryIntervalProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL.value());
-        Integer messageExpiryInterval = messageExpiryIntervalProperty == null ? null : (Integer) messageExpiryIntervalProperty.value();
-        MqttProperties.MqttProperty contentTypeProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.CONTENT_TYPE.value());
-        String contentType = contentTypeProperty == null ? null : (String) contentTypeProperty.value();
-        MqttProperties.MqttProperty responseTopicProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.RESPONSE_TOPIC.value());
-        String responseTopic = responseTopicProperty == null ? null : (String) responseTopicProperty.value();
-        MqttProperties.MqttProperty correlationDataProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.CORRELATION_DATA.value());
-        Buffer correlationData = correlationDataProperty == null ? null : Buffer.buffer((byte[]) correlationDataProperty.value());
-        List<? extends MqttProperties.MqttProperty> userPropertiesProperty = mqttEndpoint.connectProperties().getProperties(MqttProperties.MqttPropertyType.USER_PROPERTY.value());
-        List<StringPair> userProperties = userPropertiesProperty.stream().map(mqttProperty -> (MqttProperties.UserProperty) mqttProperty).map(userProperty -> new StringPair(userProperty.value().key, userProperty.value().value)).collect(Collectors.toList());
+        Integer willDelayInterval = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.WILL_DELAY_INTERVAL, MqttProperties.IntegerProperty.class);
+        Integer payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
+        Integer messageExpiryInterval = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
+        String contentType = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
+        String responseTopic = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.RESPONSE_TOPIC, MqttProperties.StringProperty.class);
+        Buffer correlationData = Buffer.buffer(MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class));
+        List<MqttProperties.StringPair> userProperties = MqttPropertiesUtil.getValues(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.UserProperty.class);
 
         will = new Will().setSessionId(session.getSessionId()).setClientId(mqttEndpoint.clientIdentifier()).setWillTopicName(mqttEndpoint.will().getWillTopic())
           .setWillMessage(mqttEndpoint.will().getWillMessage()).setWillQos(mqttEndpoint.will().getWillQos()).setWillRetain(mqttEndpoint.will().isWillRetain())

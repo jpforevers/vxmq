@@ -18,7 +18,7 @@ package cloud.wangyongjun.vxmq.service.will;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.Nullable;
-import cloud.wangyongjun.vxmq.assist.StringPair;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -43,7 +43,7 @@ public class Will {
   private String contentType;  // 3.1.3.2.5 Content Type
   private String responseTopic;  // 3.1.3.2.6 Response Topic
   private Buffer correlationData;  // 3.1.3.2.7 Correlation Data
-  private List<StringPair> userProperties;  // 3.1.3.2.8 User Property
+  private List<MqttProperties.StringPair> userProperties;  // 3.1.3.2.8 User Property
 
   private long createdTime;
 
@@ -63,7 +63,11 @@ public class Will {
     this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
     this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
     this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
-    this.userProperties = jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES) == null ? new ArrayList<>() : jsonObject.getJsonArray("userProperties").stream().map(o -> (JsonObject) o).map(StringPair::new).collect(Collectors.toList());
+    this.userProperties = jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES) == null ? new ArrayList<>() :
+      jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES).stream()
+        .map(o -> (JsonObject) o)
+        .map(j -> new MqttProperties.StringPair(j.getString("key"), j.getString("value")))
+        .collect(Collectors.toList());
     this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
   }
 
@@ -81,7 +85,10 @@ public class Will {
     jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
     jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
     jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
-    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, this.userProperties == null ? null : this.userProperties.stream().map(StringPair::toJson).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, this.userProperties == null ? null :
+      this.userProperties.stream()
+        .map(stringPair -> new JsonObject().put("key", stringPair.key).put("value", stringPair.value))
+        .collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
     return jsonObject;
   }
@@ -146,7 +153,7 @@ public class Will {
   }
 
   @Nullable
-  public List<StringPair> getUserProperties() {
+  public List<MqttProperties.StringPair> getUserProperties() {
     return userProperties;
   }
 
@@ -214,7 +221,7 @@ public class Will {
     return this;
   }
 
-  public Will setUserProperties(List<StringPair> userProperties) {
+  public Will setUserProperties(List<MqttProperties.StringPair> userProperties) {
     this.userProperties = userProperties;
     return this;
   }
@@ -223,7 +230,7 @@ public class Will {
     if (this.userProperties == null) {
       userProperties = new ArrayList<>();
     }
-    userProperties.add(new StringPair(key, value));
+    userProperties.add(new MqttProperties.StringPair(key, value));
     return this;
   }
 

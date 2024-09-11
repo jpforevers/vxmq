@@ -21,6 +21,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 public class MqttPropertiesUtil {
 
@@ -86,6 +88,34 @@ public class MqttPropertiesUtil {
       }
     });
     return mqttProperties;
+  }
+
+  /**
+   * Get value from {@link MqttProperties}
+   * @param mqttProperties {@link MqttProperties}
+   * @param mqttPropertyType {@link io.netty.handler.codec.mqtt.MqttProperties.MqttPropertyType}
+   * @param clazz could only be: {@link io.netty.handler.codec.mqtt.MqttProperties.IntegerProperty}, {@link io.netty.handler.codec.mqtt.MqttProperties.StringProperty}, {@link io.netty.handler.codec.mqtt.MqttProperties.BinaryProperty}
+   * @return Mqtt property values
+   */
+  public static <T> T getValue(MqttProperties mqttProperties, MqttProperties.MqttPropertyType mqttPropertyType, Class<? extends MqttProperties.MqttProperty<T>> clazz) {
+    return Optional.ofNullable(mqttProperties.getProperty(mqttPropertyType.value())).map(mqttProperty -> (T) mqttProperty.value()).orElse(null);
+  }
+
+  /**
+   * Get values from {@link MqttProperties}
+   * @param mqttProperties {@link MqttProperties}
+   * @param mqttPropertyType could only be USER_PROPERTY, SUBSCRIPTION_IDENTIFIER
+   * @param clazz could only be: {@link io.netty.handler.codec.mqtt.MqttProperties.UserProperty}, {@link io.netty.handler.codec.mqtt.MqttProperties.IntegerProperty}
+   * @return Mqtt property values
+   */
+  public static <T> List<T> getValues(MqttProperties mqttProperties, MqttProperties.MqttPropertyType mqttPropertyType, Class<? extends MqttProperties.MqttProperty<T>> clazz) {
+    if (!List.of(MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER).contains(mqttPropertyType)) {
+      throw new IllegalArgumentException("Not support " + mqttPropertyType);
+    }
+    if (!(clazz.equals(MqttProperties.UserProperty.class) || clazz.equals(MqttProperties.IntegerProperty.class))) {
+      throw new IllegalArgumentException("Not support " + clazz);
+    }
+    return mqttProperties.getProperties(mqttPropertyType.value()).stream().map(mp -> (T) mp.value()).toList();
   }
 
 }
