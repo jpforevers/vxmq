@@ -30,7 +30,7 @@ public class MsgToClient {
   private Buffer payload;
   private boolean dup;
   private boolean retain;
-
+  private Integer messageExpiryInterval;
   private long createdTime;
 
   public MsgToClient() {
@@ -45,6 +45,7 @@ public class MsgToClient {
     this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
     this.dup = jsonObject.getBoolean(ModelConstants.FIELD_NAME_DUP);
     this.retain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_RETAIN);
+    this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
@@ -58,6 +59,7 @@ public class MsgToClient {
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
     jsonObject.put(ModelConstants.FIELD_NAME_DUP, this.dup);
     jsonObject.put(ModelConstants.FIELD_NAME_RETAIN, this.retain);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
@@ -136,6 +138,15 @@ public class MsgToClient {
 
   public MsgToClient setRetain(boolean retain) {
     this.retain = retain;
+    return this;
+  }
+
+  public Integer getMessageExpiryInterval() {
+    return messageExpiryInterval;
+  }
+
+  public MsgToClient setMessageExpiryInterval(Integer messageExpiryInterval) {
+    this.messageExpiryInterval = messageExpiryInterval;
     return this;
   }
 

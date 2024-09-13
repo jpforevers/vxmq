@@ -19,8 +19,6 @@ package cloud.wangyongjun.vxmq.service.msg;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
-import java.time.Instant;
-
 public class InboundQos2Pub {
 
   private String sessionId;
@@ -31,12 +29,14 @@ public class InboundQos2Pub {
   private Buffer payload;
   private boolean dup;
   private boolean retain;
+  private Integer messageExpiryInterval;
   private long createdTime;
 
   public InboundQos2Pub() {
   }
 
-  public InboundQos2Pub(String sessionId, String clientId, int messageId, String topic, int qos, Buffer payload, boolean dup, boolean retain, long createdTime) {
+  public InboundQos2Pub(String sessionId, String clientId, int messageId, String topic, int qos,
+                        Buffer payload, boolean dup, boolean retain, Integer messageExpiryInterval, long createdTime) {
     this.sessionId = sessionId;
     this.clientId = clientId;
     this.messageId = messageId;
@@ -45,6 +45,7 @@ public class InboundQos2Pub {
     this.payload = payload;
     this.dup = dup;
     this.retain = retain;
+    this.messageExpiryInterval = messageExpiryInterval;
     this.createdTime = createdTime;
   }
 
@@ -57,6 +58,7 @@ public class InboundQos2Pub {
     this.payload = jsonObject.getBuffer("payload");
     this.dup = jsonObject.getBoolean("dup");
     this.retain = jsonObject.getBoolean("retain");
+    this.messageExpiryInterval = jsonObject.getInteger("messageExpiryInterval");
     this.createdTime = jsonObject.getLong("createdTime");
   }
 
@@ -70,6 +72,7 @@ public class InboundQos2Pub {
     jsonObject.put("payload", this.payload);
     jsonObject.put("dup", this.dup);
     jsonObject.put("retain", this.retain);
+    jsonObject.put("messageExpiryInterval", this.messageExpiryInterval);
     jsonObject.put("createdTime", this.createdTime);
     return jsonObject;
   }
@@ -109,6 +112,10 @@ public class InboundQos2Pub {
 
   public boolean isRetain() {
     return retain;
+  }
+
+  public Integer getMessageExpiryInterval() {
+    return messageExpiryInterval;
   }
 
   public long getCreatedTime() {

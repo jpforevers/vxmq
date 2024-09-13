@@ -153,20 +153,20 @@ public class MqttCloseHandler implements Runnable {
           return compositeService.clearSessionData(session.getClientId())
             .onItem().transformToUni(v -> compositeService.publishWill(session.getSessionId()));
         } else {
-          // 这里暂时放弃实现：
-          // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901048
-          // If the Session Expiry Interval is 0xFFFFFFFF (UINT_MAX), the Session does not expire.
-
-          vertx.setTimer(session.getSessionExpiryInterval() * 1000, l -> sessionService.getSession(session.getClientId())
-            .onItem().transformToUni(sessionX -> {
-              if (sessionX.isOnline()) {
-                return Uni.createFrom().voidItem();
-              } else {
-                return compositeService.clearSessionData(sessionX.getClientId())
-                  .onItem().transformToUni(v -> compositeService.publishWill(sessionX.getSessionId()));
-              }
-            })
-            .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when clear session on session expiry interval passed")));
+          // From MQTT 5 specification: If the Session Expiry Interval is 0xFFFFFFFF (UINT_MAX), the Session does not expire.
+          // The result of Integer.valueOf(0xFFFFFFFF) is -1.
+          if (session.getSessionExpiryInterval() != -1) {
+            vertx.setTimer(session.getSessionExpiryInterval() * 1000, l -> sessionService.getSession(session.getClientId())
+              .onItem().transformToUni(sessionX -> {
+                if (sessionX.isOnline()) {
+                  return Uni.createFrom().voidItem();
+                } else {
+                  return compositeService.clearSessionData(sessionX.getClientId())
+                    .onItem().transformToUni(v -> compositeService.publishWill(sessionX.getSessionId()));
+                }
+              })
+              .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when clear session on session expiry interval passed")));
+          }
           return sessionService.saveOrUpdateSession(session.copy().setOnline(false).setVerticleId(null).setNodeId(null).setUpdatedTime(Instant.now().toEpochMilli()));
         }
       }

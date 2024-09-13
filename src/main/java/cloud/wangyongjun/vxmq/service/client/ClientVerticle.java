@@ -24,7 +24,9 @@ import cloud.wangyongjun.vxmq.service.msg.OutboundQos1Pub;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos2Pub;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import io.micrometer.core.instrument.Counter;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
@@ -117,7 +119,18 @@ public class ClientVerticle extends AbstractVerticle {
         };
       })
       // From MQTT 3.1.1 specification: The DUP flag MUST be set to 0 for all QoS 0 messages
-      .onItem().transformToUni(v -> mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId))
+      .onItem().transformToUni(v -> {
+        if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
+          return mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId);
+        } else {
+          MqttProperties mqttProperties = new MqttProperties();
+          if (msgToClient.getMessageExpiryInterval() != null && msgToClient.getMessageExpiryInterval() != 0) {
+            long messageExpiryInterval = msgToClient.getMessageExpiryInterval() - (Instant.now().toEpochMilli() - msgToClient.getCreatedTime()) / 1000;
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL.value(), (int) messageExpiryInterval));
+          }
+          return mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId, mqttProperties);
+        }
+      })
       .onItem().invoke(() -> {
         if (packetsPublishSentCounter != null) {
           packetsPublishSentCounter.increment();

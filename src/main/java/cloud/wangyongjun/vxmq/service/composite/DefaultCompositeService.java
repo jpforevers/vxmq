@@ -97,7 +97,8 @@ public class DefaultCompositeService implements CompositeService {
       .onItem().transformToUni(will -> {
         if (will != null) {
           MsgToTopic msgToTopic = new MsgToTopic().setClientId(will.getClientId()).setTopic(will.getWillTopicName())
-            .setQos(will.getWillQos()).setPayload(will.getWillMessage()).setRetain(will.isWillRetain());
+            .setQos(will.getWillQos()).setPayload(will.getWillMessage()).setRetain(will.isWillRetain())
+            .setMessageExpiryInterval(will.getMessageExpiryInterval());
           return forward(msgToTopic)
             .onItem().transformToUni(v -> willService.removeWill(sessionId))
             .onItem().transformToUni(v -> {
@@ -157,7 +158,8 @@ public class DefaultCompositeService implements CompositeService {
               .onItem().transformToUni(session -> {
                 MsgToClient msgToClient = new MsgToClient().setSessionId(session.getSessionId()).setClientId(subscription.getClientId())
                   .setTopic(msgToTopic.getTopic()).setQos(Math.min(msgToTopic.getQos(), subscription.getQos()))
-                  .setPayload(msgToTopic.getPayload()).setDup(false).setCreatedTime(Instant.now().toEpochMilli());
+                  .setPayload(msgToTopic.getPayload()).setDup(false).setMessageExpiryInterval(msgToTopic.getMessageExpiryInterval())
+                  .setCreatedTime(Instant.now().toEpochMilli());
                 if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
                   // From http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718038
                   // When sending a PUBLISH Packet to a Client the Server MUST set the RETAIN flag to 1 if a message is sent as a result of a new subscription being made by a Client [MQTT-3.3.1-8]. It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].
@@ -181,10 +183,18 @@ public class DefaultCompositeService implements CompositeService {
   public Uni<Void> sendOfflineMsg(String sessionId) {
     MsgToClient msgToClient = IgniteAssist.getOfflineMsgQueueOfSession(IgniteUtil.getIgnite(vertx), sessionId).poll();
     if (msgToClient != null) {
-      return Uni.createFrom().voidItem()
-        .onItem().transformToUni(v -> sessionService.getSession(msgToClient.getClientId()))
-        .onItem().transformToUni(session -> sendToClient(session, msgToClient))
-        .onItem().transformToUni(v -> sendOfflineMsg(sessionId));
+      Instant now = Instant.now();
+      if (msgToClient.getMessageExpiryInterval() != null && msgToClient.getMessageExpiryInterval() != 0
+        && msgToClient.getCreatedTime() + msgToClient.getMessageExpiryInterval() * 1000 < now.toEpochMilli()) {
+        // Message expiry interval exist and already expired, skip this message.
+        LOGGER.warn("Offline message expired: {}", msgToClient);
+        return sendOfflineMsg(sessionId);
+      } else {
+        return Uni.createFrom().voidItem()
+          .onItem().transformToUni(v -> sessionService.getSession(msgToClient.getClientId()))
+          .onItem().transformToUni(session -> sendToClient(session, msgToClient))
+          .onItem().transformToUni(v -> sendOfflineMsg(sessionId));
+      }
     } else {
       return Uni.createFrom().voidItem();
     }

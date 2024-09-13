@@ -217,10 +217,16 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
         Uni.createFrom().voidItem();
       case EXACTLY_ONCE -> sessionService.getSession(mqttEndpoint.clientIdentifier())
         .onItem().transformToUni(session -> {
+          Integer messageExpiryInterval;
+          if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+            messageExpiryInterval = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
+          } else {
+            messageExpiryInterval = null;
+          }
           InboundQos2Pub inboundQos2Pub = new InboundQos2Pub(session.getSessionId(), mqttEndpoint.clientIdentifier(),
             mqttPublishMessage.messageId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
             mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain(),
-            Instant.now().toEpochMilli());
+            messageExpiryInterval, Instant.now().toEpochMilli());
           return msgService.saveInboundQos2Pub(inboundQos2Pub);
         });
       default -> Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
@@ -269,6 +275,10 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
         MsgToTopic msgToTopic = new MsgToTopic().setClientId(mqttEndpoint.clientIdentifier()).setTopic(mqttPublishMessage.topicName())
           .setQos(mqttPublishMessage.qosLevel().value()).setPayload(mqttPublishMessage.payload().getDelegate())
           .setRetain(mqttPublishMessage.isRetain());
+        if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+          Integer messageExpiryInterval = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
+          msgToTopic.setMessageExpiryInterval(messageExpiryInterval);
+        }
         return compositeService.forward(msgToTopic);
       }
       case EXACTLY_ONCE -> {

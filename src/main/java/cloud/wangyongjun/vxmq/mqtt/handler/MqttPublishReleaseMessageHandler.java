@@ -90,7 +90,9 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
       })
       .onItem().transformToUni(inboundQos2Pub -> {
         if (inboundQos2Pub != null) {
-          MsgToTopic msgToTopic = new MsgToTopic().setClientId(inboundQos2Pub.getClientId()).setTopic(inboundQos2Pub.getTopic()).setQos(inboundQos2Pub.getQos()).setPayload(inboundQos2Pub.getPayload()).setRetain(inboundQos2Pub.isRetain());
+          MsgToTopic msgToTopic = new MsgToTopic().setClientId(inboundQos2Pub.getClientId()).setTopic(inboundQos2Pub.getTopic())
+            .setQos(inboundQos2Pub.getQos()).setPayload(inboundQos2Pub.getPayload()).setRetain(inboundQos2Pub.isRetain())
+            .setMessageExpiryInterval(inboundQos2Pub.getMessageExpiryInterval());
           return compositeService.forward(msgToTopic);
         } else {
           return Uni.createFrom().voidItem();
