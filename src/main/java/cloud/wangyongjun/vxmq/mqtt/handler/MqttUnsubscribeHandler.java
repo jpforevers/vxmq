@@ -113,10 +113,13 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
             // http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180893
             // The UNSUBACK Packet has no payload. Nothing need to do.
           } else {
+            Integer requestProblemInformation = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.REQUEST_PROBLEM_INFORMATION, MqttProperties.IntegerProperty.class);
             if (t instanceof MqttUnsubscribeException) {
               reasonCodes.add(((MqttUnsubscribeException) t).code());
             } else {
-              unsubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+              if (requestProblemInformation == null || requestProblemInformation == 1) {
+                unsubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+              }
               reasonCodes.add(MqttUnsubAckReasonCode.UNSPECIFIED_ERROR);
             }
           }

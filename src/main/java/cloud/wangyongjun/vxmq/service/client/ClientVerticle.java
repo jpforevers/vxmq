@@ -128,6 +128,12 @@ public class ClientVerticle extends AbstractVerticle {
             long messageExpiryInterval = msgToClient.getMessageExpiryInterval() - (Instant.now().toEpochMilli() - msgToClient.getCreatedTime()) / 1000;
             mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL.value(), (int) messageExpiryInterval));
           }
+          if (msgToClient.getPayloadFormatIndicator() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR.value(), msgToClient.getPayloadFormatIndicator()));
+          }
+          if (StringUtils.isNotBlank(msgToClient.getContentType())) {
+            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.CONTENT_TYPE.value(), msgToClient.getContentType()));
+          }
           return mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId, mqttProperties);
         }
       })

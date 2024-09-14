@@ -39,6 +39,8 @@ public class WriteMqttEventToMqttStaticRule extends AbstractVerticle {
           msgToTopic.setQos(0);
           msgToTopic.setRetain(false);
           msgToTopic.setPayload(event.toJson().toBuffer());
+          // From MQTT 5 specification: 1 (0x01) Byte Indicates that the Payload is UTF-8 Encoded Character Data.
+          msgToTopic.setPayloadFormatIndicator(1);
           compositeService.forward(msgToTopic)
             .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when write mqtt event to mqtt", t));
         }

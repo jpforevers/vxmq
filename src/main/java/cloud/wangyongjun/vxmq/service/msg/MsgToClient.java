@@ -31,6 +31,8 @@ public class MsgToClient {
   private boolean dup;
   private boolean retain;
   private Integer messageExpiryInterval;
+  private Integer payloadFormatIndicator;
+  private String contentType;
   private long createdTime;
 
   public MsgToClient() {
@@ -46,6 +48,8 @@ public class MsgToClient {
     this.dup = jsonObject.getBoolean(ModelConstants.FIELD_NAME_DUP);
     this.retain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_RETAIN);
     this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
+    this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
+    this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
@@ -60,6 +64,8 @@ public class MsgToClient {
     jsonObject.put(ModelConstants.FIELD_NAME_DUP, this.dup);
     jsonObject.put(ModelConstants.FIELD_NAME_RETAIN, this.retain);
     jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, this.payloadFormatIndicator);
+    jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
@@ -147,6 +153,24 @@ public class MsgToClient {
 
   public MsgToClient setMessageExpiryInterval(Integer messageExpiryInterval) {
     this.messageExpiryInterval = messageExpiryInterval;
+    return this;
+  }
+
+  public Integer getPayloadFormatIndicator() {
+    return payloadFormatIndicator;
+  }
+
+  public MsgToClient setPayloadFormatIndicator(Integer payloadFormatIndicator) {
+    this.payloadFormatIndicator = payloadFormatIndicator;
+    return this;
+  }
+
+  public String getContentType() {
+    return contentType;
+  }
+
+  public MsgToClient setContentType(String contentType) {
+    this.contentType = contentType;
     return this;
   }
 

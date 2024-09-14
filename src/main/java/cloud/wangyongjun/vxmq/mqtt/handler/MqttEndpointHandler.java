@@ -124,14 +124,14 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       LOGGER.debug("CONNECT from {}: {}", mqttEndpoint.clientIdentifier(), connectInfo(mqttEndpoint));
     }
 
-    MqttProperties mqttProperties = new MqttProperties();
+    MqttProperties conAckMqttProperties = new MqttProperties();
     if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
       if (StringUtils.isBlank(clientIdOriginal)) {
-        mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.ASSIGNED_CLIENT_IDENTIFIER.value(), mqttEndpoint.clientIdentifier()));
+        conAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.ASSIGNED_CLIENT_IDENTIFIER.value(), mqttEndpoint.clientIdentifier()));
       }
       // TODO When these MQTT 5 features implemented, change 0 to 1
-      mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER_AVAILABLE.value(), 0));
-      mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SHARED_SUBSCRIPTION_AVAILABLE.value(), 1));
+      conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER_AVAILABLE.value(), 0));
+      conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SHARED_SUBSCRIPTION_AVAILABLE.value(), 1));
     }
 
     Context context = Context.empty();
@@ -153,7 +153,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           mqttEndpoint.accept(sessionPresent);
         } else {
-          mqttEndpoint.accept(sessionPresent, mqttProperties);
+          mqttEndpoint.accept(sessionPresent, conAckMqttProperties);
         }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Mqtt client {} connected", mqttEndpoint.clientIdentifier());
@@ -169,11 +169,11 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           }
         } else {
           if (t instanceof MqttAuthFailedException e) {
-            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), ((MqttAuthFailedException) t).getReason()));
-            mqttEndpoint.reject(e.getCode(), mqttProperties);
+            conAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), ((MqttAuthFailedException) t).getReason()));
+            mqttEndpoint.reject(e.getCode(), conAckMqttProperties);
           } else {
-            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
-            mqttEndpoint.reject(MqttConnectReturnCode.CONNECTION_REFUSED_UNSPECIFIED_ERROR, mqttProperties);
+            conAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+            mqttEndpoint.reject(MqttConnectReturnCode.CONNECTION_REFUSED_UNSPECIFIED_ERROR, conAckMqttProperties);
           }
         }
       });

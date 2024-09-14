@@ -28,6 +28,8 @@ public class MsgToTopic {
   private Buffer payload;
   private boolean retain;
   private Integer messageExpiryInterval;
+  private Integer payloadFormatIndicator;
+  private String contentType;
 
   public MsgToTopic() {
   }
@@ -39,6 +41,8 @@ public class MsgToTopic {
     this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
     this.retain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_RETAIN);
     this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
+    this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
+    this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
   }
 
   public JsonObject toJson() {
@@ -49,6 +53,8 @@ public class MsgToTopic {
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
     jsonObject.put(ModelConstants.FIELD_NAME_RETAIN, this.retain);
     jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, this.payloadFormatIndicator);
+    jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
     return jsonObject;
   }
 
@@ -108,6 +114,24 @@ public class MsgToTopic {
 
   public MsgToTopic setMessageExpiryInterval(Integer messageExpiryInterval) {
     this.messageExpiryInterval = messageExpiryInterval;
+    return this;
+  }
+
+  public Integer getPayloadFormatIndicator() {
+    return payloadFormatIndicator;
+  }
+
+  public MsgToTopic setPayloadFormatIndicator(Integer payloadFormatIndicator) {
+    this.payloadFormatIndicator = payloadFormatIndicator;
+    return this;
+  }
+
+  public String getContentType() {
+    return contentType;
+  }
+
+  public MsgToTopic setContentType(String contentType) {
+    this.contentType = contentType;
     return this;
   }
 }

@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.msg;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
@@ -30,13 +31,17 @@ public class InboundQos2Pub {
   private boolean dup;
   private boolean retain;
   private Integer messageExpiryInterval;
+  private Integer payloadFormatIndicator;
+  private String contentType;
   private long createdTime;
 
   public InboundQos2Pub() {
   }
 
   public InboundQos2Pub(String sessionId, String clientId, int messageId, String topic, int qos,
-                        Buffer payload, boolean dup, boolean retain, Integer messageExpiryInterval, long createdTime) {
+                        Buffer payload, boolean dup, boolean retain, Integer messageExpiryInterval,
+                        Integer payloadFormatIndicator, String contentType,
+                        long createdTime) {
     this.sessionId = sessionId;
     this.clientId = clientId;
     this.messageId = messageId;
@@ -46,34 +51,40 @@ public class InboundQos2Pub {
     this.dup = dup;
     this.retain = retain;
     this.messageExpiryInterval = messageExpiryInterval;
+    this.payloadFormatIndicator = payloadFormatIndicator;
+    this.contentType = contentType;
     this.createdTime = createdTime;
   }
 
   public InboundQos2Pub(JsonObject jsonObject) {
-    this.sessionId = jsonObject.getString("sessionId");
-    this.clientId = jsonObject.getString("clientId");
-    this.messageId = jsonObject.getInteger("messageId");
-    this.topic = jsonObject.getString("topic");
-    this.qos = jsonObject.getInteger("qos");
-    this.payload = jsonObject.getBuffer("payload");
-    this.dup = jsonObject.getBoolean("dup");
-    this.retain = jsonObject.getBoolean("retain");
-    this.messageExpiryInterval = jsonObject.getInteger("messageExpiryInterval");
-    this.createdTime = jsonObject.getLong("createdTime");
+    this.sessionId = jsonObject.getString(ModelConstants.FIELD_NAME_SESSION_ID);
+    this.clientId = jsonObject.getString(ModelConstants.FIELD_NAME_CLIENT_ID);
+    this.messageId = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_ID);
+    this.topic = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC);
+    this.qos = jsonObject.getInteger(ModelConstants.FIELD_NAME_QOS);
+    this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
+    this.dup = jsonObject.getBoolean(ModelConstants.FIELD_NAME_DUP);
+    this.retain = jsonObject.getBoolean(ModelConstants.FIELD_NAME_RETAIN);
+    this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
+    this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
+    this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
+    this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("sessionId", this.sessionId);
-    jsonObject.put("clientId", this.clientId);
-    jsonObject.put("messageId", this.messageId);
-    jsonObject.put("topic", this.topic);
-    jsonObject.put("qos", this.qos);
-    jsonObject.put("payload", this.payload);
-    jsonObject.put("dup", this.dup);
-    jsonObject.put("retain", this.retain);
-    jsonObject.put("messageExpiryInterval", this.messageExpiryInterval);
-    jsonObject.put("createdTime", this.createdTime);
+    jsonObject.put(ModelConstants.FIELD_NAME_SESSION_ID, this.sessionId);
+    jsonObject.put(ModelConstants.FIELD_NAME_CLIENT_ID, this.clientId);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_ID, this.messageId);
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC, this.topic);
+    jsonObject.put(ModelConstants.FIELD_NAME_QOS, this.qos);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
+    jsonObject.put(ModelConstants.FIELD_NAME_DUP, this.dup);
+    jsonObject.put(ModelConstants.FIELD_NAME_RETAIN, this.retain);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
+    jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, this.payloadFormatIndicator);
+    jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
+    jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
 
@@ -116,6 +127,14 @@ public class InboundQos2Pub {
 
   public Integer getMessageExpiryInterval() {
     return messageExpiryInterval;
+  }
+
+  public Integer getPayloadFormatIndicator() {
+    return payloadFormatIndicator;
+  }
+
+  public String getContentType() {
+    return contentType;
   }
 
   public long getCreatedTime() {

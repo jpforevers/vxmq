@@ -135,15 +135,21 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
                 mqttEndpoint.publishReceived(mqttPublishMessage.messageId(), ((MqttPublishException) t).mqttPubRecReasonCode(), pubRecProperties);
             }
           } else {
+            Integer requestProblemInformation = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.REQUEST_PROBLEM_INFORMATION, MqttProperties.IntegerProperty.class);
             switch (mqttPublishMessage.qosLevel()) {
               case AT_MOST_ONCE:
                 break;
-              case AT_LEAST_ONCE:
-                pubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+              case AT_LEAST_ONCE:{
+                if (requestProblemInformation == null || requestProblemInformation == 1) {
+                  pubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+                }
                 mqttEndpoint.publishAcknowledge(mqttPublishMessage.messageId(), MqttPubAckReasonCode.UNSPECIFIED_ERROR, pubAckProperties);
                 break;
+              }
               case EXACTLY_ONCE:
-                pubRecProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+                if (requestProblemInformation == null || requestProblemInformation == 1) {
+                  pubRecProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+                }
                 mqttEndpoint.publishReceived(mqttPublishMessage.messageId(), MqttPubRecReasonCode.UNSPECIFIED_ERROR, pubRecProperties);
             }
           }
@@ -218,15 +224,21 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
       case EXACTLY_ONCE -> sessionService.getSession(mqttEndpoint.clientIdentifier())
         .onItem().transformToUni(session -> {
           Integer messageExpiryInterval;
+          Integer payloadFormatIndicator;
+          String contentType;
           if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
             messageExpiryInterval = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
+            payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
+            contentType = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
           } else {
             messageExpiryInterval = null;
+            payloadFormatIndicator = null;
+            contentType = null;
           }
           InboundQos2Pub inboundQos2Pub = new InboundQos2Pub(session.getSessionId(), mqttEndpoint.clientIdentifier(),
             mqttPublishMessage.messageId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
             mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain(),
-            messageExpiryInterval, Instant.now().toEpochMilli());
+            messageExpiryInterval, payloadFormatIndicator, contentType, Instant.now().toEpochMilli());
           return msgService.saveInboundQos2Pub(inboundQos2Pub);
         });
       default -> Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
@@ -252,8 +264,17 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
   private Uni<Void> handleRetain(MqttPublishMessage mqttPublishMessage) {
     if (mqttPublishMessage.isRetain()) {
       if (mqttPublishMessage.payload() != null && mqttPublishMessage.payload().length() > 0) {
+        Integer payloadFormatIndicator;
+        String contentType;
+        if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+          payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
+          contentType = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
+        } else {
+          payloadFormatIndicator = null;
+          contentType = null;
+        }
         Retain retainMessage = new Retain(mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
-          mqttPublishMessage.payload().getDelegate(), Instant.now().toEpochMilli());
+          mqttPublishMessage.payload().getDelegate(), payloadFormatIndicator, contentType, Instant.now().toEpochMilli());
         return retainService.saveOrUpdateRetain(retainMessage);
       } else {
         return retainService.removeRetain(mqttPublishMessage.topicName());
@@ -277,7 +298,11 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
           .setRetain(mqttPublishMessage.isRetain());
         if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
           Integer messageExpiryInterval = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
+          Integer payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
+          String contentType = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
           msgToTopic.setMessageExpiryInterval(messageExpiryInterval);
+          msgToTopic.setPayloadFormatIndicator(payloadFormatIndicator);
+          msgToTopic.setContentType(contentType);
         }
         return compositeService.forward(msgToTopic);
       }

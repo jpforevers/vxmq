@@ -133,11 +133,14 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
             if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
               grantedQosLevels.add(MqttQoS.FAILURE);
             } else {
+              Integer requestProblemInformation = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.REQUEST_PROBLEM_INFORMATION, MqttProperties.IntegerProperty.class);
               if (t instanceof MqttSubscribeException) {
                 reasonCodes.add(((MqttSubscribeException) t).code());
               } else {
                 reasonCodes.add(MqttSubAckReasonCode.UNSPECIFIED_ERROR);
-                subAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+                if (requestProblemInformation == null || requestProblemInformation == 1) {
+                  subAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+                }
               }
             }
           }
@@ -266,15 +269,18 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
               switch (retainedHandlingPolicy) {
                 case SEND_AT_SUBSCRIBE:
                   unis.add(compositeService.sendToClient(session, new MsgToClient()
-                    .setSessionId(session.getSessionId())
-                    .setClientId(clientId).setTopic(retain.getTopicName()).setQos(retain.getQos()).setPayload(retain.getPayload()).setDup(false)
-                    .setRetain(true).setCreatedTime(Instant.now().toEpochMilli())));
+                    .setSessionId(session.getSessionId()).setClientId(clientId).setTopic(retain.getTopicName())
+                    .setQos(retain.getQos()).setPayload(retain.getPayload()).setDup(false).setRetain(true)
+                    .setPayloadFormatIndicator(retain.getPayloadFormatIndicator()).setContentType(retain.getContentType())
+                    .setCreatedTime(Instant.now().toEpochMilli())));
                   break;
                 case SEND_AT_SUBSCRIBE_IF_NOT_YET_EXISTS:
                   if (!ifSubscriptionAlreadyExist) {
-                    unis.add(compositeService.sendToClient(session, new MsgToClient().setSessionId(session.getSessionId())
-                      .setClientId(clientId).setTopic(retain.getTopicName()).setQos(retain.getQos()).setPayload(retain.getPayload()).setDup(false)
-                      .setRetain(true).setCreatedTime(Instant.now().toEpochMilli())));
+                    unis.add(compositeService.sendToClient(session, new MsgToClient()
+                      .setSessionId(session.getSessionId()).setClientId(clientId).setTopic(retain.getTopicName())
+                      .setQos(retain.getQos()).setPayload(retain.getPayload()).setDup(false).setRetain(true)
+                      .setPayloadFormatIndicator(retain.getPayloadFormatIndicator()).setContentType(retain.getContentType())
+                      .setCreatedTime(Instant.now().toEpochMilli())));
                   }
                   break;
                 case DONT_SEND_AT_SUBSCRIBE:
