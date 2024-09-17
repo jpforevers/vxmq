@@ -151,7 +151,7 @@ public class DefaultCompositeService implements CompositeService {
   public Uni<Void> forward(MsgToTopic msgToTopic) {
 
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> subService.allMatchSubs(msgToTopic.getTopic(), true))
+      .onItem().transformToUni(v -> subService.allMatchSubs(msgToTopic.getTopic(), false))
       .onItem().transformToUni(subscriptions -> {
         List<Uni<Void>> unis = new ArrayList<>();
         for (Subscription subscription : subscriptions) {
