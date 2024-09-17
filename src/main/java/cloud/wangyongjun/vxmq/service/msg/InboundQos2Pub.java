@@ -17,8 +17,12 @@
 package cloud.wangyongjun.vxmq.service.msg;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+
+import java.util.List;
 
 public class InboundQos2Pub {
 
@@ -33,6 +37,9 @@ public class InboundQos2Pub {
   private Integer messageExpiryInterval;
   private Integer payloadFormatIndicator;
   private String contentType;
+  private String responseTopic;
+  private Buffer correlationData;
+  private List<MqttProperties.StringPair> userProperties;
   private long createdTime;
 
   public InboundQos2Pub() {
@@ -41,7 +48,8 @@ public class InboundQos2Pub {
   public InboundQos2Pub(String sessionId, String clientId, int messageId, String topic, int qos,
                         Buffer payload, boolean dup, boolean retain, Integer messageExpiryInterval,
                         Integer payloadFormatIndicator, String contentType,
-                        long createdTime) {
+                        String responseTopic, Buffer correlationData,
+                        List<MqttProperties.StringPair> userProperties, long createdTime) {
     this.sessionId = sessionId;
     this.clientId = clientId;
     this.messageId = messageId;
@@ -53,6 +61,9 @@ public class InboundQos2Pub {
     this.messageExpiryInterval = messageExpiryInterval;
     this.payloadFormatIndicator = payloadFormatIndicator;
     this.contentType = contentType;
+    this.responseTopic = responseTopic;
+    this.correlationData = correlationData;
+    this.userProperties = userProperties;
     this.createdTime = createdTime;
   }
 
@@ -68,6 +79,9 @@ public class InboundQos2Pub {
     this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
     this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
     this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
+    this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
+    this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
+    this.userProperties = MqttPropertiesUtil.decodeUserProperties(jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES));
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
@@ -84,6 +98,9 @@ public class InboundQos2Pub {
     jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, this.payloadFormatIndicator);
     jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
+    jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
+    jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
+    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, MqttPropertiesUtil.encodeUserProperties(this.userProperties));
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
@@ -135,6 +152,18 @@ public class InboundQos2Pub {
 
   public String getContentType() {
     return contentType;
+  }
+
+  public String getResponseTopic() {
+    return responseTopic;
+  }
+
+  public Buffer getCorrelationData() {
+    return correlationData;
+  }
+
+  public List<MqttProperties.StringPair> getUserProperties() {
+    return userProperties;
   }
 
   public long getCreatedTime() {

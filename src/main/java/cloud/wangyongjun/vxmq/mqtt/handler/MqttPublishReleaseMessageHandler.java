@@ -94,7 +94,10 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
             .setQos(inboundQos2Pub.getQos()).setPayload(inboundQos2Pub.getPayload()).setRetain(inboundQos2Pub.isRetain())
             .setMessageExpiryInterval(inboundQos2Pub.getMessageExpiryInterval())
             .setPayloadFormatIndicator(inboundQos2Pub.getPayloadFormatIndicator())
-            .setContentType(inboundQos2Pub.getContentType());
+            .setContentType(inboundQos2Pub.getContentType())
+            .setResponseTopic(inboundQos2Pub.getResponseTopic())
+            .setCorrelationData(inboundQos2Pub.getCorrelationData())
+            .setUserProperties(inboundQos2Pub.getUserProperties());
           return compositeService.forward(msgToTopic);
         } else {
           return Uni.createFrom().voidItem();

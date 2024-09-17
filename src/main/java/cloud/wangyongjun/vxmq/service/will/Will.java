@@ -17,6 +17,7 @@
 package cloud.wangyongjun.vxmq.service.will;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.assist.Nullable;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.core.buffer.Buffer;
@@ -63,11 +64,7 @@ public class Will {
     this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
     this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
     this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
-    this.userProperties = jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES) == null ? new ArrayList<>() :
-      jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES).stream()
-        .map(o -> (JsonObject) o)
-        .map(j -> new MqttProperties.StringPair(j.getString("key"), j.getString("value")))
-        .collect(Collectors.toList());
+    this.userProperties = MqttPropertiesUtil.decodeUserProperties(jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES));
     this.createdTime = Instant.parse(jsonObject.getString(ModelConstants.FIELD_NAME_CREATED_TIME)).toEpochMilli();
   }
 
@@ -85,10 +82,7 @@ public class Will {
     jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
     jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
     jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
-    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, this.userProperties == null ? null :
-      this.userProperties.stream()
-        .map(stringPair -> new JsonObject().put("key", stringPair.key).put("value", stringPair.value))
-        .collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, MqttPropertiesUtil.encodeUserProperties(this.userProperties));
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, Instant.ofEpochMilli(this.createdTime).toString());
     return jsonObject;
   }

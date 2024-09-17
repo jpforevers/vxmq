@@ -100,7 +100,10 @@ public class DefaultCompositeService implements CompositeService {
             .setQos(will.getWillQos()).setPayload(will.getWillMessage()).setRetain(will.isWillRetain())
             .setMessageExpiryInterval(will.getMessageExpiryInterval())
             .setPayloadFormatIndicator(will.getPayloadFormatIndicator())
-            .setContentType(will.getContentType());
+            .setContentType(will.getContentType())
+            .setResponseTopic(will.getResponseTopic())
+            .setCorrelationData(will.getCorrelationData())
+            .setUserProperties(will.getUserProperties());
           return forward(msgToTopic)
             .onItem().transformToUni(v -> willService.removeWill(sessionId))
             .onItem().transformToUni(v -> {
@@ -162,7 +165,9 @@ public class DefaultCompositeService implements CompositeService {
                   .setSessionId(session.getSessionId()).setClientId(subscription.getClientId()).setTopic(msgToTopic.getTopic())
                   .setQos(Math.min(msgToTopic.getQos(), subscription.getQos())).setPayload(msgToTopic.getPayload()).setDup(false)
                   .setMessageExpiryInterval(msgToTopic.getMessageExpiryInterval()).setPayloadFormatIndicator(msgToTopic.getPayloadFormatIndicator())
-                  .setContentType(msgToTopic.getContentType()).setCreatedTime(Instant.now().toEpochMilli());
+                  .setContentType(msgToTopic.getContentType()).setResponseTopic(msgToTopic.getResponseTopic())
+                  .setCorrelationData(msgToTopic.getCorrelationData()).setUserProperties(msgToTopic.getUserProperties())
+                  .setCreatedTime(Instant.now().toEpochMilli());
                 if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
                   // From http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718038
                   // When sending a PUBLISH Packet to a Client the Server MUST set the RETAIN flag to 1 if a message is sent as a result of a new subscription being made by a Client [MQTT-3.3.1-8]. It MUST set the RETAIN flag to 0 when a PUBLISH Packet is sent to a Client because it matches an established subscription regardless of how the flag was set in the message it received [MQTT-3.3.1-9].

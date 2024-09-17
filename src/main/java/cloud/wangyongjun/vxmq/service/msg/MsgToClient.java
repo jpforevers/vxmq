@@ -17,8 +17,13 @@
 package cloud.wangyongjun.vxmq.service.msg;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MsgToClient {
 
@@ -33,6 +38,9 @@ public class MsgToClient {
   private Integer messageExpiryInterval;
   private Integer payloadFormatIndicator;
   private String contentType;
+  private String responseTopic;
+  private Buffer correlationData;
+  private List<MqttProperties.StringPair> userProperties;
   private long createdTime;
 
   public MsgToClient() {
@@ -50,6 +58,9 @@ public class MsgToClient {
     this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
     this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
     this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
+    this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
+    this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
+    this.userProperties = MqttPropertiesUtil.decodeUserProperties(jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES));
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
 
@@ -66,6 +77,9 @@ public class MsgToClient {
     jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, this.payloadFormatIndicator);
     jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
+    jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
+    jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
+    jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, MqttPropertiesUtil.encodeUserProperties(this.userProperties));
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
   }
@@ -171,6 +185,41 @@ public class MsgToClient {
 
   public MsgToClient setContentType(String contentType) {
     this.contentType = contentType;
+    return this;
+  }
+
+  public String getResponseTopic() {
+    return responseTopic;
+  }
+
+  public MsgToClient setResponseTopic(String responseTopic) {
+    this.responseTopic = responseTopic;
+    return this;
+  }
+
+  public Buffer getCorrelationData() {
+    return correlationData;
+  }
+
+  public MsgToClient setCorrelationData(Buffer correlationData) {
+    this.correlationData = correlationData;
+    return this;
+  }
+
+  public List<MqttProperties.StringPair> getUserProperties() {
+    return userProperties;
+  }
+
+  public MsgToClient setUserProperties(List<MqttProperties.StringPair> userProperties) {
+    this.userProperties = userProperties;
+    return this;
+  }
+
+  public MsgToClient addUserProperties(MqttProperties.StringPair userProperty) {
+    if (this.userProperties == null) {
+      this.userProperties = new ArrayList<>();
+    }
+    this.userProperties.add(userProperty);
     return this;
   }
 

@@ -20,9 +20,11 @@ import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class MqttPropertiesUtil {
 
@@ -65,6 +67,21 @@ public class MqttPropertiesUtil {
       }
     });
     return jsonArray;
+  }
+
+  public static JsonArray encodeUserProperties(List<MqttProperties.StringPair> userProperties) {
+    return userProperties == null ? null :
+      userProperties.stream()
+        .map(stringPair -> new JsonObject().put("key", stringPair.key).put("value", stringPair.value))
+        .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+  }
+
+  public static List<MqttProperties.StringPair> decodeUserProperties(JsonArray jsonArray) {
+    return jsonArray == null ? new ArrayList<>() :
+      jsonArray.stream()
+        .map(o -> (JsonObject) o)
+        .map(j -> new MqttProperties.StringPair(j.getString("key"), j.getString("value")))
+        .collect(Collectors.toList());
   }
 
   public static MqttProperties decode(JsonArray jsonArray) {
