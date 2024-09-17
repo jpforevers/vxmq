@@ -134,6 +134,12 @@ public class ClientVerticle extends AbstractVerticle {
           if (StringUtils.isNotBlank(msgToClient.getContentType())) {
             mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.CONTENT_TYPE.value(), msgToClient.getContentType()));
           }
+          if (StringUtils.isNotBlank(msgToClient.getResponseTopic())) {
+            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.RESPONSE_TOPIC.value(), msgToClient.getResponseTopic()));
+          }
+          if (msgToClient.getCorrelationData() != null) {
+            mqttProperties.add(new MqttProperties.BinaryProperty(MqttProperties.MqttPropertyType.CORRELATION_DATA.value(), msgToClient.getCorrelationData().getBytes()));
+          }
           return mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId, mqttProperties);
         }
       })
