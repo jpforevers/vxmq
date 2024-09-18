@@ -264,7 +264,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                 }, false))
               .onItem().invoke(messageConsumer::set)
               .onItem().transformToUni(v -> {
-                if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
+                if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
                   return clientService.closeMqttEndpoint(session.getVerticleId());
                 } else {
                   return clientService.disconnect(session.getVerticleId(), new DisconnectRequest(MqttDisconnectReasonCode.SESSION_TAKEN_OVER, MqttProperties.NO_PROPERTIES));
