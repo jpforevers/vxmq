@@ -47,6 +47,7 @@ public class ModelConstants {
   public static final String FIELD_NAME_RESPONSE_TOPIC = "responseTopic";
   public static final String FIELD_NAME_CORRELATION_DATA = "correlationData";
   public static final String FIELD_NAME_USER_PROPERTIES = "userProperties";
+  public static final String FIELD_NAME_MQTT_PROPERTIES = "mqttProperties";
 
   public static final String FIELD_NAME_TOPIC_FILTER = "topicFilter";
 
@@ -67,5 +68,6 @@ public class ModelConstants {
 
   public static final String FIELD_NAME_CODE = "code";
   public static final String FIELD_NAME_REASON = "reason";
+  public static final String FIELD_NAME_MQTT_DISCONNECT_REASON_CODE = "mqttDisconnectReasonCode";
 
 }

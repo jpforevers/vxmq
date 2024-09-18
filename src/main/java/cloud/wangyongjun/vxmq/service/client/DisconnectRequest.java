@@ -16,6 +16,7 @@
 
 package cloud.wangyongjun.vxmq.service.client;
 
+import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.core.json.JsonObject;
@@ -25,22 +26,22 @@ import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 public class DisconnectRequest {
 
   private final MqttDisconnectReasonCode mqttDisconnectReasonCode;
-  private final MqttProperties disconnectProperties;
+  private final MqttProperties mqttProperties;
 
-  public DisconnectRequest(MqttDisconnectReasonCode mqttDisconnectReasonCode, MqttProperties disconnectProperties) {
+  public DisconnectRequest(MqttDisconnectReasonCode mqttDisconnectReasonCode, MqttProperties mqttProperties) {
     this.mqttDisconnectReasonCode = mqttDisconnectReasonCode;
-    this.disconnectProperties = disconnectProperties;
+    this.mqttProperties = mqttProperties;
   }
 
   public DisconnectRequest(JsonObject jsonObject) {
-    this.mqttDisconnectReasonCode = MqttDisconnectReasonCode.valueOf(jsonObject.getString("mqttDisconnectReasonCode"));
-    this.disconnectProperties = MqttPropertiesUtil.decode(jsonObject.getJsonArray("disconnectProperties"));
+    this.mqttDisconnectReasonCode = MqttDisconnectReasonCode.valueOf(jsonObject.getInteger(ModelConstants.FIELD_NAME_MQTT_DISCONNECT_REASON_CODE).byteValue());
+    this.mqttProperties = MqttPropertiesUtil.decode(jsonObject.getJsonArray(ModelConstants.FIELD_NAME_MQTT_PROPERTIES));
   }
 
   public JsonObject toJson() {
     JsonObject jsonObject = new JsonObject();
-    jsonObject.put("mqttDisconnectReasonCode", mqttDisconnectReasonCode.value());
-    jsonObject.put("disconnectProperties", MqttPropertiesUtil.encode(disconnectProperties));
+    jsonObject.put(ModelConstants.FIELD_NAME_MQTT_DISCONNECT_REASON_CODE, mqttDisconnectReasonCode.value());
+    jsonObject.put(ModelConstants.FIELD_NAME_MQTT_PROPERTIES, MqttPropertiesUtil.encode(mqttProperties));
     return jsonObject;
   }
 
@@ -48,8 +49,8 @@ public class DisconnectRequest {
     return mqttDisconnectReasonCode;
   }
 
-  public MqttProperties getDisconnectProperties() {
-    return disconnectProperties;
+  public MqttProperties getMqttProperties() {
+    return mqttProperties;
   }
 
 }
