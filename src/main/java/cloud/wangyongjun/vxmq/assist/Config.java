@@ -45,6 +45,8 @@ public class Config {
   public static final String DEFAULT_VXMQ_MQTT_AUTH_TYPE = MqttAuthType.NONE.name();
   public static final String KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL = "vxmq.mqtt.auth.webhook.url";
   public static final String DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL = "http://localhost:8080";
+  public static final String KEY_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM = "vxmq.mqtt.topic.alias.maximum";
+  public static final int DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM = 65535;
 
   public static final String KEY_VXMQ_SHELL_SERVER_PORT = "vxmq.shell.server.port";
   public static final int DEFAULT_VXMQ_SHELL_SERVER_PORT = 5000;
@@ -108,6 +110,10 @@ public class Config {
 
   public static String getMqttAuthWebhookUrl() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL);
+  }
+
+  public static int getVxmqTopicAliasMaximum() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM);
   }
 
   public static int getShellServerPort() {

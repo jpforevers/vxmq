@@ -55,6 +55,9 @@ vxmq:
       proxy-protocol:
         enable: false
       port: 1883
+    topic:
+      alias:
+        maximum: 65535
   http:
     server:
       port: 8060
