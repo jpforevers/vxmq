@@ -40,6 +40,7 @@ public class MsgToClient {
   private String contentType;
   private String responseTopic;
   private Buffer correlationData;
+  private Integer subscriptionIdentifier;
   private List<MqttProperties.StringPair> userProperties;
   private long createdTime;
 
@@ -60,6 +61,7 @@ public class MsgToClient {
     this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
     this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
     this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
+    this.subscriptionIdentifier = jsonObject.getInteger(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER);
     this.userProperties = MqttPropertiesUtil.decodeUserProperties(jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES));
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
@@ -79,6 +81,7 @@ public class MsgToClient {
     jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
     jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
     jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
+    jsonObject.put(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER, this.subscriptionIdentifier);
     jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, MqttPropertiesUtil.encodeUserProperties(this.userProperties));
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
@@ -203,6 +206,15 @@ public class MsgToClient {
 
   public MsgToClient setCorrelationData(Buffer correlationData) {
     this.correlationData = correlationData;
+    return this;
+  }
+
+  public Integer getSubscriptionIdentifier() {
+    return subscriptionIdentifier;
+  }
+
+  public MsgToClient setSubscriptionIdentifier(Integer subscriptionIdentifier) {
+    this.subscriptionIdentifier = subscriptionIdentifier;
     return this;
   }
 

@@ -439,7 +439,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         Integer messageExpiryInterval = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
         String contentType = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
         String responseTopic = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.RESPONSE_TOPIC, MqttProperties.StringProperty.class);
-        Buffer correlationData = Buffer.buffer(MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class));
+        byte[] correlationDataBytes = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class);
+        Buffer correlationData = correlationDataBytes != null ? Buffer.buffer(correlationDataBytes) : null;
         List<MqttProperties.StringPair> userProperties = MqttPropertiesUtil.getValues(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.UserProperty.class);
 
         will = new Will().setSessionId(session.getSessionId()).setClientId(mqttEndpoint.clientIdentifier()).setWillTopicName(mqttEndpoint.will().getWillTopic())
@@ -480,11 +481,32 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().call(outboundQos1Pub -> {
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           return mqttEndpoint.publish(outboundQos1Pub.getTopic(), io.vertx.mutiny.core.buffer.Buffer.newInstance(outboundQos1Pub.getPayload()),
-            MqttQoS.valueOf(outboundQos1Pub.getQos()), true, outboundQos1Pub.isRetain(), outboundQos1Pub.getMessageId()).replaceWithVoid();
+              MqttQoS.valueOf(outboundQos1Pub.getQos()), true, outboundQos1Pub.isRetain(), outboundQos1Pub.getMessageId())
+            .replaceWithVoid();
         } else {
+          MqttProperties mqttProperties = new MqttProperties();
+          if (outboundQos1Pub.getMessageExpiryInterval() != null && outboundQos1Pub.getMessageExpiryInterval() != 0) {
+            long messageExpiryInterval = outboundQos1Pub.getMessageExpiryInterval() - (Instant.now().toEpochMilli() - outboundQos1Pub.getCreatedTime()) / 1000;
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL.value(), (int) messageExpiryInterval));
+          }
+          if (outboundQos1Pub.getPayloadFormatIndicator() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR.value(), outboundQos1Pub.getPayloadFormatIndicator()));
+          }
+          if (StringUtils.isNotBlank(outboundQos1Pub.getContentType())) {
+            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.CONTENT_TYPE.value(), outboundQos1Pub.getContentType()));
+          }
+          if (StringUtils.isNotBlank(outboundQos1Pub.getResponseTopic())) {
+            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.RESPONSE_TOPIC.value(), outboundQos1Pub.getResponseTopic()));
+          }
+          if (outboundQos1Pub.getCorrelationData() != null) {
+            mqttProperties.add(new MqttProperties.BinaryProperty(MqttProperties.MqttPropertyType.CORRELATION_DATA.value(), outboundQos1Pub.getCorrelationData().getBytes()));
+          }
+          if (outboundQos1Pub.getSubscriptionIdentifier() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value(), outboundQos1Pub.getSubscriptionIdentifier()));
+          }
           return mqttEndpoint.publish(outboundQos1Pub.getTopic(), io.vertx.mutiny.core.buffer.Buffer.newInstance(outboundQos1Pub.getPayload()),
-            MqttQoS.valueOf(outboundQos1Pub.getQos()), true, outboundQos1Pub.isRetain(), outboundQos1Pub.getMessageId(),
-            MqttProperties.NO_PROPERTIES).replaceWithVoid();
+              MqttQoS.valueOf(outboundQos1Pub.getQos()), true, outboundQos1Pub.isRetain(), outboundQos1Pub.getMessageId(), mqttProperties)
+            .replaceWithVoid();
         }
       }).subscribe().with(ConsumerUtil.nothingToDo(), uniEmitter::fail, () -> uniEmitter.complete(null)));
   }
@@ -495,11 +517,32 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().call(outboundQos2Pub -> {
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           return mqttEndpoint.publish(outboundQos2Pub.getTopic(), io.vertx.mutiny.core.buffer.Buffer.newInstance(outboundQos2Pub.getPayload()),
-            MqttQoS.valueOf(outboundQos2Pub.getQos()), true, outboundQos2Pub.isRetain(), outboundQos2Pub.getMessageId()).replaceWithVoid();
+              MqttQoS.valueOf(outboundQos2Pub.getQos()), true, outboundQos2Pub.isRetain(), outboundQos2Pub.getMessageId())
+            .replaceWithVoid();
         } else {
+          MqttProperties mqttProperties = new MqttProperties();
+          if (outboundQos2Pub.getMessageExpiryInterval() != null && outboundQos2Pub.getMessageExpiryInterval() != 0) {
+            long messageExpiryInterval = outboundQos2Pub.getMessageExpiryInterval() - (Instant.now().toEpochMilli() - outboundQos2Pub.getCreatedTime()) / 1000;
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL.value(), (int) messageExpiryInterval));
+          }
+          if (outboundQos2Pub.getPayloadFormatIndicator() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR.value(), outboundQos2Pub.getPayloadFormatIndicator()));
+          }
+          if (StringUtils.isNotBlank(outboundQos2Pub.getContentType())) {
+            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.CONTENT_TYPE.value(), outboundQos2Pub.getContentType()));
+          }
+          if (StringUtils.isNotBlank(outboundQos2Pub.getResponseTopic())) {
+            mqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.RESPONSE_TOPIC.value(), outboundQos2Pub.getResponseTopic()));
+          }
+          if (outboundQos2Pub.getCorrelationData() != null) {
+            mqttProperties.add(new MqttProperties.BinaryProperty(MqttProperties.MqttPropertyType.CORRELATION_DATA.value(), outboundQos2Pub.getCorrelationData().getBytes()));
+          }
+          if (outboundQos2Pub.getSubscriptionIdentifier() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value(), outboundQos2Pub.getSubscriptionIdentifier()));
+          }
           return mqttEndpoint.publish(outboundQos2Pub.getTopic(), io.vertx.mutiny.core.buffer.Buffer.newInstance(outboundQos2Pub.getPayload()),
-            MqttQoS.valueOf(outboundQos2Pub.getQos()), true, outboundQos2Pub.isRetain(), outboundQos2Pub.getMessageId(),
-            MqttProperties.NO_PROPERTIES).replaceWithVoid();
+              MqttQoS.valueOf(outboundQos2Pub.getQos()), true, outboundQos2Pub.isRetain(), outboundQos2Pub.getMessageId(), mqttProperties)
+            .replaceWithVoid();
         }
       }).subscribe().with(ConsumerUtil.nothingToDo(), uniEmitter::fail, () -> uniEmitter.complete(null)));
   }

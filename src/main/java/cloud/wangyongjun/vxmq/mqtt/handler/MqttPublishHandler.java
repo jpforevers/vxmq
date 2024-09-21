@@ -236,7 +236,8 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
             payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
             contentType = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
             responseTopic = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.RESPONSE_TOPIC, MqttProperties.StringProperty.class);
-            correlationData = Buffer.buffer(MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class));
+            byte[] correlationDataBytes = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class);
+            correlationData = correlationDataBytes != null ? Buffer.buffer(correlationDataBytes) : null;
             userProperties = MqttPropertiesUtil.getValues(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.UserProperty.class);
           } else {
             messageExpiryInterval = null;
@@ -314,7 +315,8 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
           Integer payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
           String contentType = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
           String responseTopic = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.RESPONSE_TOPIC, MqttProperties.StringProperty.class);
-          Buffer correlationData = Buffer.buffer(MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class));
+          byte[] correlationDataBytes = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class);
+          Buffer correlationData = correlationDataBytes != null ? Buffer.buffer(correlationDataBytes) : null;
           List<MqttProperties.StringPair> userProperties = MqttPropertiesUtil.getValues(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.UserProperty.class);
           msgToTopic.setMessageExpiryInterval(messageExpiryInterval);
           msgToTopic.setPayloadFormatIndicator(payloadFormatIndicator);

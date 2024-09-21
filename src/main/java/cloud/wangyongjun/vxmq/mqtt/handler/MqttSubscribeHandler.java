@@ -230,8 +230,7 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
           subscription = new Subscription().setSessionId(session.getSessionId()).setClientId(clientId).setTopicFilter(realTopic).setQos(qos)
             .setShareName(shareName).setCreatedTime(Instant.now().toEpochMilli());
         } else {
-          MqttProperties.MqttProperty subscriptionIdentifierProperty = subProperties.getProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value());
-          Integer subscriptionIdentifier = subscriptionIdentifierProperty == null ? null : (Integer) subscriptionIdentifierProperty.value();
+          Integer subscriptionIdentifier = MqttPropertiesUtil.getValue(subProperties, MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER, MqttProperties.IntegerProperty.class);
           subscription = new Subscription().setSessionId(session.getSessionId()).setClientId(clientId).setTopicFilter(realTopic).setQos(qos)
             .setNoLocal(subscriptionOption.isNoLocal()).setRetainAsPublished(subscriptionOption.isRetainAsPublished()).setRetainHandling(subscriptionOption.retainHandling().value())
             .setSubscriptionIdentifier(subscriptionIdentifier).setShareName(shareName).setCreatedTime(Instant.now().toEpochMilli());

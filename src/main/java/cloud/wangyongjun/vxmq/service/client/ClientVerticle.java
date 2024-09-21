@@ -95,7 +95,7 @@ public class ClientVerticle extends AbstractVerticle {
 
   private void handleDisconnectAction(Message<JsonObject> actionMessage) {
     DisconnectRequest disconnectRequest = new DisconnectRequest(actionMessage.body());
-    mqttEndpoint.disconnect(disconnectRequest.getMqttDisconnectReasonCode(), disconnectRequest.getDisconnectProperties());
+    mqttEndpoint.disconnect(disconnectRequest.getMqttDisconnectReasonCode(), disconnectRequest.getMqttProperties());
   }
 
   private void handleSendPublish(Message<JsonObject> actionMessage) {
@@ -112,9 +112,21 @@ public class ClientVerticle extends AbstractVerticle {
         MqttQoS mqttQoS = MqttQoS.valueOf(msgToClient.getQos());
         return switch (mqttQoS) {
           case AT_LEAST_ONCE ->
-            msgService.saveOutboundQos1Pub(new OutboundQos1Pub(session.getSessionId(), session.getClientId(), messageId, msgToClient.getTopic(), msgToClient.getQos(), msgToClient.getPayload(), msgToClient.isDup(), msgToClient.isRetain(), Instant.now().toEpochMilli()));
+            msgService.saveOutboundQos1Pub(new OutboundQos1Pub(session.getSessionId(), session.getClientId(),
+              messageId, msgToClient.getTopic(), msgToClient.getQos(), msgToClient.getPayload(),
+              msgToClient.isDup(), msgToClient.isRetain(),
+              msgToClient.getMessageExpiryInterval(), msgToClient.getPayloadFormatIndicator(),
+              msgToClient.getContentType(), msgToClient.getResponseTopic(), msgToClient.getCorrelationData(),
+              msgToClient.getSubscriptionIdentifier(), msgToClient.getUserProperties(),
+              Instant.now().toEpochMilli()));
           case EXACTLY_ONCE ->
-            msgService.saveOutboundQos2Pub(new OutboundQos2Pub(session.getSessionId(), session.getClientId(), messageId, msgToClient.getTopic(), msgToClient.getQos(), msgToClient.getPayload(), msgToClient.isDup(), msgToClient.isRetain(), Instant.now().toEpochMilli()));
+            msgService.saveOutboundQos2Pub(new OutboundQos2Pub(session.getSessionId(), session.getClientId(),
+              messageId, msgToClient.getTopic(), msgToClient.getQos(), msgToClient.getPayload(),
+              msgToClient.isDup(), msgToClient.isRetain(),
+              msgToClient.getMessageExpiryInterval(), msgToClient.getPayloadFormatIndicator(),
+              msgToClient.getContentType(), msgToClient.getResponseTopic(), msgToClient.getCorrelationData(),
+              msgToClient.getSubscriptionIdentifier(), msgToClient.getUserProperties(),
+              Instant.now().toEpochMilli()));
           default -> Uni.createFrom().voidItem();
         };
       })
@@ -139,6 +151,9 @@ public class ClientVerticle extends AbstractVerticle {
           }
           if (msgToClient.getCorrelationData() != null) {
             mqttProperties.add(new MqttProperties.BinaryProperty(MqttProperties.MqttPropertyType.CORRELATION_DATA.value(), msgToClient.getCorrelationData().getBytes()));
+          }
+          if (msgToClient.getSubscriptionIdentifier() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value(), msgToClient.getSubscriptionIdentifier()));
           }
           return mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId, mqttProperties);
         }

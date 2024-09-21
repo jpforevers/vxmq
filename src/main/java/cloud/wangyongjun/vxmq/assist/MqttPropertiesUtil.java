@@ -35,8 +35,8 @@ public class MqttPropertiesUtil {
 
   public static JsonArray encode(MqttProperties mqttProperties) {
     JsonArray jsonArray = new JsonArray();
-    Collection<? extends MqttProperties.MqttProperty> alllMqttProperties = mqttProperties.listAll();
-    alllMqttProperties.forEach(mqttProperty -> {
+    Collection<? extends MqttProperties.MqttProperty> allMqttProperties = mqttProperties.listAll();
+    allMqttProperties.forEach(mqttProperty -> {
       if (mqttProperty instanceof MqttProperties.StringProperty) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.put(ID_KEY, mqttProperty.propertyId());
