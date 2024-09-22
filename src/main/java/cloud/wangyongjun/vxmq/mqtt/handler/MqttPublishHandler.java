@@ -43,6 +43,7 @@ import io.vertx.mqtt.messages.codes.MqttPubRecReasonCode;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import io.vertx.mutiny.mqtt.messages.MqttPublishMessage;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,17 +179,22 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
    * @return Void
    */
   private Uni<Void> checkTopic(MqttPublishMessage mqttPublishMessage) {
-    if (TopicUtil.isValidTopicToPublish(mqttPublishMessage.topicName())) {
-      return Uni.createFrom().voidItem();
+    if (StringUtils.isNotBlank(mqttPublishMessage.topicName())) {
+      if (TopicUtil.isValidTopicToPublish(mqttPublishMessage.topicName())) {
+        return Uni.createFrom().voidItem();
+      } else {
+        return switch (mqttPublishMessage.qosLevel()) {
+          case AT_MOST_ONCE -> Uni.createFrom().failure(new MqttPublishException("Topic name invalid"));
+          case AT_LEAST_ONCE ->
+            Uni.createFrom().failure(new MqttPublishException(MqttPubAckReasonCode.TOPIC_NAME_INVALID));
+          case EXACTLY_ONCE ->
+            Uni.createFrom().failure(new MqttPublishException(MqttPubRecReasonCode.TOPIC_NAME_INVALID));
+          default -> Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
+        };
+      }
     } else {
-      return switch (mqttPublishMessage.qosLevel()) {
-        case AT_MOST_ONCE -> Uni.createFrom().failure(new MqttPublishException("Topic name invalid"));
-        case AT_LEAST_ONCE ->
-          Uni.createFrom().failure(new MqttPublishException(MqttPubAckReasonCode.TOPIC_NAME_INVALID));
-        case EXACTLY_ONCE ->
-          Uni.createFrom().failure(new MqttPublishException(MqttPubRecReasonCode.TOPIC_NAME_INVALID));
-        default -> Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
-      };
+      // For MQTT 5, topic name may be empty
+      return Uni.createFrom().voidItem();
     }
   }
 
