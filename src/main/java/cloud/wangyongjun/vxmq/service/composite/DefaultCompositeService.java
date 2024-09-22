@@ -21,6 +21,7 @@ import cloud.wangyongjun.vxmq.assist.IgniteAssist;
 import cloud.wangyongjun.vxmq.assist.IgniteUtil;
 import cloud.wangyongjun.vxmq.http.api.ApiErrorCode;
 import cloud.wangyongjun.vxmq.http.api.ApiException;
+import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
@@ -49,12 +50,14 @@ public class DefaultCompositeService implements CompositeService {
 
   private static volatile DefaultCompositeService defaultCompositeService;
 
-  public static DefaultCompositeService getSingleton(Vertx vertx, SessionService sessionService, SubService subService, WillService willService,
-                                                     MsgService msgService, RetainService retainService, ClientService clientService) {
+  public static DefaultCompositeService getSingleton(Vertx vertx, SessionService sessionService, SubService subService,
+                                                     WillService willService, MsgService msgService, RetainService retainService,
+                                                     ClientService clientService, InboundTopicAliasService inboundTopicAliasService) {
     if (defaultCompositeService == null) {
       synchronized (DefaultCompositeService.class) {
         if (defaultCompositeService == null) {
-          defaultCompositeService = new DefaultCompositeService(vertx, sessionService, subService, willService, msgService, retainService, clientService);
+          defaultCompositeService = new DefaultCompositeService(vertx, sessionService, subService, willService,
+            msgService, retainService, clientService, inboundTopicAliasService);
         }
       }
     }
@@ -68,9 +71,11 @@ public class DefaultCompositeService implements CompositeService {
   private final MsgService msgService;
   private final RetainService retainService;
   private final ClientService clientService;
+  private final InboundTopicAliasService inboundTopicAliasService;
 
-  private DefaultCompositeService(Vertx vertx, SessionService sessionService, SubService subService, WillService willService,
-                                  MsgService msgService, RetainService retainService, ClientService clientService) {
+  private DefaultCompositeService(Vertx vertx, SessionService sessionService, SubService subService,
+                                  WillService willService, MsgService msgService, RetainService retainService,
+                                  ClientService clientService, InboundTopicAliasService inboundTopicAliasService) {
     this.vertx = vertx;
     this.sessionService = sessionService;
     this.subService = subService;
@@ -78,6 +83,7 @@ public class DefaultCompositeService implements CompositeService {
     this.msgService = msgService;
     this.retainService = retainService;
     this.clientService = clientService;
+    this.inboundTopicAliasService = inboundTopicAliasService;
   }
 
   @Override
@@ -149,9 +155,15 @@ public class DefaultCompositeService implements CompositeService {
 
   @Override
   public Uni<Void> forward(MsgToTopic msgToTopic) {
-
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> subService.allMatchSubs(msgToTopic.getTopic(), false))
+      .onItem().transformToUni(v -> inboundTopicAliasService.processTopicAlias(msgToTopic, msgToTopic.getClientId(), msgToTopic.getTopicAlias(), msgToTopic.getTopic()))
+      .onItem().transformToUni(v -> {
+        if (StringUtils.isNotBlank(msgToTopic.getTopic())) {
+          return subService.allMatchSubs(msgToTopic.getTopic(), false);
+        } else {
+          return Uni.createFrom().item(List.<Subscription>of());
+        }
+      })
       .onItem().transformToUni(subscriptions -> {
         List<Uni<Void>> unis = new ArrayList<>();
         for (Subscription subscription : subscriptions) {

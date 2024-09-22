@@ -37,6 +37,7 @@ public class MsgToTopic {
   private String contentType;
   private String responseTopic;
   private Buffer correlationData;
+  private Integer topicAlias;
   private List<MqttProperties.StringPair> userProperties;
 
   public MsgToTopic() {
@@ -51,6 +52,9 @@ public class MsgToTopic {
     this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
     this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
     this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
+    this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
+    this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
+    this.topicAlias = jsonObject.getInteger(ModelConstants.FIELD_NAME_TOPIC_ALIAS);
     this.userProperties = MqttPropertiesUtil.decodeUserProperties(jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES));
   }
 
@@ -66,6 +70,7 @@ public class MsgToTopic {
     jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
     jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
     jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC_ALIAS, this.topicAlias);
     jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, MqttPropertiesUtil.encodeUserProperties(this.userProperties));
     return jsonObject;
   }
@@ -162,6 +167,15 @@ public class MsgToTopic {
 
   public MsgToTopic setCorrelationData(Buffer correlationData) {
     this.correlationData = correlationData;
+    return this;
+  }
+
+  public Integer getTopicAlias() {
+    return topicAlias;
+  }
+
+  public MsgToTopic setTopicAlias(Integer topicAlias) {
+    this.topicAlias = topicAlias;
     return this;
   }
 

@@ -225,12 +225,13 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
         Uni.createFrom().voidItem();
       case EXACTLY_ONCE -> sessionService.getSession(mqttEndpoint.clientIdentifier())
         .onItem().transformToUni(session -> {
-          Integer messageExpiryInterval;
-          Integer payloadFormatIndicator;
-          String responseTopic;
-          Buffer correlationData;
-          String contentType;
-          List<MqttProperties.StringPair> userProperties;
+          Integer messageExpiryInterval = null;
+          Integer payloadFormatIndicator = null;
+          String responseTopic = null;
+          Buffer correlationData = null;
+          String contentType = null;
+          Integer topicAlias = null;
+          List<MqttProperties.StringPair> userProperties = List.of();
           if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
             messageExpiryInterval = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
             payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
@@ -238,21 +239,15 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
             responseTopic = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.RESPONSE_TOPIC, MqttProperties.StringProperty.class);
             byte[] correlationDataBytes = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class);
             correlationData = correlationDataBytes != null ? Buffer.buffer(correlationDataBytes) : null;
+            topicAlias = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.TOPIC_ALIAS, MqttProperties.IntegerProperty.class);
             userProperties = MqttPropertiesUtil.getValues(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.UserProperty.class);
-          } else {
-            messageExpiryInterval = null;
-            payloadFormatIndicator = null;
-            contentType = null;
-            responseTopic = null;
-            correlationData = null;
-            userProperties = List.of();
           }
           InboundQos2Pub inboundQos2Pub = new InboundQos2Pub(session.getSessionId(), mqttEndpoint.clientIdentifier(),
             mqttPublishMessage.messageId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
             mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain(),
             messageExpiryInterval, payloadFormatIndicator, contentType,
-            responseTopic, correlationData, userProperties,
-            Instant.now().toEpochMilli());
+            responseTopic, correlationData, topicAlias,
+            userProperties, Instant.now().toEpochMilli());
           return msgService.saveInboundQos2Pub(inboundQos2Pub);
         });
       default -> Uni.createFrom().failure(new MqttPublishException("Unknown mqtt qos"));
@@ -317,12 +312,14 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
           String responseTopic = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.RESPONSE_TOPIC, MqttProperties.StringProperty.class);
           byte[] correlationDataBytes = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.CORRELATION_DATA, MqttProperties.BinaryProperty.class);
           Buffer correlationData = correlationDataBytes != null ? Buffer.buffer(correlationDataBytes) : null;
+          Integer topicAlias = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.TOPIC_ALIAS, MqttProperties.IntegerProperty.class);
           List<MqttProperties.StringPair> userProperties = MqttPropertiesUtil.getValues(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.UserProperty.class);
           msgToTopic.setMessageExpiryInterval(messageExpiryInterval);
           msgToTopic.setPayloadFormatIndicator(payloadFormatIndicator);
           msgToTopic.setContentType(contentType);
           msgToTopic.setResponseTopic(responseTopic);
           msgToTopic.setCorrelationData(correlationData);
+          msgToTopic.setTopicAlias(topicAlias);
           msgToTopic.setUserProperties(userProperties);
         }
         return compositeService.forward(msgToTopic);

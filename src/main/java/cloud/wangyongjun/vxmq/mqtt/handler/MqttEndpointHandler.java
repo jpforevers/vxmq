@@ -23,6 +23,7 @@ import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectedEvent;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttSessionTakenOverEvent;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttAuthFailedException;
+import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
@@ -85,6 +86,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final CompositeService compositeService;
   private final EventService eventService;
   private final AuthenticationService authenticationService;
+  private final InboundTopicAliasService inboundTopicAliasService;
   private final Counter packetsPublishReceivedCounter;
   private final Counter packetsPublishSentCounter;
 
@@ -98,6 +100,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              CompositeService compositeService,
                              EventService eventService,
                              AuthenticationService authenticationService,
+                             InboundTopicAliasService inboundTopicAliasService,
                              Counter packetsPublishReceivedCounter,
                              Counter packetsPublishSentCounter) {
     this.vertx = vertx;
@@ -110,6 +113,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.compositeService = compositeService;
     this.eventService = eventService;
     this.authenticationService = authenticationService;
+    this.inboundTopicAliasService = inboundTopicAliasService;
     this.packetsPublishReceivedCounter = packetsPublishReceivedCounter;
     this.packetsPublishSentCounter = packetsPublishSentCounter;
   }
@@ -292,7 +296,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    */
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
     mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
-    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService));
+    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService, inboundTopicAliasService));
     mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, vertx, sessionService, eventService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint, vertx, eventService));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));

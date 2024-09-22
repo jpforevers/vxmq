@@ -91,13 +91,16 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
       .onItem().transformToUni(inboundQos2Pub -> {
         if (inboundQos2Pub != null) {
           MsgToTopic msgToTopic = new MsgToTopic().setClientId(inboundQos2Pub.getClientId()).setTopic(inboundQos2Pub.getTopic())
-            .setQos(inboundQos2Pub.getQos()).setPayload(inboundQos2Pub.getPayload()).setRetain(inboundQos2Pub.isRetain())
-            .setMessageExpiryInterval(inboundQos2Pub.getMessageExpiryInterval())
-            .setPayloadFormatIndicator(inboundQos2Pub.getPayloadFormatIndicator())
-            .setContentType(inboundQos2Pub.getContentType())
-            .setResponseTopic(inboundQos2Pub.getResponseTopic())
-            .setCorrelationData(inboundQos2Pub.getCorrelationData())
-            .setUserProperties(inboundQos2Pub.getUserProperties());
+            .setQos(inboundQos2Pub.getQos()).setPayload(inboundQos2Pub.getPayload()).setRetain(inboundQos2Pub.isRetain());
+          if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+            msgToTopic.setMessageExpiryInterval(inboundQos2Pub.getMessageExpiryInterval())
+              .setPayloadFormatIndicator(inboundQos2Pub.getPayloadFormatIndicator())
+              .setContentType(inboundQos2Pub.getContentType())
+              .setResponseTopic(inboundQos2Pub.getResponseTopic())
+              .setCorrelationData(inboundQos2Pub.getCorrelationData())
+              .setTopicAlias(inboundQos2Pub.getTopicAlias())
+              .setUserProperties(inboundQos2Pub.getUserProperties());
+          }
           return compositeService.forward(msgToTopic);
         } else {
           return Uni.createFrom().voidItem();

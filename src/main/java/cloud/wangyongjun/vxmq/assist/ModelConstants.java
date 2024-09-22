@@ -48,6 +48,7 @@ public class ModelConstants {
   public static final String FIELD_NAME_CORRELATION_DATA = "correlationData";
   public static final String FIELD_NAME_USER_PROPERTIES = "userProperties";
   public static final String FIELD_NAME_MQTT_PROPERTIES = "mqttProperties";
+  public static final String FIELD_NAME_TOPIC_ALIAS = "topicAlias";
 
   public static final String FIELD_NAME_TOPIC_FILTER = "topicFilter";
 

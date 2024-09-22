@@ -18,6 +18,7 @@ package cloud.wangyongjun.vxmq.service;
 
 import cloud.wangyongjun.vxmq.event.DefaultEventService;
 import cloud.wangyongjun.vxmq.event.EventService;
+import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.DefaultClientService;
@@ -62,7 +63,8 @@ public class ServiceFactory {
   }
 
   public static CompositeService compositeService(Vertx vertx) {
-    return DefaultCompositeService.getSingleton(vertx, sessionService(vertx), subService(vertx), willService(vertx), msgService(vertx), retainService(vertx), clientService(vertx));
+    return DefaultCompositeService.getSingleton(vertx, sessionService(vertx), subService(vertx), willService(vertx),
+      msgService(vertx), retainService(vertx), clientService(vertx), inboundTopicAliasService(vertx));
   }
 
   public static EventService eventService(Vertx vertx){
@@ -73,4 +75,7 @@ public class ServiceFactory {
     return VertxServiceProxyBuilder.buildAuthenticationService(vertx);
   }
 
+  public static InboundTopicAliasService inboundTopicAliasService(Vertx vertx) {
+    return InboundTopicAliasService.getSingleton(vertx, clientService(vertx), sessionService(vertx));
+  }
 }

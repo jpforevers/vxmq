@@ -21,6 +21,7 @@ import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.session.Session;
@@ -49,12 +50,14 @@ public class MqttCloseHandler implements Runnable {
   private final SessionService sessionService;
   private final WillService willService;
   private final EventService eventService;
+  private final InboundTopicAliasService inboundTopicAliasService;
 
   public MqttCloseHandler(MqttEndpoint mqttEndpoint, Vertx vertx,
                           ClientService clientService,
                           CompositeService compositeService,
                           SessionService sessionService,
-                          WillService willService, EventService eventService) {
+                          WillService willService, EventService eventService,
+                          InboundTopicAliasService inboundTopicAliasService) {
     this.mqttEndpoint = mqttEndpoint;
     this.vertx = vertx;
     this.clientService = clientService;
@@ -62,6 +65,7 @@ public class MqttCloseHandler implements Runnable {
     this.sessionService = sessionService;
     this.willService = willService;
     this.eventService = eventService;
+    this.inboundTopicAliasService = inboundTopicAliasService;
   }
 
   @Override
@@ -85,6 +89,7 @@ public class MqttCloseHandler implements Runnable {
           return Uni.createFrom().voidItem();
         }
       })
+      .onItem().invoke(() -> inboundTopicAliasService.clearTopicAlias(mqttEndpoint.clientIdentifier()))
       .eventually(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
   }
