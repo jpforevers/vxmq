@@ -32,9 +32,6 @@ vxmq:
       tcp:
         addresses: localhost:47500
         port: 47500
-    work-dir:
-  logs:
-    level: INFO
   session:
     # Max offline message amount, 0 for no limit.
     queued-message:

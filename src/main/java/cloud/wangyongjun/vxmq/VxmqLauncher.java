@@ -79,7 +79,6 @@ public class VxmqLauncher {
     IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
     igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);
     igniteConfiguration.setGridLogger(new Slf4jLogger());
-    igniteConfiguration.setWorkDirectory(Config.getIgniteWorkDirectory());
     igniteConfiguration.setMetricsLogFrequency(0);
     ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
 

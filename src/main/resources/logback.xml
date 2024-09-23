@@ -2,7 +2,7 @@
 <configuration scan="true" scanPeriod="30 seconds">
   <!-- Log configuration properties -->
   <property name="log_pattern" value="%date{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC} [%26.26thread] %-5level %-40.40logger{39} : %msg%n" />
-  <property name="log_dir" value="${VXMQ_LOGS_DIR:-/vxmq/logs}"/>
+  <property name="log_dir" value="${VXMQ_LOGS_DIR:-logs}"/>
   <property name="log_file" value="${log_dir}/vxmq.log"/>
 
   <!-- Console Appender configuration -->

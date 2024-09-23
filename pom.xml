@@ -295,6 +295,7 @@
             </paths>
           </extraDirectories>
           <container>
+            <workingDirectory>/vxmq</workingDirectory>
             <mainClass>${launcher.class}</mainClass>
             <appRoot>/vxmq/app</appRoot>
             <!-- From https://ignite.apache.org/docs/latest/quick-start/java#running-ignite-with-java-11-or-later -->
@@ -331,6 +332,10 @@
               <port>5000/tcp</port>
               <port>47500/tcp</port>
             </ports>
+            <environment>
+              <IGNITE_HOME>/vxmq/ignite</IGNITE_HOME>
+              <VXMQ_LOGS_DIR>/vxmq/logs</VXMQ_LOGS_DIR>
+            </environment>
           </container>
         </configuration>
       </plugin>

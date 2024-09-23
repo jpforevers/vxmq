@@ -58,12 +58,6 @@ public class Config {
   public static final String KEY_VXMQ_IGNITE_BACKUPS = "vxmq.ignite.backups";
   public static final int DEFAULT_VXMQ_IGNITE_BACKUPS = 1;
 
-  public static final String KEY_VXMQ_LOGS_LEVEL = "vxmq.logs.level";
-  public static final String DEFAULT_VXMQ_LOGS_LEVEL = "INFO";
-
-  public static final String KEY_VXMQ_IGNITE_WORK_DIR = "vxmq.ignite.work-dir";
-  public static final String DEFAULT_VXMQ_IGNITE_WORK_DIR = "/vxmq/ignite";
-
   public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT = "vxmq.ignite.discovery.tcp.port";
   public static final int DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT = TcpDiscoverySpi.DFLT_PORT;
 
@@ -129,20 +123,12 @@ public class Config {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_BACKUPS, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_BACKUPS);
   }
 
-  public static String getIgniteWorkDirectory() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_WORK_DIR, String.class).orElse(DEFAULT_VXMQ_IGNITE_WORK_DIR);
-  }
-
   public static int getIgniteDiscoveryTcpPort() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT);
   }
 
   public static String getIgniteDiscoveryTcpAddresses() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES, String.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES);
-  }
-
-  public static String getLogsLevel() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_LOGS_LEVEL, String.class).orElse(DEFAULT_VXMQ_LOGS_LEVEL);
   }
 
   public static boolean getRuleStaticWriteMqttEventToMqttEnable() {
