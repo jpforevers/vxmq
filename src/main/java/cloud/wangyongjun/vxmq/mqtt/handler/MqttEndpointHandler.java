@@ -164,7 +164,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           LOGGER.debug("Mqtt client {} connected", mqttEndpoint.clientIdentifier());
         }
       }, t -> {
-        LOGGER.error("Error occurred when processing CONNECT from " + mqttEndpoint.clientIdentifier(), t);
+        LOGGER.error("Error occurred when processing CONNECT from {}", mqttEndpoint.clientIdentifier(), t);
         publishMqttConnectFailedEvent(mqttEndpoint, t).subscribe().with(v -> {}, tt -> LOGGER.error("Error occurred when publishing mqtt connect failed event", tt));
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           if (t instanceof MqttAuthFailedException e) {

@@ -72,7 +72,7 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
       .subscribe().with(v -> {
         if (LOGGER.isDebugEnabled()){
           LOGGER.debug("Mqtt client {} disconnected", mqttEndpoint.clientIdentifier());
-        }}, t -> LOGGER.error("Error occurred when processing DISCONNECT from " + mqttEndpoint.clientIdentifier(), t));
+        }}, t -> LOGGER.error("Error occurred when processing DISCONNECT from {}", mqttEndpoint.clientIdentifier(), t));
   }
 
   private String disconnectInfo(MqttDisconnectMessage mqttDisconnectMessage) {
