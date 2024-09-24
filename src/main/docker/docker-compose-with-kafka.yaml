@@ -1,6 +1,4 @@
-version: '3'
-
-name: vxmq
+name: vxmq-kafka
 services:
   vxmq-kafka:
     image: "bitnami/kafka:3.5"
@@ -29,22 +27,23 @@ services:
       - vxmq
 
   vxmq-vxmq1:
-    image: "jpforevers/vxmq:1.6.0"
+    image: "jpforevers/vxmq:1.7.0"
     container_name: vxmq-vxmq1
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "curl --fail http://localhost:8060/q/health | jq -e '.status == \"UP\"'" ]
-      interval: 10s
+      interval: 30s
       timeout: 3s
       retries: 5
     environment:
-      vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
-      vxmq.rule.static.WriteMqttEventToKafka.enable: true
-      vxmq.rule.static.WriteMqttEventToKafka.kafka.servers: vxmq-kafka:9092
-      vxmq.rule.static.ReadMqttPublishFromKafka.enable: true
-      vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers: vxmq-kafka:9092
-    volumes:
-      - vxmq1-ignite-volume:/vxmq/ignite
+      VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
+      VXMQ_RULE_STATIC_WRITEMQTTEVENTTOKAFKA_ENABLE: true
+      VXMQ_RULE_STATIC_WRITEMQTTEVENTTOKAFKA_KAFKA_SERVERS: vxmq-kafka:9092
+      VXMQ_RULE_STATIC_READMQTTPUBLISHFROMKAFKA_ENABLE: true
+      VXMQ_RULE_STATIC_READMQTTPUBLISHFROMKAFKA_KAFKA_SERVERS: vxmq-kafka:9092
+      VXMQ_METRICS_ENABLE: true
+#      VXMQ_LOGS_LEVEL: DEBUG
+      VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
     networks:
       - vxmq
     depends_on:
@@ -52,22 +51,23 @@ services:
         condition: service_healthy
 
   vxmq-vxmq2:
-    image: "jpforevers/vxmq:1.6.0"
+    image: "jpforevers/vxmq:1.7.0"
     container_name: vxmq-vxmq2
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "curl --fail http://localhost:8060/q/health | jq -e '.status == \"UP\"'" ]
-      interval: 10s
+      interval: 30s
       timeout: 3s
       retries: 5
     environment:
-      vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
-      vxmq.rule.static.WriteMqttEventToKafka.enable: true
-      vxmq.rule.static.WriteMqttEventToKafka.kafka.servers: vxmq-kafka:9092
-      vxmq.rule.static.ReadMqttPublishFromKafka.enable: true
-      vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers: vxmq-kafka:9092
-    volumes:
-      - vxmq2-ignite-volume:/vxmq/ignite
+      VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
+      VXMQ_RULE_STATIC_WRITEMQTTEVENTTOKAFKA_ENABLE: true
+      VXMQ_RULE_STATIC_WRITEMQTTEVENTTOKAFKA_KAFKA_SERVERS: vxmq-kafka:9092
+      VXMQ_RULE_STATIC_READMQTTPUBLISHFROMKAFKA_ENABLE: true
+      VXMQ_RULE_STATIC_READMQTTPUBLISHFROMKAFKA_KAFKA_SERVERS: vxmq-kafka:9092
+      VXMQ_METRICS_ENABLE: true
+      #      VXMQ_LOGS_LEVEL: DEBUG
+      VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
     networks:
       - vxmq
     depends_on:
@@ -75,22 +75,23 @@ services:
         condition: service_healthy
 
   vxmq-vxmq3:
-    image: "jpforevers/vxmq:1.6.0"
+    image: "jpforevers/vxmq:1.7.0"
     container_name: vxmq-vxmq3
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "curl --fail http://localhost:8060/q/health | jq -e '.status == \"UP\"'" ]
-      interval: 10s
+      interval: 30s
       timeout: 3s
       retries: 5
     environment:
-      vxmq.ignite.discovery.tcp.addresses: vxmq-vxmq1:47500,vxmq-vxmq2:47500，vxmq-vxmq3:47500
-      vxmq.rule.static.WriteMqttEventToKafka.enable: true
-      vxmq.rule.static.WriteMqttEventToKafka.kafka.servers: vxmq-kafka:9092
-      vxmq.rule.static.ReadMqttPublishFromKafka.enable: true
-      vxmq.rule.static.ReadMqttPublishFromKafka.kafka.servers: vxmq-kafka:9092
-    volumes:
-      - vxmq3-ignite-volume:/vxmq/ignite
+      VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
+      VXMQ_RULE_STATIC_WRITEMQTTEVENTTOKAFKA_ENABLE: true
+      VXMQ_RULE_STATIC_WRITEMQTTEVENTTOKAFKA_KAFKA_SERVERS: vxmq-kafka:9092
+      VXMQ_RULE_STATIC_READMQTTPUBLISHFROMKAFKA_ENABLE: true
+      VXMQ_RULE_STATIC_READMQTTPUBLISHFROMKAFKA_KAFKA_SERVERS: vxmq-kafka:9092
+      VXMQ_METRICS_ENABLE: true
+      #      VXMQ_LOGS_LEVEL: DEBUG
+      VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
     networks:
       - vxmq
     depends_on:
@@ -128,12 +129,6 @@ services:
 
 volumes:
   kafka-volume:
-  vxmq1-log-volume:
-  vxmq2-log-volume:
-  vxmq3-log-volume:
-  vxmq1-ignite-volume:
-  vxmq2-ignite-volume:
-  vxmq3-ignite-volume:
 
 networks:
   vxmq:
