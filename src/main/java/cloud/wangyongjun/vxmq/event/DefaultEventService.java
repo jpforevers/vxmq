@@ -48,12 +48,6 @@ public class DefaultEventService implements EventService {
 
   private DefaultEventService(Vertx vertx) {
     this.vertx = vertx;
-
-    // If you publish a message to a vertx event bus address which no handler consumer it, will cause an exception "No handlers for address xxx".
-    // Thus, I register an empty handler for every event address to avoid this exception.
-    for (EventType eventType : EventType.values()) {
-      vertx.eventBus().<JsonObject>consumer(eventType.getEbAddress(), message -> LOGGER.trace("Event {} received, nothing need to do", message.body()));
-    }
   }
 
   @Override
