@@ -45,7 +45,7 @@ public class InboundTopicAliasService {
   public Uni<Void> processTopicAlias(MsgToTopic msgToTopic, String clientId, Integer topicAlias, String topicName) {
     if (topicAlias != null) {
       // topic alias exist
-      if (topicAlias > 0 && topicAlias <= Config.getMqttTopicAliasMaximum()) {
+      if (topicAlias > 0 && topicAlias <= Config.getMqttTopicAliasMax()) {
         // topic alias valid
         if (StringUtils.isNotBlank(topicName)) {
           // topic name exist

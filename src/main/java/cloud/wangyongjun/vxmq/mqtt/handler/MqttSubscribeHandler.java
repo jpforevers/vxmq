@@ -17,13 +17,10 @@
 
 package cloud.wangyongjun.vxmq.mqtt.handler;
 
-import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
-import cloud.wangyongjun.vxmq.assist.VertxUtil;
+import cloud.wangyongjun.vxmq.assist.*;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttSubscribedEvent;
-import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
-import cloud.wangyongjun.vxmq.assist.TopicUtil;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttSubscribeException;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
@@ -176,7 +173,7 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
    * @return Void
    */
   private Uni<Void> checkTopicFilter(String topicFilter) {
-    if (TopicUtil.isValidToSubscribe(topicFilter)) {
+    if (TopicUtil.isValidToSubscribe(topicFilter) && TopicUtil.parseTokens(topicFilter).length <= Config.getMqttTopicLevelsMax()) {
       return Uni.createFrom().voidItem();
     } else {
       if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

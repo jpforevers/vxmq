@@ -52,8 +52,10 @@ vxmq:
         enable: false
       port: 1883
     topic:
+      levels:
+        max: 128
       alias:
-        maximum: 65535
+        max: 65535
     message:
       size:
         # 10M

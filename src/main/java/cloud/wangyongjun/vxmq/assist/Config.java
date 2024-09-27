@@ -46,8 +46,10 @@ public class Config {
   public static final String DEFAULT_VXMQ_MQTT_AUTH_TYPE = MqttAuthType.NONE.name();
   public static final String KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL = "vxmq.mqtt.auth.webhook.url";
   public static final String DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL = "http://localhost:8080";
-  public static final String KEY_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM = "vxmq.mqtt.topic.alias.maximum";
-  public static final int DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM = 65535;
+  public static final String KEY_VXMQ_MQTT_TOPIC_ALIAS_MAX = "vxmq.mqtt.topic.alias.max";
+  public static final int DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAX = 65535;
+  public static final String KEY_VXMQ_MQTT_TOPIC_LEVELS_MAX = "vxmq.mqtt.topic.levels.max";
+  public static final int DEFAULT_VXMQ_MQTT_TOPIC_LEVELS_MAX = 128;
   public static final String KEY_VXMQ_MQTT_MESSAGE_SIZE_MAX = "vxmq.mqtt.message.size.max";
   public static final int DEFAULT_VXMQ_MQTT_MESSAGE_SIZE_MAX = 10 * 1024 * 1024;  // 10M
   public static final String KEY_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX = "vxmq.mqtt.client-id.length.max";
@@ -111,8 +113,12 @@ public class Config {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL);
   }
 
-  public static int getMqttTopicAliasMaximum() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAXIMUM);
+  public static int getMqttTopicLevelsMax() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_LEVELS_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_LEVELS_MAX);
+  }
+
+  public static int getMqttTopicAliasMax() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_ALIAS_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAX);
   }
 
   public static int getMqttMessageSizeMax() {
