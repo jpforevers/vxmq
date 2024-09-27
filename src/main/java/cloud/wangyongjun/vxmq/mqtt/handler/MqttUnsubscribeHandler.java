@@ -115,12 +115,12 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
             // The UNSUBACK Packet has no payload. Nothing need to do.
           } else {
             Integer requestProblemInformation = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.REQUEST_PROBLEM_INFORMATION, MqttProperties.IntegerProperty.class);
+            if (requestProblemInformation == null || requestProblemInformation == 1) {
+              unsubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+            }
             if (t instanceof MqttUnsubscribeException) {
-              reasonCodes.add(((MqttUnsubscribeException) t).code());
+              reasonCodes.add(((MqttUnsubscribeException) t).getMqttUnsubAckReasonCode());
             } else {
-              if (requestProblemInformation == null || requestProblemInformation == 1) {
-                unsubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
-              }
               reasonCodes.add(MqttUnsubAckReasonCode.UNSPECIFIED_ERROR);
             }
           }

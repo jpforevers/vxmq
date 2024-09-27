@@ -135,13 +135,14 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
               grantedQosLevels.add(MqttQoS.FAILURE);
             } else {
               Integer requestProblemInformation = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.REQUEST_PROBLEM_INFORMATION, MqttProperties.IntegerProperty.class);
+              // If the value of Request Problem Information is 0, the Server MAY return a Reason String or User Properties on a CONNACK or DISCONNECT packet, but MUST NOT send a Reason String or User Properties on any packet other than PUBLISH, CONNACK, or DISCONNECT [MQTT-3.1.2-29]
+              if (requestProblemInformation == null || requestProblemInformation == 1) {
+                subAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+              }
               if (t instanceof MqttSubscribeException) {
-                reasonCodes.add(((MqttSubscribeException) t).code());
+                reasonCodes.add(((MqttSubscribeException) t).getMqttSubAckReasonCode());
               } else {
                 reasonCodes.add(MqttSubAckReasonCode.UNSPECIFIED_ERROR);
-                if (requestProblemInformation == null || requestProblemInformation == 1) {
-                  subAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
-                }
               }
             }
           }

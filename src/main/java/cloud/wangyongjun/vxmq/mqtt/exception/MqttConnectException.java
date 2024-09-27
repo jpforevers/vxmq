@@ -14,14 +14,27 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package cloud.wangyongjun.vxmq.mqtt.exception;
 
-import io.vertx.mqtt.messages.codes.MqttSubAckReasonCode;
+import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
+import io.vertx.mqtt.MqttException;
 
-public class InvalidTopicException extends MqttSubscribeException {
+public class MqttConnectException extends MqttException {
 
-  public InvalidTopicException() {
-    super(MqttSubAckReasonCode.TOPIC_FILTER_INVALID);
+  private final MqttConnectReturnCode mqttConnectReturnCode;
+
+  public MqttConnectException(MqttConnectReturnCode mqttConnectReturnCode) {
+    this(mqttConnectReturnCode, mqttConnectReturnCode.name());
+  }
+
+  public MqttConnectException(MqttConnectReturnCode mqttConnectReturnCode, String reason) {
+    super(mqttConnectReturnCode.byteValue(), reason);
+    this.mqttConnectReturnCode = mqttConnectReturnCode;
+  }
+
+  public MqttConnectReturnCode getMqttConnectReturnCode() {
+    return mqttConnectReturnCode;
   }
 
 }

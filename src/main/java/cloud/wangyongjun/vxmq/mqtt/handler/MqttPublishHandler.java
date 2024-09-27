@@ -128,22 +128,31 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           mqttEndpoint.close();
         } else {
+          Integer requestProblemInformation = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.REQUEST_PROBLEM_INFORMATION, MqttProperties.IntegerProperty.class);
           if (t instanceof MqttPublishException) {
             switch (mqttPublishMessage.qosLevel()) {
               case AT_MOST_ONCE:
                 break;
               case AT_LEAST_ONCE:
-                mqttEndpoint.publishAcknowledge(mqttPublishMessage.messageId(), ((MqttPublishException) t).mqttPubAckReasonCode(), pubAckProperties);
+                // If the value of Request Problem Information is 0, the Server MAY return a Reason String or User Properties on a CONNACK or DISCONNECT packet, but MUST NOT send a Reason String or User Properties on any packet other than PUBLISH, CONNACK, or DISCONNECT [MQTT-3.1.2-29]
+                if (requestProblemInformation == null || requestProblemInformation == 1) {
+                  pubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+                }
+                mqttEndpoint.publishAcknowledge(mqttPublishMessage.messageId(), ((MqttPublishException) t).getMqttPubAckReasonCode(), pubAckProperties);
                 break;
               case EXACTLY_ONCE:
-                mqttEndpoint.publishReceived(mqttPublishMessage.messageId(), ((MqttPublishException) t).mqttPubRecReasonCode(), pubRecProperties);
+                // If the value of Request Problem Information is 0, the Server MAY return a Reason String or User Properties on a CONNACK or DISCONNECT packet, but MUST NOT send a Reason String or User Properties on any packet other than PUBLISH, CONNACK, or DISCONNECT [MQTT-3.1.2-29]
+                if (requestProblemInformation == null || requestProblemInformation == 1) {
+                  pubRecProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+                }
+                mqttEndpoint.publishReceived(mqttPublishMessage.messageId(), ((MqttPublishException) t).getMqttPubRecReasonCode(), pubRecProperties);
             }
           } else {
-            Integer requestProblemInformation = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.REQUEST_PROBLEM_INFORMATION, MqttProperties.IntegerProperty.class);
             switch (mqttPublishMessage.qosLevel()) {
               case AT_MOST_ONCE:
                 break;
               case AT_LEAST_ONCE:{
+                // If the value of Request Problem Information is 0, the Server MAY return a Reason String or User Properties on a CONNACK or DISCONNECT packet, but MUST NOT send a Reason String or User Properties on any packet other than PUBLISH, CONNACK, or DISCONNECT [MQTT-3.1.2-29]
                 if (requestProblemInformation == null || requestProblemInformation == 1) {
                   pubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
                 }
@@ -151,6 +160,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
                 break;
               }
               case EXACTLY_ONCE:
+                // If the value of Request Problem Information is 0, the Server MAY return a Reason String or User Properties on a CONNACK or DISCONNECT packet, but MUST NOT send a Reason String or User Properties on any packet other than PUBLISH, CONNACK, or DISCONNECT [MQTT-3.1.2-29]
                 if (requestProblemInformation == null || requestProblemInformation == 1) {
                   pubRecProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
                 }

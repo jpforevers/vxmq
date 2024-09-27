@@ -17,6 +17,7 @@
 
 package cloud.wangyongjun.vxmq.mqtt.exception;
 
+import io.vertx.mqtt.MqttException;
 import io.vertx.mqtt.messages.codes.MqttPubAckReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRecReasonCode;
 
@@ -25,40 +26,33 @@ public class MqttPublishException extends MqttException {
   private MqttPubAckReasonCode mqttPubAckReasonCode;
   private MqttPubRecReasonCode mqttPubRecReasonCode;
 
-  /**
-   * Suitable for MQTT version 3 and above.
-   *
-   * @param message message
-   */
-  public MqttPublishException(String message) {
-    super(message);
+  public MqttPublishException(String reason) {
+    super(-1, reason);
   }
 
-  /**
-   * Suitable for MQTT version above 3.
-   *
-   * @param code code
-   */
   public MqttPublishException(MqttPubAckReasonCode code) {
-    super(String.format("Publish failed: %s", code));
+    this(code, code.name());
+  }
+
+  public MqttPublishException(MqttPubAckReasonCode code, String reason) {
+    super(code.value(), reason);
     this.mqttPubAckReasonCode = code;
   }
 
-  /**
-   * Suitable for MQTT version above 3.
-   *
-   * @param code code
-   */
   public MqttPublishException(MqttPubRecReasonCode code) {
-    super(String.format("Publish failed: %s", code));
+    this(code, code.name());
+  }
+
+  public MqttPublishException(MqttPubRecReasonCode code, String reason) {
+    super(code.value(), reason);
     this.mqttPubRecReasonCode = code;
   }
 
-  public MqttPubAckReasonCode mqttPubAckReasonCode() {
+  public MqttPubAckReasonCode getMqttPubAckReasonCode() {
     return mqttPubAckReasonCode;
   }
 
-  public MqttPubRecReasonCode mqttPubRecReasonCode() {
+  public MqttPubRecReasonCode getMqttPubRecReasonCode() {
     return mqttPubRecReasonCode;
   }
 

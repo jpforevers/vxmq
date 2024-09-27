@@ -17,24 +17,24 @@
 
 package cloud.wangyongjun.vxmq.mqtt.exception;
 
+import io.vertx.mqtt.MqttException;
 import io.vertx.mqtt.messages.codes.MqttSubAckReasonCode;
 
 public class MqttSubscribeException extends MqttException {
 
-  private final MqttSubAckReasonCode code;
+  private final MqttSubAckReasonCode mqttSubAckReasonCode;
 
-  /**
-   * Suitable for MQTT version 3 and above.
-   *
-   * @param code code
-   */
-  public MqttSubscribeException(MqttSubAckReasonCode code) {
-    super(String.format("Subscribe failed: %s", code));
-    this.code = code;
+  public MqttSubscribeException(MqttSubAckReasonCode mqttSubAckReasonCode) {
+    this(mqttSubAckReasonCode, mqttSubAckReasonCode.name());
   }
 
-  public MqttSubAckReasonCode code() {
-    return this.code;
+  public MqttSubscribeException(MqttSubAckReasonCode mqttSubAckReasonCode, String reason) {
+    super(mqttSubAckReasonCode.value(), reason);
+    this.mqttSubAckReasonCode = mqttSubAckReasonCode;
+  }
+
+  public MqttSubAckReasonCode getMqttSubAckReasonCode() {
+    return mqttSubAckReasonCode;
   }
 
 }

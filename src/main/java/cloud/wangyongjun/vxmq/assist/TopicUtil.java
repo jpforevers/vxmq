@@ -17,7 +17,6 @@
 
 package cloud.wangyongjun.vxmq.assist;
 
-import cloud.wangyongjun.vxmq.mqtt.exception.InvalidTopicException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Matcher;
@@ -52,10 +51,10 @@ public class TopicUtil {
     return StringUtils.splitPreserveAllTokens(topic, String.valueOf(TOPIC_LEVEL_SEPARATOR));
   }
 
-  public static boolean matches(String topicSubscription, String actualTopic) throws InvalidTopicException {
+  public static boolean matches(String topicSubscription, String actualTopic) throws IllegalArgumentException {
 
     if (StringUtils.containsAny(actualTopic, "#+")) {
-      throw new InvalidTopicException();
+      throw new IllegalArgumentException("Invalid topic subscription: " + topicSubscription);
     }
     final String subscription = StringUtils.stripEnd(topicSubscription, "/");
 

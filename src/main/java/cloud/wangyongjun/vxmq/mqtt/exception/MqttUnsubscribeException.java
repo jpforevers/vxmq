@@ -17,33 +17,28 @@
 
 package cloud.wangyongjun.vxmq.mqtt.exception;
 
+import io.vertx.mqtt.MqttException;
 import io.vertx.mqtt.messages.codes.MqttUnsubAckReasonCode;
 
 public class MqttUnsubscribeException extends MqttException {
 
-  private MqttUnsubAckReasonCode code;
+  private MqttUnsubAckReasonCode mqttUnsubAckReasonCode;
 
-  /**
-   * Suitable for MQTT version 3.
-   *
-   * @param message message
-   */
   public MqttUnsubscribeException(String message) {
-    super(message);
+    super(-1, message);
   }
 
-  /**
-   * Suitable for MQTT version above 3.
-   *
-   * @param code code
-   */
-  public MqttUnsubscribeException(MqttUnsubAckReasonCode code) {
-    super(String.format("Unsubscribe failed: %s", code));
-    this.code = code;
+  public MqttUnsubscribeException(MqttUnsubAckReasonCode mqttUnsubAckReasonCode) {
+    this(mqttUnsubAckReasonCode, mqttUnsubAckReasonCode.name());
   }
 
-  public MqttUnsubAckReasonCode code() {
-    return this.code;
+  public MqttUnsubscribeException(MqttUnsubAckReasonCode mqttUnsubAckReasonCode, String reason) {
+    super(mqttUnsubAckReasonCode.value(), reason);
+    this.mqttUnsubAckReasonCode = mqttUnsubAckReasonCode;
+  }
+
+  public MqttUnsubAckReasonCode getMqttUnsubAckReasonCode() {
+    return mqttUnsubAckReasonCode;
   }
 
 }

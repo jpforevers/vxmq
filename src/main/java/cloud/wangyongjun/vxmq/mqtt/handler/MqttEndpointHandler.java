@@ -23,7 +23,7 @@ import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectFailedEvent;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttConnectedEvent;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttSessionTakenOverEvent;
-import cloud.wangyongjun.vxmq.mqtt.exception.MqttAuthFailedException;
+import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
@@ -168,17 +168,16 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
         LOGGER.error("Error occurred when processing CONNECT from {}", mqttEndpoint.clientIdentifier(), t);
         publishMqttConnectFailedEvent(mqttEndpoint, t).subscribe().with(v -> {}, tt -> LOGGER.error("Error occurred when publishing mqtt connect failed event", tt));
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-          if (t instanceof MqttAuthFailedException e) {
-            mqttEndpoint.reject(e.getCode());
+          if (t instanceof MqttConnectException e) {
+            mqttEndpoint.reject(e.getMqttConnectReturnCode());
           } else {
             mqttEndpoint.reject(MqttConnectReturnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE);
           }
         } else {
-          if (t instanceof MqttAuthFailedException e) {
-            conAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), ((MqttAuthFailedException) t).getReason()));
-            mqttEndpoint.reject(e.getCode(), conAckMqttProperties);
+          conAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
+          if (t instanceof MqttConnectException e) {
+            mqttEndpoint.reject(e.getMqttConnectReturnCode(), conAckMqttProperties);
           } else {
-            conAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
             mqttEndpoint.reject(MqttConnectReturnCode.CONNECTION_REFUSED_UNSPECIFIED_ERROR, conAckMqttProperties);
           }
         }
@@ -232,7 +231,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           if (MqttConnectReturnCode.CONNECTION_ACCEPTED.equals(mqttAuthResult.getCode())) {
             return Uni.createFrom().voidItem();
           } else {
-            return Uni.createFrom().failure(new MqttAuthFailedException(mqttAuthResult.getCode(), mqttAuthResult.getReason()));
+            return Uni.createFrom().failure(new MqttConnectException(mqttAuthResult.getCode(), mqttAuthResult.getReason()));
           }
         });
     }
