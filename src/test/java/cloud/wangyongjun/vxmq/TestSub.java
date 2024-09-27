@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +65,7 @@ public class TestSub extends BaseTest {
         return Uni.combine().all().unis(unis).collectFailures().discardItems();
       })
       .onItem().transformToUni(v -> mqttClient.disconnect())
+      .onItem().delayIt().by(Duration.ofSeconds(1))
       .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
   }
 

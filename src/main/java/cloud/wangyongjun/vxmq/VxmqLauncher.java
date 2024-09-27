@@ -52,6 +52,7 @@ public class VxmqLauncher {
   private static final Logger LOGGER = LoggerFactory.getLogger(VxmqLauncher.class);
 
   private Vertx vertx;
+  private String mainVerticleId;
 
   public static void main(String[] args) {
     VxmqLauncher vxmqLauncher = new VxmqLauncher();
@@ -64,9 +65,17 @@ public class VxmqLauncher {
     Instant start = Instant.now();
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> initVertx())
-      .onItem().transformToUni(v -> deployMainVerticle())
+      .onItem().transformToUni(v -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
+      .onItem().invoke(id -> this.mainVerticleId = id)
+      .replaceWithVoid()
       .onItem().invoke(v -> LOGGER.info("VXMQ started in {} ms", Instant.now().toEpochMilli() - start.toEpochMilli()))
       .onFailure().invoke(t -> LOGGER.error("Error occurred when starting VXMQ", t));
+  }
+
+  public Uni<Void> stop() {
+    return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> vertx.undeploy(mainVerticleId))
+      .onItem().transformToUni(v -> vertx.close());
   }
 
   private Uni<Void> initVertx() {
@@ -112,12 +121,6 @@ public class VxmqLauncher {
       vertxOptions.setMetricsOptions(micrometerMetricsOptions);
     }
     return vertxOptions;
-  }
-
-  private Uni<Void> deployMainVerticle() {
-    return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
-      .replaceWithVoid();
   }
 
 }

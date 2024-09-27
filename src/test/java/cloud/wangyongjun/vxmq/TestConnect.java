@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestConnect extends BaseTest {
@@ -43,6 +45,7 @@ public class TestConnect extends BaseTest {
         assertEquals(MqttConnectReturnCode.CONNECTION_ACCEPTED, mqttConnAckMessage.code());
       })
       .onItem().transformToUni(v -> mqttClient.disconnect())
+      .onItem().delayIt().by(Duration.ofSeconds(1))
       .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
   }
 
