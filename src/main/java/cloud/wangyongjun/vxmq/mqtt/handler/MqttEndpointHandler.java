@@ -137,12 +137,13 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       // TODO When these MQTT 5 features implemented, change 0 to 1
       conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER_AVAILABLE.value(), 0));
       conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SHARED_SUBSCRIPTION_AVAILABLE.value(), 1));
-      conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.TOPIC_ALIAS_MAXIMUM.value(), Config.getVxmqTopicAliasMaximum()));
+      conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.TOPIC_ALIAS_MAXIMUM.value(), Config.getMqttTopicAliasMaximum()));
     }
 
     Context context = Context.empty();
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> clientService.obtainClientLock(mqttEndpoint.clientIdentifier(), 2000))
+      .onItem().transformToUni(v -> checkClientId(mqttEndpoint.clientIdentifier()))
       .onItem().transformToUni(v -> authenticate(mqttEndpoint))
       .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint, context))
       .onItem().transformToUni(v -> registerHandler(mqttEndpoint))
@@ -204,6 +205,15 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     jsonObject.put("remoteHost", mqttEndpoint.remoteAddress().host());
     jsonObject.put("remotePort", mqttEndpoint.remoteAddress().port());
     return jsonObject.toString();
+  }
+
+  private Uni<Void> checkClientId(String clientIdentifier) {
+    int clientIdLengthMax = Config.getMqttClientIdLengthMax();
+    if (clientIdentifier.length() > clientIdLengthMax) {
+      return Uni.createFrom().failure(new MqttConnectException(MqttConnectReturnCode.CONNECTION_REFUSED_CLIENT_IDENTIFIER_NOT_VALID, "Client identifier is too long, exceeding " + clientIdLengthMax));
+    } else {
+      return Uni.createFrom().voidItem();
+    }
   }
 
   /**

@@ -54,6 +54,13 @@ vxmq:
     topic:
       alias:
         maximum: 65535
+    message:
+      size:
+        # 10M
+        max: 10485760
+    client-id:
+      length:
+        max: 65535
   http:
     server:
       port: 8060

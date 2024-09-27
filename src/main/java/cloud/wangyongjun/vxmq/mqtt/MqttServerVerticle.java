@@ -35,7 +35,7 @@ public class MqttServerVerticle extends AbstractVerticle {
   @Override
   public Uni<Void> asyncStart() {
     MqttServerOptions mqttServerOptions = new MqttServerOptions()
-      .setMaxMessageSize(10 * 1024 * 1024)
+      .setMaxMessageSize(Config.getMqttMessageSizeMax())
       .setAutoClientId(false)
       .setPort(Config.getMqttServerPort())
       .setUseProxyProtocol(Config.getMqttProxyProtocolEnable());
