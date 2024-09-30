@@ -23,6 +23,8 @@ import io.vertx.mutiny.core.Vertx;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.function.BiConsumer;
+
 @ExtendWith(VertxExtension.class)
 public class BaseTest {
 
@@ -36,6 +38,16 @@ public class BaseTest {
     } else {
       testContext.completeNow();
     }
+  }
+
+  protected <T> BiConsumer<? super T, ? super Throwable> whenCompleteBiConsumer(VertxTestContext testContext) {
+    return (v, throwable) -> {
+      if (throwable == null) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow(throwable);
+      }
+    };
   }
 
 }

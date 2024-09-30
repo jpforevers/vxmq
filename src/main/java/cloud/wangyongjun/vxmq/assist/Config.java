@@ -53,10 +53,10 @@ public class Config {
   public static final String KEY_VXMQ_MQTT_MESSAGE_SIZE_MAX = "vxmq.mqtt.message.size.max";
   public static final int DEFAULT_VXMQ_MQTT_MESSAGE_SIZE_MAX = 10 * 1024 * 1024;  // 10M
   public static final String KEY_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX = "vxmq.mqtt.client-id.length.max";
-  public static final int DEFAULT_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX = 128;
+  public static final int DEFAULT_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX = 1024;
 
   public static final String KEY_VXMQ_SHELL_SERVER_PORT = "vxmq.shell.server.port";
-  public static final int DEFAULT_VXMQ_SHELL_SERVER_PORT = 5000;
+  public static final int DEFAULT_VXMQ_SHELL_SERVER_PORT = 10022;
 
   public static final String KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX = "vxmq.session.queued-message.max";
   public static final int DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX = 1000;

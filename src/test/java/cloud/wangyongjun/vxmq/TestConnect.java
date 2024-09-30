@@ -17,18 +17,21 @@
 
 package cloud.wangyongjun.vxmq;
 
-import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
+import cloud.wangyongjun.vxmq.assist.Config;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
+import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAckReturnCode;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
+import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5ConnAckException;
+import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCode;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.mqtt.MqttClientOptions;
 import io.vertx.mutiny.core.Vertx;
-import io.vertx.mutiny.mqtt.MqttClient;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestConnect extends BaseTest {
 
@@ -36,17 +39,57 @@ public class TestConnect extends BaseTest {
 
   @Test
   void testMqttSpec311Connect(Vertx vertx, VertxTestContext testContext) throws Throwable {
-    MqttClientOptions mqttClientOptions = new MqttClientOptions();
-
-    MqttClient mqttClient = MqttClient.create(vertx, mqttClientOptions);
-    mqttClient.connect(1883, "localhost")
-      .onItem().invoke(mqttConnAckMessage -> {
-        LOGGER.info("Mqtt client connected, code: {}", mqttConnAckMessage.code());
-        assertEquals(MqttConnectReturnCode.CONNECTION_ACCEPTED, mqttConnAckMessage.code());
+    Mqtt3AsyncClient mqtt3AsyncClient = Mqtt3Client.builder()
+      .identifier("clientId1")
+      .buildAsync();
+    mqtt3AsyncClient.connect()
+      .thenAccept(mqtt3ConnAck -> {
+        assertEquals(Mqtt3ConnAckReturnCode.SUCCESS, mqtt3ConnAck.getReturnCode());
       })
-      .onItem().transformToUni(v -> mqttClient.disconnect())
-      .onItem().delayIt().by(Duration.ofSeconds(1))
-      .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
+      .thenCompose(v -> mqtt3AsyncClient.disconnect())
+      .whenComplete(whenCompleteBiConsumer(testContext));
+  }
+
+  @Test
+  void testMqttSpec5Connect(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
+      .identifier("clientId1")
+      .buildAsync();
+    mqtt5AsyncClient.connect()
+      .thenAccept(mqtt5ConnAck -> {
+        assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode());
+      })
+      .thenCompose(v -> mqtt5AsyncClient.disconnect())
+      .whenComplete(whenCompleteBiConsumer(testContext));
+  }
+
+  @Test
+  void testMqttSpec5WithoutClientId(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
+      .buildAsync();
+    mqtt5AsyncClient.connect()
+      .thenAccept(mqtt5ConnAck -> {
+        assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode());
+        assertTrue(mqtt5ConnAck.getAssignedClientIdentifier().isPresent(), "Mqtt 5 property assigned client identifier not set");
+      })
+      .thenCompose(v -> mqtt5AsyncClient.disconnect())
+      .whenComplete(whenCompleteBiConsumer(testContext));
+  }
+
+  @Test
+  void testMqttSpec5ClientIdTooLong(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
+      .identifier("a".repeat(Config.getMqttClientIdLengthMax() + 1))
+      .buildAsync();
+    mqtt5AsyncClient.connect()
+      .handle((mqtt5ConnAck, throwable) -> {
+        assertNotNull(throwable);
+        assertInstanceOf(Mqtt5ConnAckException.class, throwable);
+        assertEquals(Mqtt5ConnAckReasonCode.CLIENT_IDENTIFIER_NOT_VALID, ((Mqtt5ConnAckException) throwable).getMqttMessage().getReasonCode());
+        assertTrue(((Mqtt5ConnAckException) throwable).getMqttMessage().getReasonString().isPresent());
+        return null;
+      })
+      .whenComplete(whenCompleteBiConsumer(testContext));
   }
 
 }
