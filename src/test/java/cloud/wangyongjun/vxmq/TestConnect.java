@@ -18,18 +18,26 @@
 package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.assist.Config;
+import com.hivemq.client.mqtt.lifecycle.MqttDisconnectSource;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
 import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAckReturnCode;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
 import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5ConnAckException;
+import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5DisconnectException;
 import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCode;
+import com.hivemq.client.mqtt.mqtt5.message.disconnect.Mqtt5DisconnectReasonCode;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.buffer.Buffer;
+import io.vertx.mutiny.core.net.NetClient;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,33 +46,64 @@ public class TestConnect extends BaseTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(TestConnect.class);
 
   @Test
-  void testMqttSpec311Connect(Vertx vertx, VertxTestContext testContext) throws Throwable {
+  void testMqtt311ConnSuccess(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Mqtt3AsyncClient mqtt3AsyncClient = Mqtt3Client.builder()
       .identifier("clientId1")
       .buildAsync();
     mqtt3AsyncClient.connect()
-      .thenAccept(mqtt3ConnAck -> {
-        assertEquals(Mqtt3ConnAckReturnCode.SUCCESS, mqtt3ConnAck.getReturnCode());
-      })
+      .thenAccept(mqtt3ConnAck -> assertEquals(Mqtt3ConnAckReturnCode.SUCCESS, mqtt3ConnAck.getReturnCode()))
       .thenCompose(v -> mqtt3AsyncClient.disconnect())
       .whenComplete(whenCompleteBiConsumer(testContext));
   }
 
   @Test
-  void testMqttSpec5Connect(Vertx vertx, VertxTestContext testContext) throws Throwable {
+  void testMqtt311ConnUnsupportedMqttVersion(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    NetClient netClient = vertx.createNetClient();
+    netClient.connect(Config.getMqttServerPort(), "localhost")
+      .onItem().invoke(so -> so.handler(buffer -> {
+        assertEquals(Mqtt3ConnAckReturnCode.UNSUPPORTED_PROTOCOL_VERSION.getCode(), buffer.getByte(buffer.length() - 1));
+        testContext.completeNow();
+      }))
+      .onItem().call(so -> {
+        Buffer buffer = Buffer.buffer();
+        buffer.appendByte((byte) 0b00010000);  // Fixed header byte 1
+        buffer.appendByte((byte) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
+
+        buffer.appendByte((byte) 0b00000000);  // Variable header byte 1, Protocol Name Length MSB (0)
+        buffer.appendByte((byte) 0b00000100);  // Variable header byte 2, Protocol Name Length LSB (4)
+        buffer.appendByte((byte) 0b01001101);  // Variable header byte 3, Protocol Name M
+        buffer.appendByte((byte) 0b01010001);  // Variable header byte 4, Protocol Name Q
+        buffer.appendByte((byte) 0b01010100);  // Variable header byte 5, Protocol Name T
+        buffer.appendByte((byte) 0b01010100);  // Variable header byte 6, Protocol Name T
+        buffer.appendByte((byte) 0b00000110);  // Variable header byte 7, Protocol Level, set wrong value 6
+        buffer.appendByte((byte) 0b11000010);  // Variable header byte 8, Connect Flags, username, password and clean session set to 1
+        buffer.appendByte((byte) 0b00000000);  // Variable header byte 9, Keep Alive MSB (0)
+        buffer.appendByte((byte) 0b00011110);  // Variable header byte 10, Keep Alive LSB (30)
+
+        buffer.appendBytes(encodeToMqttUtf8EncodedStringBytes("clientId1"));  // Payload, client id
+        buffer.appendBytes(encodeToMqttUtf8EncodedStringBytes("username1")); // Payload, username
+        buffer.appendBytes(encodeToMqttPasswordBytes("password".getBytes(StandardCharsets.UTF_8)));  // Payload, password
+
+        buffer.setBytes(1, encodeRemainingLength(buffer.length() - 2));  // Update remaining length
+
+        return so.write(buffer);
+      })
+      .subscribe().with(v -> {}, testContext::failNow);
+  }
+
+  @Test
+  void testMqtt5ConnSuccess(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
       .identifier("clientId1")
       .buildAsync();
     mqtt5AsyncClient.connect()
-      .thenAccept(mqtt5ConnAck -> {
-        assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode());
-      })
+      .thenAccept(mqtt5ConnAck -> assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode()))
       .thenCompose(v -> mqtt5AsyncClient.disconnect())
       .whenComplete(whenCompleteBiConsumer(testContext));
   }
 
   @Test
-  void testMqttSpec5WithoutClientId(Vertx vertx, VertxTestContext testContext) throws Throwable {
+  void testMqtt5ConnWithoutClientId(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
       .buildAsync();
     mqtt5AsyncClient.connect()
@@ -77,7 +116,7 @@ public class TestConnect extends BaseTest {
   }
 
   @Test
-  void testMqttSpec5ClientIdTooLong(Vertx vertx, VertxTestContext testContext) throws Throwable {
+  void testMqtt5ConnClientIdTooLong(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
       .identifier("a".repeat(Config.getMqttClientIdLengthMax() + 1))
       .buildAsync();
@@ -89,6 +128,35 @@ public class TestConnect extends BaseTest {
         assertTrue(((Mqtt5ConnAckException) throwable).getMqttMessage().getReasonString().isPresent());
         return null;
       })
+      .whenComplete(whenCompleteBiConsumer(testContext));
+  }
+
+  @Test
+  void testMqtt5ConnSessionTakenOver(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    CompletableFuture<Void> disconnectFuture = new CompletableFuture<>();
+    Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
+      .addDisconnectedListener(mqttClientDisconnectedContext -> {
+        try {
+          assertEquals(MqttDisconnectSource.SERVER, mqttClientDisconnectedContext.getSource());
+          assertInstanceOf(Mqtt5DisconnectException.class, mqttClientDisconnectedContext.getCause());
+          assertEquals(Mqtt5DisconnectReasonCode.SESSION_TAKEN_OVER, ((Mqtt5DisconnectException) mqttClientDisconnectedContext.getCause()).getMqttMessage().getReasonCode());
+          disconnectFuture.complete(null);
+        } catch (Throwable t) {
+          disconnectFuture.completeExceptionally(t);
+        }
+      })
+      .identifier("c1")
+      .buildAsync();
+    Mqtt5AsyncClient mqtt5AsyncClientCopy = Mqtt5Client.builder()
+      .identifier("c1")
+      .buildAsync();
+    mqtt5AsyncClient.connect()
+      .thenCompose(mqtt5ConnAck -> {
+        assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode());
+        return mqtt5AsyncClientCopy.connect();
+      })
+      .thenAccept(mqtt5ConnAck -> assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode()))
+      .thenCompose(v -> disconnectFuture)
       .whenComplete(whenCompleteBiConsumer(testContext));
   }
 

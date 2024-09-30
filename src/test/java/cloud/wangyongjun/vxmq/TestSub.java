@@ -18,55 +18,54 @@
 package cloud.wangyongjun.vxmq;
 
 import cloud.wangyongjun.vxmq.service.sub.Subscription;
-import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
-import io.smallrye.mutiny.Uni;
+import com.hivemq.client.mqtt.datatypes.MqttQos;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
+import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAckReturnCode;
+import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe;
+import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscription;
+import com.hivemq.client.mqtt.mqtt3.message.subscribe.suback.Mqtt3SubAckReturnCode;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.mqtt.MqttClientOptions;
 import io.vertx.mutiny.core.Vertx;
-import io.vertx.mutiny.mqtt.MqttClient;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class TestSub extends BaseTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestSub.class);
 
   @Test
-  void testSub(Vertx vertx, VertxTestContext testContext) throws Throwable {
+  void testMqtt311Sub(Vertx vertx, VertxTestContext testContext) throws Throwable {
     Map<String, Integer> topicToQosMap = new HashMap<>();
     for (Subscription subscription : TestConstants.SUBSCRIPTIONS) {
       topicToQosMap.put(subscription.getTopicFilter(), subscription.getQos());
     }
 
-    MqttClientOptions mqttClientOptions = new MqttClientOptions();
-    MqttClient mqttClient = MqttClient.create(vertx, mqttClientOptions);
-    mqttClient.connect(1883, "localhost")
-      .onItem().invoke(mqttConnAckMessage -> {
-        LOGGER.info("Mqtt client connected, code: {}", mqttConnAckMessage.code());
-        assertEquals(MqttConnectReturnCode.CONNECTION_ACCEPTED, mqttConnAckMessage.code());
-      })
-      .replaceWithVoid()
-      .onItem().transformToUni(v -> {
-        List<Uni<Integer>> unis = new ArrayList<>();
+    Mqtt3AsyncClient mqtt3AsyncClient = Mqtt3Client.builder().buildAsync();
+    mqtt3AsyncClient.connect()
+      .thenAccept(mqtt3ConnAck -> assertEquals(Mqtt3ConnAckReturnCode.SUCCESS, mqtt3ConnAck.getReturnCode()))
+      .thenCompose(v -> {
+        List<Mqtt3Subscription> mqtt3Subscriptions = new ArrayList<>();
         for (Map.Entry<String, Integer> stringIntegerEntry : topicToQosMap.entrySet()) {
-          Uni<Integer> uni = mqttClient.subscribe(stringIntegerEntry.getKey(), stringIntegerEntry.getValue())
-            .onItem().invoke(i -> LOGGER.info("Mqtt client subscribed, topic: {}, qos: {}", stringIntegerEntry.getKey(), stringIntegerEntry.getValue()));
-          unis.add(uni);
+          Mqtt3Subscription mqtt3Subscription = Mqtt3Subscription.builder().topicFilter(stringIntegerEntry.getKey()).qos(MqttQos.fromCode(stringIntegerEntry.getValue())).build();
+          mqtt3Subscriptions.add(mqtt3Subscription);
         }
-        return Uni.combine().all().unis(unis).collectFailures().discardItems();
+        return mqtt3AsyncClient.subscribe(Mqtt3Subscribe.builder().addSubscriptions(mqtt3Subscriptions).build());
       })
-      .onItem().transformToUni(v -> mqttClient.disconnect())
-      .onItem().delayIt().by(Duration.ofSeconds(1))
-      .subscribe().with(v -> testContext.completeNow(), testContext::failNow);
+      .thenAccept(mqtt3SubAck -> {
+        mqtt3SubAck.getReturnCodes().forEach(mqtt3SubAckReturnCode -> assertNotEquals(Mqtt3SubAckReturnCode.FAILURE, mqtt3SubAckReturnCode));
+      })
+      .thenCompose(v -> mqtt3AsyncClient.disconnect())
+      .whenComplete(whenCompleteBiConsumer(testContext));
   }
 
 }
