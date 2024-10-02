@@ -20,6 +20,7 @@ package cloud.wangyongjun.vxmq;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.buffer.Buffer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -66,29 +67,35 @@ public class BaseTest {
   }
 
   protected byte[] encodeToMqttTwoByteIntegerBytes(int i) {
-    byte[] encoded = new byte[2];
-    encoded[0] = (byte) (i >> 8); // MSB
-    encoded[1] = (byte) (i & 0xFF); // LSB
-    return encoded;
+    Buffer buffer = Buffer.buffer();
+    short msb = (short) (i >> 8); // MSB
+    buffer.appendUnsignedByte(msb);
+    short lsb = (short) (i & 0xFF); // LSB
+    buffer.appendUnsignedByte(lsb);
+    return buffer.getBytes();
   }
 
   // encode a string to MQTT UTF-8 encoded string
   protected byte[] encodeToMqttUtf8EncodedStringBytes(String value) {
+    Buffer buffer = Buffer.buffer();
     byte[] utf8Bytes = value.getBytes(StandardCharsets.UTF_8);
-    byte[] encoded = new byte[2 + utf8Bytes.length];
-    encoded[0] = (byte) (utf8Bytes.length >> 8); // MSB
-    encoded[1] = (byte) (utf8Bytes.length & 0xFF); // LSB
-    System.arraycopy(utf8Bytes, 0, encoded, 2, utf8Bytes.length);
-    return encoded;
+    short msb = (short) (utf8Bytes.length >> 8); // MSB
+    buffer.appendUnsignedByte(msb);
+    short lsb = (short) (utf8Bytes.length & 0xFF); // LSB
+    buffer.appendUnsignedByte(lsb);
+    buffer.appendBytes(utf8Bytes);
+    return buffer.getBytes();
   }
 
   // encode password data to MQTT password field bytes
   protected byte[] encodeToMqttPasswordBytes(byte[] password) {
-    byte[] encoded = new byte[2 + password.length];
-    encoded[0] = (byte) (password.length >> 8); // MSB
-    encoded[1] = (byte) (password.length & 0xFF); // LSB
-    System.arraycopy(password, 0, encoded, 2, password.length);
-    return encoded;
+    Buffer buffer = Buffer.buffer();
+    short msb = (short) (password.length >> 8); // MSB
+    buffer.appendUnsignedByte(msb);
+    short lsb = (short) (password.length & 0xFF); // LSB
+    buffer.appendUnsignedByte(lsb);
+    buffer.appendBytes(password);
+    return buffer.getBytes();
   }
 
 }

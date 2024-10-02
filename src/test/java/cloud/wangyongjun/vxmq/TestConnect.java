@@ -66,20 +66,19 @@ public class TestConnect extends BaseTest {
       }))
       .onItem().call(so -> {
         Buffer buffer = Buffer.buffer();
-        buffer.appendByte((byte) 0b00010000);  // Fixed header byte 1
-        buffer.appendByte((byte) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
+        buffer.appendUnsignedByte((short) 0b00010000);  // Fixed header byte 1
+        buffer.appendUnsignedByte((short) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
 
+        buffer.appendUnsignedByte((short) 0b00000000);  // Variable header byte 1, Protocol Name Length MSB (0)
+        buffer.appendUnsignedByte((short) 0b00000100);  // Variable header byte 2, Protocol Name Length LSB (4)
+        buffer.appendUnsignedByte((short) 0b01001101);  // Variable header byte 3, Protocol Name M
+        buffer.appendUnsignedByte((short) 0b01010001);  // Variable header byte 4, Protocol Name Q
+        buffer.appendUnsignedByte((short) 0b01010100);  // Variable header byte 5, Protocol Name T
+        buffer.appendUnsignedByte((short) 0b01010100);  // Variable header byte 6, Protocol Name T
+        buffer.appendUnsignedByte((short) 0b00000110);  // Variable header byte 7, Protocol Level, set wrong value 6
+        buffer.appendUnsignedByte((short) 0b11000010);  // Variable header byte 8, Connect Flags, username, password and clean session set to 1
 
-        buffer.appendByte((byte) 0b00000000);  // Variable header byte 1, Protocol Name Length MSB (0)
-        buffer.appendByte((byte) 0b00000100);  // Variable header byte 2, Protocol Name Length LSB (4)
-        buffer.appendByte((byte) 0b01001101);  // Variable header byte 3, Protocol Name M
-        buffer.appendByte((byte) 0b01010001);  // Variable header byte 4, Protocol Name Q
-        buffer.appendByte((byte) 0b01010100);  // Variable header byte 5, Protocol Name T
-        buffer.appendByte((byte) 0b01010100);  // Variable header byte 6, Protocol Name T
-        buffer.appendByte((byte) 0b00000110);  // Variable header byte 7, Protocol Level, set wrong value 6
-        buffer.appendByte((byte) 0b11000010);  // Variable header byte 8, Connect Flags, username, password and clean session set to 1
-        buffer.appendByte((byte) 0b00000000);  // Variable header byte 9, Keep Alive MSB (0)
-        buffer.appendByte((byte) 0b00011110);  // Variable header byte 10, Keep Alive LSB (30)
+        buffer.appendBytes(encodeToMqttTwoByteIntegerBytes(30));  // Variable header, Keep Alive
 
         buffer.appendBytes(encodeToMqttUtf8EncodedStringBytes("clientId1"));  // Payload, client id
         buffer.appendBytes(encodeToMqttUtf8EncodedStringBytes("username1")); // Payload, username

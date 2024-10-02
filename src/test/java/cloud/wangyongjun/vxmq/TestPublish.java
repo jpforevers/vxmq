@@ -20,7 +20,7 @@ public class TestPublish extends BaseTest {
 
   @Test
   public void testMqtt5PubTopicAliasMax(Vertx vertx, VertxTestContext testContext) throws Throwable {
-    System.setProperty("vxmq.mqtt.topic.alias.max", "3");
+    System.setProperty(Config.KEY_VXMQ_MQTT_TOPIC_ALIAS_MAX, "3");
     NetClient netClient = vertx.createNetClient();
     netClient.connect(Config.getMqttServerPort(), "localhost")
       .onItem().invoke(so -> so.handler(buffer -> {
@@ -31,21 +31,20 @@ public class TestPublish extends BaseTest {
       }))
       .onItem().call(so -> {
         Buffer buffer = Buffer.buffer();
-        buffer.appendByte((byte) 0b00010000);  // Fixed header byte 1
-        buffer.appendByte((byte) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
+        buffer.appendUnsignedByte((short) 0b00010000);  // Fixed header byte 1
+        buffer.appendUnsignedByte((short) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
 
-        buffer.appendByte((byte) 0b00000000);  // Variable header byte 1, Protocol Name Length MSB (0)
-        buffer.appendByte((byte) 0b00000100);  // Variable header byte 2, Protocol Name Length LSB (4)
-        buffer.appendByte((byte) 0b01001101);  // Variable header byte 3, Protocol Name M
-        buffer.appendByte((byte) 0b01010001);  // Variable header byte 4, Protocol Name Q
-        buffer.appendByte((byte) 0b01010100);  // Variable header byte 5, Protocol Name T
-        buffer.appendByte((byte) 0b01010100);  // Variable header byte 6, Protocol Name T
-        buffer.appendByte((byte) 0b00000101);  // Variable header byte 7, Protocol Level
-        buffer.appendByte((byte) 0b11000010);  // Variable header byte 8, Connect Flags, username, password and clean session set to 1
-        buffer.appendByte((byte) 0b00000000);  // Variable header byte 9, Keep Alive MSB (0)
-        buffer.appendByte((byte) 0b00011110);  // Variable header byte 10, Keep Alive LSB (30)
+        buffer.appendUnsignedByte((short) 0b00000000);  // Variable header byte 1, Protocol Name Length MSB (0)
+        buffer.appendUnsignedByte((short) 0b00000100);  // Variable header byte 2, Protocol Name Length LSB (4)
+        buffer.appendUnsignedByte((short) 0b01001101);  // Variable header byte 3, Protocol Name M
+        buffer.appendUnsignedByte((short) 0b01010001);  // Variable header byte 4, Protocol Name Q
+        buffer.appendUnsignedByte((short) 0b01010100);  // Variable header byte 5, Protocol Name T
+        buffer.appendUnsignedByte((short) 0b01010100);  // Variable header byte 6, Protocol Name T
+        buffer.appendUnsignedByte((short) 0b00000101);  // Variable header byte 7, Protocol Level
+        buffer.appendUnsignedByte((short) 0b11000010);  // Variable header byte 8, Connect Flags, username, password and clean session set to 1
+        buffer.appendBytes(encodeToMqttTwoByteIntegerBytes(30));  // Variable header, Keep Alive
         Buffer properties = Buffer.buffer();
-        properties.appendByte((byte) 0b00000000);
+        properties.appendUnsignedByte((short) 0b00000000);
         properties.setBytes(0, encodeVariableByteIntegerBytes(properties.length() - 1));
         buffer.appendBuffer(properties);  // Variable header, Properties
 
@@ -60,15 +59,15 @@ public class TestPublish extends BaseTest {
       .onItem().delayIt().by(Duration.ofSeconds(1))
       .onItem().call(so -> {
         Buffer buffer = Buffer.buffer();
-        buffer.appendByte((byte) 0b00110010);  // Fixed header byte 1
-        buffer.appendByte((byte) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
+        buffer.appendUnsignedByte((short) 0b00110010);  // Fixed header byte 1
+        buffer.appendUnsignedByte((short) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
 
         buffer.appendBytes(encodeToMqttUtf8EncodedStringBytes("topic"));  // Variable header, Topic Name
         buffer.appendBytes(encodeToMqttTwoByteIntegerBytes(1));  // Variable header, Packet Identifier
 
         Buffer properties = Buffer.buffer();
-        properties.appendByte((byte) 0b00000000);
-        properties.appendByte((byte) 0x23);
+        properties.appendUnsignedByte((short) 0b00000000);
+        properties.appendUnsignedByte((short) 0x23);
         properties.appendBytes(encodeToMqttTwoByteIntegerBytes(4));
         properties.setBytes(0, encodeVariableByteIntegerBytes(properties.length() - 1));
         buffer.appendBuffer(properties);  // Variable header, Properties
