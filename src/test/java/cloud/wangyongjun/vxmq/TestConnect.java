@@ -57,7 +57,7 @@ public class TestConnect extends BaseTest {
   }
 
   @Test
-  void testMqtt311ConnUnsupportedMqttVersion(Vertx vertx, VertxTestContext testContext) throws Throwable {
+  void testMqttConnUnsupportedMqttVersion(Vertx vertx, VertxTestContext testContext) throws Throwable {
     NetClient netClient = vertx.createNetClient();
     netClient.connect(Config.getMqttServerPort(), "localhost")
       .onItem().invoke(so -> so.handler(buffer -> {
@@ -68,6 +68,7 @@ public class TestConnect extends BaseTest {
         Buffer buffer = Buffer.buffer();
         buffer.appendByte((byte) 0b00010000);  // Fixed header byte 1
         buffer.appendByte((byte) 0b00000000);  // Fixed header byte 2, Remaining Length, update later
+
 
         buffer.appendByte((byte) 0b00000000);  // Variable header byte 1, Protocol Name Length MSB (0)
         buffer.appendByte((byte) 0b00000100);  // Variable header byte 2, Protocol Name Length LSB (4)
@@ -84,7 +85,7 @@ public class TestConnect extends BaseTest {
         buffer.appendBytes(encodeToMqttUtf8EncodedStringBytes("username1")); // Payload, username
         buffer.appendBytes(encodeToMqttPasswordBytes("password".getBytes(StandardCharsets.UTF_8)));  // Payload, password
 
-        buffer.setBytes(1, encodeRemainingLength(buffer.length() - 2));  // Update remaining length
+        buffer.setBytes(1, encodeVariableByteIntegerBytes(buffer.length() - 2));  // Update remaining length
 
         return so.write(buffer);
       })

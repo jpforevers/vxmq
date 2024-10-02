@@ -17,6 +17,7 @@
 
 package cloud.wangyongjun.vxmq;
 
+import cloud.wangyongjun.vxmq.assist.Config;
 import cloud.wangyongjun.vxmq.service.sub.Subscription;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
@@ -25,6 +26,13 @@ import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAckReturnCo
 import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscribe;
 import com.hivemq.client.mqtt.mqtt3.message.subscribe.Mqtt3Subscription;
 import com.hivemq.client.mqtt.mqtt3.message.subscribe.suback.Mqtt3SubAckReturnCode;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5AsyncClient;
+import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
+import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5SubAckException;
+import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCode;
+import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
+import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscription;
+import com.hivemq.client.mqtt.mqtt5.message.subscribe.suback.Mqtt5SubAckReasonCode;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
 import org.junit.jupiter.api.Test;
@@ -36,8 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestSub extends BaseTest {
 
@@ -65,6 +72,30 @@ public class TestSub extends BaseTest {
         mqtt3SubAck.getReturnCodes().forEach(mqtt3SubAckReturnCode -> assertNotEquals(Mqtt3SubAckReturnCode.FAILURE, mqtt3SubAckReturnCode));
       })
       .thenCompose(v -> mqtt3AsyncClient.disconnect())
+      .whenComplete(whenCompleteBiConsumer(testContext));
+  }
+
+  @Test
+  void testMqtt5SubTopicLevelsMax(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder().buildAsync();
+    mqtt5AsyncClient.connect()
+      .thenAccept(mqtt5ConnAck -> assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode()))
+      .thenCompose(v -> {
+        int topicLevelsMax = Config.getMqttTopicLevelsMax();
+        String topicFilterExceedingMax = 'a' + "/a".repeat(topicLevelsMax);
+        Mqtt5Subscription mqtt5Subscription = Mqtt5Subscription.builder()
+          .topicFilter(topicFilterExceedingMax)
+          .qos(MqttQos.AT_MOST_ONCE)
+          .build();
+        return mqtt5AsyncClient.subscribe(Mqtt5Subscribe.builder().addSubscription(mqtt5Subscription).build());
+      })
+      .handle((mqtt5SubAck, t) -> {
+        assertNotNull(t);
+        assertInstanceOf(Mqtt5SubAckException.class, t.getCause());
+        ((Mqtt5SubAckException) t.getCause()).getMqttMessage().getReasonCodes().forEach(mqtt5SubAckReasonCode -> assertEquals(Mqtt5SubAckReasonCode.TOPIC_FILTER_INVALID, mqtt5SubAckReasonCode));
+        return null;
+      })
+      .thenCompose(v -> mqtt5AsyncClient.disconnect())
       .whenComplete(whenCompleteBiConsumer(testContext));
   }
 

@@ -51,7 +51,7 @@ public class BaseTest {
     };
   }
 
-  public static byte[] encodeRemainingLength(int length) {
+  public byte[] encodeVariableByteIntegerBytes(int length) {
     int digit;
     StringBuilder encoded = new StringBuilder();
     do {
@@ -63,6 +63,13 @@ public class BaseTest {
       encoded.append((char) digit);
     } while (length > 0);
     return encoded.toString().getBytes();
+  }
+
+  protected byte[] encodeToMqttTwoByteIntegerBytes(int i) {
+    byte[] encoded = new byte[2];
+    encoded[0] = (byte) (i >> 8); // MSB
+    encoded[1] = (byte) (i & 0xFF); // LSB
+    return encoded;
   }
 
   // encode a string to MQTT UTF-8 encoded string
