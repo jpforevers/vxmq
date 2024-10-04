@@ -40,6 +40,7 @@ public class OutboundTopicAliasService {
       if (topicAliasOptional.isPresent()) {
         // topic alias exist
         msgToClient.setTopicAlias(topicAliasOptional.get());
+        msgToClient.setTopic("");
       } else {
         // topic alias not exist
         clientIdToTopicAliasMap.compute(clientId, (key, value) -> {
