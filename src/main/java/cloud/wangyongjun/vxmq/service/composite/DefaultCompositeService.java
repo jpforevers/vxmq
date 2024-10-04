@@ -157,7 +157,7 @@ public class DefaultCompositeService implements CompositeService {
   @Override
   public Uni<Void> forward(MsgToTopic msgToTopic) {
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> inboundTopicAliasService.processTopicAlias(msgToTopic, msgToTopic.getClientId(), msgToTopic.getTopicAlias(), msgToTopic.getTopic()))
+      .onItem().transformToUni(v -> inboundTopicAliasService.processTopicAlias(msgToTopic, msgToTopic.getTopicAlias()))
       .onItem().transformToUni(v -> {
         if (StringUtils.isNotBlank(msgToTopic.getTopic())) {
           return subService.allMatchSubs(msgToTopic.getTopic(), false);

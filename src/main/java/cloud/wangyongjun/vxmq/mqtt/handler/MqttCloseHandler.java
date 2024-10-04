@@ -23,6 +23,7 @@ import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
+import cloud.wangyongjun.vxmq.service.alias.OutboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.session.Session;
@@ -52,13 +53,15 @@ public class MqttCloseHandler implements Runnable {
   private final WillService willService;
   private final EventService eventService;
   private final InboundTopicAliasService inboundTopicAliasService;
+  private final OutboundTopicAliasService outboundTopicAliasService;
 
   public MqttCloseHandler(MqttEndpoint mqttEndpoint, Vertx vertx,
                           ClientService clientService,
                           CompositeService compositeService,
                           SessionService sessionService,
                           WillService willService, EventService eventService,
-                          InboundTopicAliasService inboundTopicAliasService) {
+                          InboundTopicAliasService inboundTopicAliasService,
+                          OutboundTopicAliasService outboundTopicAliasService) {
     this.mqttEndpoint = mqttEndpoint;
     this.vertx = vertx;
     this.clientService = clientService;
@@ -67,6 +70,7 @@ public class MqttCloseHandler implements Runnable {
     this.willService = willService;
     this.eventService = eventService;
     this.inboundTopicAliasService = inboundTopicAliasService;
+    this.outboundTopicAliasService = outboundTopicAliasService;
   }
 
   @Override
@@ -91,6 +95,7 @@ public class MqttCloseHandler implements Runnable {
         }
       })
       .onItem().invoke(() -> inboundTopicAliasService.clearTopicAlias(mqttEndpoint.clientIdentifier()))
+      .onItem().invoke(() -> outboundTopicAliasService.clearTopicAlias(mqttEndpoint.clientIdentifier()))
       .eventually(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
   }

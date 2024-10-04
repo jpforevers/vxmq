@@ -17,37 +17,10 @@
 
 package cloud.wangyongjun.vxmq;
 
-import io.vertx.mutiny.core.buffer.Buffer;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 public class Main {
 
   public static void main(String[] args) {
-    f1();
-    f2();
 
-  }
-
-  private static void f1() {
-    byte[] utf8Bytes = "value".getBytes(StandardCharsets.UTF_8);
-    byte[] encoded = new byte[2 + utf8Bytes.length];
-    encoded[0] = (byte) (utf8Bytes.length >> 8); // MSB
-    encoded[1] = (byte) (utf8Bytes.length & 0xFF); // LSB
-    System.arraycopy(utf8Bytes, 0, encoded, 2, utf8Bytes.length);
-    System.out.println(Arrays.toString(encoded));
-  }
-
-  private static void f2() {
-    Buffer buffer = Buffer.buffer();
-    byte[] utf8Bytes = "value".getBytes(StandardCharsets.UTF_8);
-    short msb = (short) (utf8Bytes.length >> 8); // MSB
-    buffer.appendUnsignedByte(msb);
-    short lsb = (short) (utf8Bytes.length & 0xFF); // LSB
-    buffer.appendUnsignedByte(lsb);
-    buffer.appendBytes(utf8Bytes);
-    System.out.println(Arrays.toString(buffer.getBytes()));
   }
 
 }

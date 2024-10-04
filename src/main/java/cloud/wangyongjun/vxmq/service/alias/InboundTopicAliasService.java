@@ -42,25 +42,25 @@ public class InboundTopicAliasService {
     this.clientIdToTopicAliasMap = new ConcurrentHashMap<>();
   }
 
-  public Uni<Void> processTopicAlias(MsgToTopic msgToTopic, String clientId, Integer topicAlias, String topicName) {
+  public Uni<Void> processTopicAlias(MsgToTopic msgToTopic, Integer topicAlias) {
     if (topicAlias != null) {
       // topic alias exist
       if (topicAlias > 0 && topicAlias <= Config.getMqttTopicAliasMax()) {
         // topic alias valid
-        if (StringUtils.isNotBlank(topicName)) {
+        if (StringUtils.isNotBlank(msgToTopic.getTopic())) {
           // topic name exist
-          saveTopicAlias(clientId, topicAlias, topicName);
+          saveTopicAlias(msgToTopic.getClientId(), topicAlias, msgToTopic.getTopic());
           return Uni.createFrom().voidItem();
         } else {
           // topic name not exist
-          Optional<String> topicMapped = getTopicByAlias(clientId, topicAlias);
+          Optional<String> topicMapped = getTopicByAlias(msgToTopic.getClientId(), topicAlias);
           if (topicMapped.isPresent()) {
             // topic alias mapped exist
             msgToTopic.setTopic(topicMapped.get());
             return Uni.createFrom().voidItem();
           } else {
             // topic alias mapped not exist, close connection with 0x82
-            return sessionService.getSession(clientId)
+            return sessionService.getSession(msgToTopic.getClientId())
               .onItem().transformToUni(session -> {
                 DisconnectRequest disconnectRequest = new DisconnectRequest(MqttDisconnectReasonCode.PROTOCOL_ERROR, MqttProperties.NO_PROPERTIES);
                 return clientService.disconnect(session.getVerticleId(), disconnectRequest);
@@ -69,7 +69,7 @@ public class InboundTopicAliasService {
         }
       } else {
         // topic alias invalid, close connection with 0x94
-        return sessionService.getSession(clientId)
+        return sessionService.getSession(msgToTopic.getClientId())
           .onItem().transformToUni(session -> {
             DisconnectRequest disconnectRequest = new DisconnectRequest(MqttDisconnectReasonCode.TOPIC_ALIAS_INVALID, MqttProperties.NO_PROPERTIES);
             return clientService.disconnect(session.getVerticleId(), disconnectRequest);

@@ -20,6 +20,7 @@ package cloud.wangyongjun.vxmq.service;
 import cloud.wangyongjun.vxmq.event.DefaultEventService;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
+import cloud.wangyongjun.vxmq.service.alias.OutboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.DefaultClientService;
@@ -79,4 +80,9 @@ public class ServiceFactory {
   public static InboundTopicAliasService inboundTopicAliasService(Vertx vertx) {
     return InboundTopicAliasService.getSingleton(vertx, clientService(vertx), sessionService(vertx));
   }
+
+  public static OutboundTopicAliasService outboundTopicAliasService(Vertx vertx) {
+    return OutboundTopicAliasService.getSingleton(vertx);
+  }
+
 }

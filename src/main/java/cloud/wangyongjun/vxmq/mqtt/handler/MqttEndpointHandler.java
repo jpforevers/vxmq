@@ -25,6 +25,7 @@ import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttSessionTakenOverEvent;
 import cloud.wangyongjun.vxmq.mqtt.exception.MqttConnectException;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
+import cloud.wangyongjun.vxmq.service.alias.OutboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
@@ -88,6 +89,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final EventService eventService;
   private final AuthenticationService authenticationService;
   private final InboundTopicAliasService inboundTopicAliasService;
+  private final OutboundTopicAliasService outboundTopicAliasService;
   private final Counter packetsPublishReceivedCounter;
   private final Counter packetsPublishSentCounter;
 
@@ -102,6 +104,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              EventService eventService,
                              AuthenticationService authenticationService,
                              InboundTopicAliasService inboundTopicAliasService,
+                             OutboundTopicAliasService outboundTopicAliasService,
                              Counter packetsPublishReceivedCounter,
                              Counter packetsPublishSentCounter) {
     this.vertx = vertx;
@@ -115,6 +118,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.eventService = eventService;
     this.authenticationService = authenticationService;
     this.inboundTopicAliasService = inboundTopicAliasService;
+    this.outboundTopicAliasService = outboundTopicAliasService;
     this.packetsPublishReceivedCounter = packetsPublishReceivedCounter;
     this.packetsPublishSentCounter = packetsPublishSentCounter;
   }
@@ -306,7 +310,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    */
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
     mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
-    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService, inboundTopicAliasService));
+    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService, inboundTopicAliasService, outboundTopicAliasService));
     mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, vertx, sessionService, eventService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint, vertx, eventService));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
@@ -353,7 +357,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Client verticle deployment id;
    */
   private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint, Counter packetsPublishSentCounter) {
-    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService, packetsPublishSentCounter);
+    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService, outboundTopicAliasService, packetsPublishSentCounter);
     return vertx.deployVerticle(clientVerticle, new DeploymentOptions());
   }
 
@@ -519,6 +523,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           if (outboundQos1Pub.getSubscriptionIdentifier() != null) {
             mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value(), outboundQos1Pub.getSubscriptionIdentifier()));
           }
+          if (outboundQos1Pub.getTopicAlias() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.TOPIC_ALIAS.value(), outboundQos1Pub.getTopicAlias()));
+          }
           return mqttEndpoint.publish(outboundQos1Pub.getTopic(), io.vertx.mutiny.core.buffer.Buffer.newInstance(outboundQos1Pub.getPayload()),
               MqttQoS.valueOf(outboundQos1Pub.getQos()), true, outboundQos1Pub.isRetain(), outboundQos1Pub.getMessageId(), mqttProperties)
             .replaceWithVoid();
@@ -554,6 +561,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           }
           if (outboundQos2Pub.getSubscriptionIdentifier() != null) {
             mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value(), outboundQos2Pub.getSubscriptionIdentifier()));
+          }
+          if (outboundQos2Pub.getTopicAlias() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.TOPIC_ALIAS.value(), outboundQos2Pub.getTopicAlias()));
           }
           return mqttEndpoint.publish(outboundQos2Pub.getTopic(), io.vertx.mutiny.core.buffer.Buffer.newInstance(outboundQos2Pub.getPayload()),
               MqttQoS.valueOf(outboundQos2Pub.getQos()), true, outboundQos2Pub.isRetain(), outboundQos2Pub.getMessageId(), mqttProperties)

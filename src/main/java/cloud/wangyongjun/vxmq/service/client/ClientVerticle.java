@@ -19,6 +19,8 @@ package cloud.wangyongjun.vxmq.service.client;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.assist.EBHeader;
+import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
+import cloud.wangyongjun.vxmq.service.alias.OutboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import cloud.wangyongjun.vxmq.service.msg.OutboundQos1Pub;
@@ -49,13 +51,16 @@ public class ClientVerticle extends AbstractVerticle {
   private final MqttEndpoint mqttEndpoint;
   private final SessionService sessionService;
   private final MsgService msgService;
+  private final OutboundTopicAliasService outboundTopicAliasService;
   private int messageIdCounter;
   private final Counter packetsPublishSentCounter;
 
-  public ClientVerticle(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService, Counter packetsPublishSentCounter) {
+  public ClientVerticle(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService,
+                        OutboundTopicAliasService outboundTopicAliasService, Counter packetsPublishSentCounter) {
     this.mqttEndpoint = mqttEndpoint;
     this.sessionService = sessionService;
     this.msgService = msgService;
+    this.outboundTopicAliasService = outboundTopicAliasService;
     this.packetsPublishSentCounter = packetsPublishSentCounter;
   }
 
@@ -108,7 +113,12 @@ public class ClientVerticle extends AbstractVerticle {
     } else {
       messageId = msgToClient.getMessageId();
     }
-    sessionService.getSession(mqttEndpoint.clientIdentifier())
+    Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> {
+        Integer topicAliasMax = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.TOPIC_ALIAS_MAXIMUM, MqttProperties.IntegerProperty.class);
+        return outboundTopicAliasService.processTopicAlias(msgToClient, mqttEndpoint.clientIdentifier(), topicAliasMax);
+      })
+      .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
       .onItem().transformToUni(session -> {
         MqttQoS mqttQoS = MqttQoS.valueOf(msgToClient.getQos());
         return switch (mqttQoS) {
@@ -118,7 +128,7 @@ public class ClientVerticle extends AbstractVerticle {
               msgToClient.isDup(), msgToClient.isRetain(),
               msgToClient.getMessageExpiryInterval(), msgToClient.getPayloadFormatIndicator(),
               msgToClient.getContentType(), msgToClient.getResponseTopic(), msgToClient.getCorrelationData(),
-              msgToClient.getSubscriptionIdentifier(), msgToClient.getUserProperties(),
+              msgToClient.getSubscriptionIdentifier(), msgToClient.getTopicAlias(), msgToClient.getUserProperties(),
               Instant.now().toEpochMilli()));
           case EXACTLY_ONCE ->
             msgService.saveOutboundQos2Pub(new OutboundQos2Pub(session.getSessionId(), session.getClientId(),
@@ -126,7 +136,7 @@ public class ClientVerticle extends AbstractVerticle {
               msgToClient.isDup(), msgToClient.isRetain(),
               msgToClient.getMessageExpiryInterval(), msgToClient.getPayloadFormatIndicator(),
               msgToClient.getContentType(), msgToClient.getResponseTopic(), msgToClient.getCorrelationData(),
-              msgToClient.getSubscriptionIdentifier(), msgToClient.getUserProperties(),
+              msgToClient.getSubscriptionIdentifier(), msgToClient.getTopicAlias(), msgToClient.getUserProperties(),
               Instant.now().toEpochMilli()));
           default -> Uni.createFrom().voidItem();
         };
@@ -155,6 +165,9 @@ public class ClientVerticle extends AbstractVerticle {
           }
           if (msgToClient.getSubscriptionIdentifier() != null) {
             mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value(), msgToClient.getSubscriptionIdentifier()));
+          }
+          if (msgToClient.getTopicAlias() != null) {
+            mqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.TOPIC_ALIAS.value(), msgToClient.getTopicAlias()));
           }
           return mqttEndpoint.publish(msgToClient.getTopic(), Buffer.newInstance(msgToClient.getPayload()), MqttQoS.valueOf(msgToClient.getQos()), msgToClient.getQos() != MqttQoS.AT_MOST_ONCE.value() && msgToClient.isDup(), msgToClient.isRetain(), messageId, mqttProperties);
         }

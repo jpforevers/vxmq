@@ -41,6 +41,7 @@ public class OutboundQos1Pub {
   private String responseTopic;
   private Buffer correlationData;
   private Integer subscriptionIdentifier;
+  private Integer topicAlias;
   private List<MqttProperties.StringPair> userProperties;
   private long createdTime;
 
@@ -50,7 +51,7 @@ public class OutboundQos1Pub {
   public OutboundQos1Pub(String sessionId, String clientId, int messageId, String topic, int qos,
                          Buffer payload, boolean dup, boolean retain,
                          Integer messageExpiryInterval, Integer payloadFormatIndicator, String contentType,
-                         String responseTopic, Buffer correlationData, Integer subscriptionIdentifier,
+                         String responseTopic, Buffer correlationData, Integer subscriptionIdentifier, Integer topicAlias,
                          List<MqttProperties.StringPair> userProperties, long createdTime) {
     this.sessionId = sessionId;
     this.clientId = clientId;
@@ -66,6 +67,7 @@ public class OutboundQos1Pub {
     this.responseTopic = responseTopic;
     this.correlationData = correlationData;
     this.subscriptionIdentifier = subscriptionIdentifier;
+    this.topicAlias = topicAlias;
     this.userProperties = userProperties;
     this.createdTime = createdTime;
   }
@@ -85,6 +87,7 @@ public class OutboundQos1Pub {
     this.responseTopic = jsonObject.getString(ModelConstants.FIELD_NAME_RESPONSE_TOPIC);
     this.correlationData = jsonObject.getBuffer(ModelConstants.FIELD_NAME_CORRELATION_DATA);
     this.subscriptionIdentifier = jsonObject.getInteger(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER);
+    this.topicAlias = jsonObject.getInteger(ModelConstants.FIELD_NAME_TOPIC_ALIAS);
     this.userProperties = MqttPropertiesUtil.decodeUserProperties(jsonObject.getJsonArray(ModelConstants.FIELD_NAME_USER_PROPERTIES));
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
   }
@@ -105,6 +108,7 @@ public class OutboundQos1Pub {
     jsonObject.put(ModelConstants.FIELD_NAME_RESPONSE_TOPIC, this.responseTopic);
     jsonObject.put(ModelConstants.FIELD_NAME_CORRELATION_DATA, this.correlationData);
     jsonObject.put(ModelConstants.FIELD_NAME_SUBSCRIPTION_IDENTIFIER, this.subscriptionIdentifier);
+    jsonObject.put(ModelConstants.FIELD_NAME_TOPIC_ALIAS, this.topicAlias);
     jsonObject.put(ModelConstants.FIELD_NAME_USER_PROPERTIES, MqttPropertiesUtil.encodeUserProperties(this.userProperties));
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
     return jsonObject;
@@ -169,6 +173,10 @@ public class OutboundQos1Pub {
 
   public Integer getSubscriptionIdentifier() {
     return subscriptionIdentifier;
+  }
+
+  public Integer getTopicAlias() {
+    return topicAlias;
   }
 
   public List<MqttProperties.StringPair> getUserProperties() {

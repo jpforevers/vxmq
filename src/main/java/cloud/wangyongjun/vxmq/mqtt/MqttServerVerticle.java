@@ -51,6 +51,7 @@ public class MqttServerVerticle extends AbstractVerticle {
       ServiceFactory.eventService(vertx),
       ServiceFactory.authenticationService(vertx),
       ServiceFactory.inboundTopicAliasService(vertx),
+      ServiceFactory.outboundTopicAliasService(vertx),
       MetricsFactory.getPacketsPublishReceivedCounter(),
       MetricsFactory.getPacketsPublishSentCounter())
     );
