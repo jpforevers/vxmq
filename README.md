@@ -19,5 +19,5 @@ VXMQ built in Java, fully implementing all features of MQTT 5, specifically desi
 # Get Started
 
 ```
- docker run -d --name vxmq -p 1883:1883 -p 5000:5000 -p 8060:8060 jpforevers/vxmq:1.7.0
+ docker run -d --name vxmq -p 1883:1883 -p 10022:10022 -p 8060:8060 jpforevers/vxmq:1.7.0
 ```
