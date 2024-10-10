@@ -337,7 +337,7 @@
             <ports>
               <port>8060/tcp</port>
               <port>1883/tcp</port>
-              <port>5000/tcp</port>
+              <port>10022/tcp</port>
               <port>47500/tcp</port>
             </ports>
             <environment>

@@ -13,7 +13,7 @@ services:
       VXMQ_IGNITE_DISCOVERY_TCP_PORT: 47500
       VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
       VXMQ_METRICS_ENABLE: true
-#      VXMQ_LOGS_LEVEL: DEBUG
+      VXMQ_LOGS_LEVEL: DEBUG
       VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
     networks:
       - vxmq
@@ -31,7 +31,7 @@ services:
       VXMQ_IGNITE_DISCOVERY_TCP_PORT: 47500
       VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
       VXMQ_METRICS_ENABLE: true
-#      VXMQ_LOGS_LEVEL: DEBUG
+      VXMQ_LOGS_LEVEL: DEBUG
       VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
     networks:
       - vxmq
@@ -49,7 +49,7 @@ services:
       VXMQ_IGNITE_DISCOVERY_TCP_PORT: 47500
       VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
       VXMQ_METRICS_ENABLE: true
-#      VXMQ_LOGS_LEVEL: DEBUG
+      VXMQ_LOGS_LEVEL: DEBUG
       VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
     networks:
       - vxmq
@@ -67,7 +67,7 @@ services:
       - "9999:9999"
       - "1883:1883"
       - "8060:8060"
-      - "5000:5000"
+      - "10022:10022"
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
