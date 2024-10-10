@@ -26,9 +26,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TestPublish extends BaseTest {
+public class TestPub extends BaseTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TestPublish.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestPub.class);
 
   @Test
   public void testMqtt5PubTopicAliasMax(Vertx vertx, VertxTestContext testContext) throws Throwable {
