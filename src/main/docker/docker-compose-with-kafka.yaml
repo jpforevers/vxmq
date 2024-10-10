@@ -112,7 +112,7 @@ services:
       - "9094:9094"
       - "1883:1883"
       - "8060:8060"
-      - "5000:5000"
+      - "10022:10022"
     volumes:
       - ./haproxy-with-kafka.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
