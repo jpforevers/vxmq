@@ -19,5 +19,8 @@ VXMQ built in Java, fully implementing all features of MQTT 5, specifically desi
 # Get Started
 
 ```
- docker run -d --name vxmq -p 1883:1883 -p 10022:10022 -p 8060:8060 jpforevers/vxmq:1.7.0
+ docker run -d --name vxmq -p 1883:1883 -p 10022:10022 -p 8060:8060 jpforevers/vxmq:latest
 ```
+
+# Cluster
+In the `src/main/docker` folder, there is an example file `docker-compose.yaml` for starting a local cluster through Docker Compose, just `cd` into and typing `docker compose up -d`

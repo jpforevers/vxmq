@@ -1,7 +1,7 @@
 name: vxmq
 services:
   vxmq-vxmq1:
-    image: "jpforevers/vxmq:1.7.0"
+    image: "jpforevers/vxmq:latest"
     container_name: vxmq-vxmq1
     restart: always
     healthcheck:
@@ -19,7 +19,7 @@ services:
       - vxmq
 
   vxmq-vxmq2:
-    image: "jpforevers/vxmq:1.7.0"
+    image: "jpforevers/vxmq:latest"
     container_name: vxmq-vxmq2
     restart: always
     healthcheck:
@@ -37,7 +37,7 @@ services:
       - vxmq
 
   vxmq-vxmq3:
-    image: "jpforevers/vxmq:1.7.0"
+    image: "jpforevers/vxmq:latest"
     container_name: vxmq-vxmq3
     restart: always
     healthcheck:
