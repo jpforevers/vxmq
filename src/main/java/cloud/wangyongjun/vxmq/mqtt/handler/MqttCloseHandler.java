@@ -25,6 +25,7 @@ import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.alias.OutboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
+import cloud.wangyongjun.vxmq.service.client.UndeployClientVerticleRequest;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
@@ -142,7 +143,7 @@ public class MqttCloseHandler implements Runnable {
    * @return Void
    */
   private Uni<Void> undeployClientVerticle(Session session) {
-    return clientService.undeployClientVerticle(session.getVerticleId());
+    return clientService.undeployClientVerticle(session.getVerticleId(), new UndeployClientVerticleRequest());
   }
 
   /**

@@ -30,6 +30,7 @@ import cloud.wangyongjun.vxmq.service.authentication.MqttAuthData;
 import cloud.wangyongjun.vxmq.service.authentication.mutiny.AuthenticationService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.ClientVerticle;
+import cloud.wangyongjun.vxmq.service.client.CloseMqttEndpointRequest;
 import cloud.wangyongjun.vxmq.service.client.DisconnectRequest;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
@@ -284,7 +285,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
               .onItem().invoke(messageConsumer::set)
               .onItem().transformToUni(v -> {
                 if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-                  return clientService.closeMqttEndpoint(session.getVerticleId());
+                  return clientService.closeMqttEndpoint(session.getVerticleId(), new CloseMqttEndpointRequest());
                 } else {
                   return clientService.disconnect(session.getVerticleId(), new DisconnectRequest(MqttDisconnectReasonCode.SESSION_TAKEN_OVER, MqttProperties.NO_PROPERTIES));
                 }

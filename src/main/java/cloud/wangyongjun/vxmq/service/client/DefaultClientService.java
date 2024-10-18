@@ -85,27 +85,27 @@ public class DefaultClientService implements ClientService {
   }
 
   @Override
-  public Uni<Void> closeMqttEndpoint(String clientVerticleId) {
-    DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader(EBHeader.ACTION.name(), ClientVerticleAction.CLOSE_MQTT_ENDPOINT.name());
-    return vertx.eventBus().sender(clientVerticleId, deliveryOptions).write(new JsonObject());
+  public Uni<Void> closeMqttEndpoint(String clientVerticleId, CloseMqttEndpointRequest closeMqttEndpointRequest) {
+    ToClientVerticleMsg toClientVerticleMsg = new ToClientVerticleMsg(ToClientVerticleMsg.Type.CLOSE_MQTT_ENDPOINT, closeMqttEndpointRequest);
+    return vertx.eventBus().sender(clientVerticleId).write(toClientVerticleMsg);
   }
 
   @Override
   public Uni<Void> disconnect(String clientVerticleId, DisconnectRequest disconnectRequest) {
-    DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader(EBHeader.ACTION.name(), ClientVerticleAction.DISCONNECT.name());
-    return vertx.eventBus().sender(clientVerticleId, deliveryOptions).write(disconnectRequest.toJson());
+    ToClientVerticleMsg toClientVerticleMsg = new ToClientVerticleMsg(ToClientVerticleMsg.Type.DISCONNECT, disconnectRequest);
+    return vertx.eventBus().sender(clientVerticleId).write(toClientVerticleMsg);
   }
 
   @Override
-  public Uni<Void> undeployClientVerticle(String clientVerticleId) {
-    DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader(EBHeader.ACTION.name(), ClientVerticleAction.UNDEPLOY_CLIENT_VERTICLE.name());
-    return vertx.eventBus().sender(clientVerticleId, deliveryOptions).write(new JsonObject());
+  public Uni<Void> undeployClientVerticle(String clientVerticleId, UndeployClientVerticleRequest undeployClientVerticleRequest) {
+    ToClientVerticleMsg toClientVerticleMsg = new ToClientVerticleMsg(ToClientVerticleMsg.Type.UNDEPLOY_CLIENT_VERTICLE, undeployClientVerticleRequest);
+    return vertx.eventBus().sender(clientVerticleId).write(toClientVerticleMsg);
   }
 
   @Override
   public Uni<Void> sendPublish(String clientVerticleId, MsgToClient msgToClient) {
-    DeliveryOptions deliveryOptions = new DeliveryOptions().addHeader(EBHeader.ACTION.name(), ClientVerticleAction.SEND_PUBLISH.name());
-    return vertx.eventBus().sender(clientVerticleId, deliveryOptions).write(msgToClient.toJson());
+    ToClientVerticleMsg toClientVerticleMsg = new ToClientVerticleMsg(ToClientVerticleMsg.Type.SEND_PUBLISH, msgToClient);
+    return vertx.eventBus().sender(clientVerticleId).write(toClientVerticleMsg);
   }
 
   @Override

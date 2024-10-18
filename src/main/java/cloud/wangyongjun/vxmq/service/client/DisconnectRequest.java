@@ -23,7 +23,6 @@ import io.netty.handler.codec.mqtt.MqttProperties;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 
-
 public class DisconnectRequest {
 
   private final MqttDisconnectReasonCode mqttDisconnectReasonCode;

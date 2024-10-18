@@ -13,12 +13,29 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
-package cloud.wangyongjun.vxmq.service.client;
+package cloud.wangyongjun.vxmq.init;
 
-enum ClientVerticleAction {
+import cloud.wangyongjun.vxmq.init.ebcodec.ToClientVerticleMsgCodec;
+import cloud.wangyongjun.vxmq.service.client.ToClientVerticleMsg;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.vertx.core.AbstractVerticle;
+import io.vertx.mutiny.core.eventbus.EventBus;
 
-  CLOSE_MQTT_ENDPOINT, DISCONNECT, UNDEPLOY_CLIENT_VERTICLE, SEND_PUBLISH
+public class InitVerticle extends AbstractVerticle {
+
+  @Override
+  public Uni<Void> asyncStart() {
+    EventBus eventBus = vertx.eventBus();
+    eventBus.getDelegate().registerDefaultCodec(ToClientVerticleMsg.class, new ToClientVerticleMsgCodec());
+    return Uni.createFrom().voidItem();
+  }
+
+  @Override
+  public Uni<Void> asyncStop() {
+    return Uni.createFrom().voidItem();
+  }
 
 }

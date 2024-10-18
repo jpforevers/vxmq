@@ -43,7 +43,7 @@ public interface ClientService {
    * @param clientVerticleId clientVerticleId
    * @return Void
    */
-  Uni<Void> closeMqttEndpoint(String clientVerticleId);
+  Uni<Void> closeMqttEndpoint(String clientVerticleId, CloseMqttEndpointRequest closeMqttEndpointRequest);
 
   /**
    * Send DISCONNECT to client.
@@ -60,7 +60,7 @@ public interface ClientService {
    * @param clientVerticleId clientVerticleId
    * @return Void
    */
-  Uni<Void> undeployClientVerticle(String clientVerticleId);
+  Uni<Void> undeployClientVerticle(String clientVerticleId, UndeployClientVerticleRequest undeployClientVerticleRequest);
 
   /**
    * Send PUBLISH to client.

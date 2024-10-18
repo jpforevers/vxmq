@@ -24,6 +24,7 @@ import cloud.wangyongjun.vxmq.http.api.ApiErrorCode;
 import cloud.wangyongjun.vxmq.http.api.ApiException;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
+import cloud.wangyongjun.vxmq.service.client.CloseMqttEndpointRequest;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import cloud.wangyongjun.vxmq.service.msg.MsgToTopic;
@@ -230,7 +231,7 @@ public class DefaultCompositeService implements CompositeService {
           return Uni.createFrom().failure(new ApiException(ApiErrorCode.COMMON_NOT_FOUND, "Client session not found: " + clientId));
         } else {
           if (session.isOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
-            return clientService.closeMqttEndpoint(session.getVerticleId());
+            return clientService.closeMqttEndpoint(session.getVerticleId(), new CloseMqttEndpointRequest());
           } else {
             return Uni.createFrom().voidItem()
               .onItem().transformToUni(vv -> clientService.obtainClientLock(clientId, 5000))

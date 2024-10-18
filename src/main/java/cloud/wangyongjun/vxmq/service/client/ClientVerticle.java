@@ -18,7 +18,6 @@
 package cloud.wangyongjun.vxmq.service.client;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
-import cloud.wangyongjun.vxmq.assist.EBHeader;
 import cloud.wangyongjun.vxmq.assist.MqttPropertiesUtil;
 import cloud.wangyongjun.vxmq.service.alias.OutboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
@@ -32,7 +31,6 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.core.eventbus.Message;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
@@ -74,24 +72,21 @@ public class ClientVerticle extends AbstractVerticle {
     return Uni.createFrom().voidItem();
   }
 
-  private void ebMessageHandler(Message<JsonObject> actionMessage) {
-    String actionString = actionMessage.headers().get(EBHeader.ACTION.name());
-    if (StringUtils.isNotBlank(actionString)) {
-      ClientVerticleAction actionEnum = ClientVerticleAction.valueOf(actionString);
-      switch (actionEnum) {
-        case UNDEPLOY_CLIENT_VERTICLE -> handleUndeployClientVerticleAction();
-        case CLOSE_MQTT_ENDPOINT -> handleCloseMqttEndpointAction();
-        case DISCONNECT -> handleDisconnectAction(actionMessage);
-        case SEND_PUBLISH -> handleSendPublish(actionMessage);
-      }
+  private void ebMessageHandler(Message<ToClientVerticleMsg> actionMessage) {
+    ToClientVerticleMsg toClientVerticleMsg = actionMessage.body();
+    switch (toClientVerticleMsg.getType()) {
+      case UNDEPLOY_CLIENT_VERTICLE -> handleUndeployClientVerticleAction((UndeployClientVerticleRequest) toClientVerticleMsg.getPayload());
+      case CLOSE_MQTT_ENDPOINT -> handleCloseMqttEndpointAction((CloseMqttEndpointRequest) toClientVerticleMsg.getPayload());
+      case DISCONNECT -> handleDisconnectAction((DisconnectRequest) toClientVerticleMsg.getPayload());
+      case SEND_PUBLISH -> handleSendPublish((MsgToClient) toClientVerticleMsg.getPayload());
     }
   }
 
-  private void handleUndeployClientVerticleAction() {
+  private void handleUndeployClientVerticleAction(UndeployClientVerticleRequest undeployClientVerticleRequest) {
     vertx.undeploy(deploymentID()).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when handle undeploy client verticle action", t));
   }
 
-  private void handleCloseMqttEndpointAction() {
+  private void handleCloseMqttEndpointAction(CloseMqttEndpointRequest closeMqttEndpointRequest) {
     if (mqttEndpoint.isConnected()){
       mqttEndpoint.close();
     }else {
@@ -99,13 +94,11 @@ public class ClientVerticle extends AbstractVerticle {
     }
   }
 
-  private void handleDisconnectAction(Message<JsonObject> actionMessage) {
-    DisconnectRequest disconnectRequest = new DisconnectRequest(actionMessage.body());
+  private void handleDisconnectAction(DisconnectRequest disconnectRequest) {
     mqttEndpoint.disconnect(disconnectRequest.getMqttDisconnectReasonCode(), disconnectRequest.getMqttProperties());
   }
 
-  private void handleSendPublish(Message<JsonObject> actionMessage) {
-    MsgToClient msgToClient = new MsgToClient(actionMessage.body());
+  private void handleSendPublish(MsgToClient msgToClient) {
     int messageId;
     if (msgToClient.getMessageId() == null || msgToClient.getMessageId() <= 0 || msgToClient.getMessageId() >= MAX_MESSAGE_ID) {
       this.messageIdCounter = ((messageIdCounter % MAX_MESSAGE_ID) != 0) ? messageIdCounter + 1 : 1;
