@@ -33,7 +33,7 @@ public class ShareSubscriptionProcessor {
   }
 
   public List<Subscription> process(List<Subscription> allMatchSubscriptions) {
-    List<Subscription> allMatchSubscriptionsShared = allMatchSubscriptions.stream().parallel().filter(subscription -> StringUtils.isNotBlank(subscription.getShareName())).toList();
+    List<Subscription> allMatchSubscriptionsShared = allMatchSubscriptions.stream().filter(subscription -> StringUtils.isNotBlank(subscription.getShareName())).toList();
     if (allMatchSubscriptionsShared.isEmpty()) {
       return allMatchSubscriptions;
     } else {
