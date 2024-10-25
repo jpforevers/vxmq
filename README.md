@@ -1,26 +1,76 @@
-# VXMQ
+# vxmq
 
-VXMQ is a high performance MQTT Broker - Tailored for Modern IoT Needs.
+This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
-VXMQ built in Java, fully implementing all features of MQTT 5, specifically designed for modern IoT applications. Whether handling large-scale device connections or real-time data transmission, delivers exceptional performance and reliability.
+If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
-# Key Features:
+## Running the application in dev mode
 
-* **Full MQTT 5 Support**: Enjoy the latest protocol features, including topic aliases, request/response patterns, and more flexible message delivery mechanisms, providing an enhanced experience for developers and end-users.
+You can run your application in dev mode that enables live coding using:
 
-* **Robust Clustering Support**: With clustering capabilities, VXMQ can easily scale to handle a vast number of concurrent connections, ensuring stable performance even under high load.
-
-* **Built on Vert.x Framework**: Utilizing the asynchronous, non-blocking architecture of Vert.x, VXMQ achieves higher efficiency and lower latency when processing requests, perfectly addressing the challenges of real-time data streams.
-
-* **Outstanding Performance**: Rigorously tested, VXMQ competes with many mature commercial products in terms of throughput and response time, meeting the demands of various application scenarios.
-
-* **Easy Deployment and Management**: User-friendly configuration options and comprehensive documentation help users get started quickly and manage the Broker effectively.
-
-# Get Started
-
-```
- docker run -d --name vxmq -p 1883:1883 -p 10022:10022 -p 8060:8060 jpforevers/vxmq:latest
+```shell script
+./mvnw compile quarkus:dev
 ```
 
-# Cluster
-In the `src/main/docker` folder, there is an example file `docker-compose.yaml` for starting a local cluster through Docker Compose, just `cd` into and typing `docker compose up -d`
+> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+
+## Packaging and running the application
+
+The application can be packaged using:
+
+```shell script
+./mvnw package
+```
+
+It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
+Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+
+The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+
+If you want to build an _über-jar_, execute the following command:
+
+```shell script
+./mvnw package -Dquarkus.package.jar.type=uber-jar
+```
+
+The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+
+## Creating a native executable
+
+You can create a native executable using:
+
+```shell script
+./mvnw package -Dnative
+```
+
+Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+
+```shell script
+./mvnw package -Dnative -Dquarkus.native.container-build=true
+```
+
+You can then execute your native executable with: `./target/vxmq-1.0.0-SNAPSHOT-runner`
+
+If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+
+## Related Guides
+
+- Eclipse Vert.x ([guide](https://quarkus.io/guides/vertx)): Write reactive applications with the Vert.x API
+- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
+- YAML Configuration ([guide](https://quarkus.io/guides/config-yaml)): Use YAML to configure your Quarkus application
+
+## Provided Code
+
+### YAML Config
+
+Configure your application with YAML
+
+[Related guide section...](https://quarkus.io/guides/config-reference#configuration-examples)
+
+The Quarkus application configuration is located in `src/main/resources/application.yml`.
+
+### REST
+
+Easily start your REST Web Services
+
+[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)

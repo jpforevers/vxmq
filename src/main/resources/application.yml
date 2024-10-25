@@ -1,0 +1,6 @@
+quarkus:
+  container-image:
+    build: true
+
+greeting:
+  message: "hello"
