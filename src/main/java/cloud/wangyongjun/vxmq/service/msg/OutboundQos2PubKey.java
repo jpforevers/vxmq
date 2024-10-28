@@ -19,13 +19,11 @@ package cloud.wangyongjun.vxmq.service.msg;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.core.json.JsonObject;
-import org.apache.ignite.cache.affinity.AffinityKeyMapped;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+
 public class OutboundQos2PubKey implements Comparable<OutboundQos2PubKey> {
 
-  @AffinityKeyMapped
   private String sessionId;
   private int messageId;
 
@@ -76,7 +74,7 @@ public class OutboundQos2PubKey implements Comparable<OutboundQos2PubKey> {
   }
 
   @Override
-  public int compareTo(@NotNull OutboundQos2PubKey o) {
+  public int compareTo(OutboundQos2PubKey o) {
     if (!this.sessionId.equals(o.sessionId)) {
       return this.sessionId.compareTo(o.getSessionId());
     } else {

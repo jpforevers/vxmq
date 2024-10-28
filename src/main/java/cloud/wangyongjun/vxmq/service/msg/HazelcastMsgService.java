@@ -17,46 +17,45 @@
 
 package cloud.wangyongjun.vxmq.service.msg;
 
-import cloud.wangyongjun.vxmq.assist.IgniteAssist;
-import cloud.wangyongjun.vxmq.assist.IgniteUtil;
+import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
+import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
-import org.apache.ignite.Ignite;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class IgniteAndMapMsgService implements MsgService {
+public class HazelcastMsgService implements MsgService {
 
-  private static volatile IgniteAndMapMsgService igniteAndMapMsgService;
+  private static volatile HazelcastMsgService hazelcastMsgService;
 
-  public static IgniteAndMapMsgService getSingleton(Vertx vertx) {
-    if (igniteAndMapMsgService == null) {
-      synchronized (IgniteAndMapMsgService.class) {
-        if (igniteAndMapMsgService == null) {
-          igniteAndMapMsgService = new IgniteAndMapMsgService(vertx);
+  public static HazelcastMsgService getSingleton(Vertx vertx) {
+    if (hazelcastMsgService == null) {
+      synchronized (HazelcastMsgService.class) {
+        if (hazelcastMsgService == null) {
+          hazelcastMsgService = new HazelcastMsgService(vertx);
         }
       }
     }
-    return igniteAndMapMsgService;
+    return hazelcastMsgService;
   }
 
   private final Vertx vertx;
-  private final Ignite ignite;
-  private final Map<InboundQos2PubKey, InboundQos2Pub> inboundQos2PubCache;
-  private final Map<OutboundQos1PubKey, OutboundQos1Pub> outboundQos1PubCache;
-  private final Map<OutboundQos2PubKey, OutboundQos2Pub> outboundQos2PubCache;
-  private final Map<OutboundQos2RelKey, OutboundQos2Rel> outboundQos2RelCache;
+  private final HazelcastInstance hazelcastInstance;
+  private final IMap<InboundQos2PubKey, InboundQos2Pub> inboundQos2PubCache;
+  private final IMap<OutboundQos1PubKey, OutboundQos1Pub> outboundQos1PubCache;
+  private final IMap<OutboundQos2PubKey, OutboundQos2Pub> outboundQos2PubCache;
+  private final IMap<OutboundQos2RelKey, OutboundQos2Rel> outboundQos2RelCache;
 
-  private IgniteAndMapMsgService(Vertx vertx) {
+  private HazelcastMsgService(Vertx vertx) {
     this.vertx = vertx;
-    this.ignite = IgniteUtil.getIgnite(vertx);
-    this.inboundQos2PubCache = new ConcurrentHashMap<>();
-    this.outboundQos1PubCache = new ConcurrentHashMap<>();
-    this.outboundQos2PubCache = new ConcurrentHashMap<>();
-    this.outboundQos2RelCache = new ConcurrentHashMap<>();
+    this.hazelcastInstance = HazelcastUtil.getHazelcastInstance(vertx);
+    this.inboundQos2PubCache = HazelcastAssist.initInboundQos2PubCache(hazelcastInstance);
+    this.outboundQos1PubCache = HazelcastAssist.initOutboundQos1PubCache(hazelcastInstance);
+    this.outboundQos2PubCache = HazelcastAssist.initOutboundQos2PubCache(hazelcastInstance);
+    this.outboundQos2RelCache = HazelcastAssist.initOutboundQos2RelCache(hazelcastInstance);
   }
 
   @Override
@@ -99,7 +98,7 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<List<OutboundQos1Pub>> outboundQos1Pub(String sessionId) {
-    return Uni.createFrom().item(outboundQos1PubCache.entrySet().stream().filter(entry -> entry.getKey().getSessionId().equals(sessionId)).map(Map.Entry::getValue).toList());
+    return Uni.createFrom().item(outboundQos1PubCache.values(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId)).stream().toList());
   }
 
   @Override
@@ -125,7 +124,7 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<List<OutboundQos2Pub>> outboundQos2Pub(String sessionId) {
-    return Uni.createFrom().item(outboundQos2PubCache.entrySet().stream().filter(entry -> entry.getKey().getSessionId().equals(sessionId)).map(Map.Entry::getValue).toList());
+    return Uni.createFrom().item(outboundQos2PubCache.values(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId)).stream().toList());
   }
 
   @Override
@@ -151,7 +150,7 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<List<OutboundQos2Rel>> outboundQos2Rel(String sessionId) {
-    return Uni.createFrom().item(outboundQos2RelCache.entrySet().stream().filter(entry -> entry.getKey().getSessionId().equals(sessionId)).map(Map.Entry::getValue).toList());
+    return Uni.createFrom().item(outboundQos2RelCache.values(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId)).stream().toList());
   }
 
   @Override
@@ -161,43 +160,23 @@ public class IgniteAndMapMsgService implements MsgService {
 
   @Override
   public Uni<Void> saveOfflineMsg(MsgToClient msgToClient) {
-    IgniteAssist.getOfflineMsgQueueOfSession(ignite, msgToClient.getSessionId()).add(msgToClient);
+    HazelcastAssist.getOfflineMsgQueueOfSession(hazelcastInstance, msgToClient.getSessionId()).add(msgToClient);
     return Uni.createFrom().voidItem();
   }
 
   @Override
   public Uni<List<MsgToClient>> allOfflineMsgOfSession(String sessionId) {
-    return Uni.createFrom().item(new ArrayList<>(IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId)));
+    return Uni.createFrom().item(new ArrayList<>(HazelcastAssist.getOfflineMsgQueueOfSession(hazelcastInstance, sessionId)));
   }
 
   @Override
   public Uni<Void> clearMsgs(String sessionId) {
     return vertx.executeBlocking(() -> {
-      for (InboundQos2PubKey inboundQos2PubKey : inboundQos2PubCache.keySet()) {
-        if (inboundQos2PubKey.getSessionId().equals(sessionId)) {
-          inboundQos2PubCache.remove(inboundQos2PubKey);
-        }
-      }
-
-      for (OutboundQos1PubKey outboundQos1PubKey : outboundQos1PubCache.keySet()) {
-        if (outboundQos1PubKey.getSessionId().equals(sessionId)) {
-          outboundQos1PubCache.remove(outboundQos1PubKey);
-        }
-      }
-
-      for (OutboundQos2PubKey outboundQos2PubKey : outboundQos2PubCache.keySet()) {
-        if (outboundQos2PubKey.getSessionId().equals(sessionId)) {
-          outboundQos2PubCache.remove(outboundQos2PubKey);
-        }
-      }
-
-      for (OutboundQos2RelKey outboundQos2RelKey : outboundQos2RelCache.keySet()) {
-        if (outboundQos2RelKey.getSessionId().equals(sessionId)) {
-          outboundQos2RelCache.remove(outboundQos2RelKey);
-        }
-      }
-
-      IgniteAssist.getOfflineMsgQueueOfSession(ignite, sessionId).close();
+      inboundQos2PubCache.removeAll(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId));
+      outboundQos1PubCache.removeAll(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId));
+      outboundQos2PubCache.removeAll(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId));
+      outboundQos2RelCache.removeAll(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId));
+      HazelcastAssist.getOfflineMsgQueueOfSession(hazelcastInstance, sessionId).destroy();
       return null;
     }, false);
   }

@@ -26,7 +26,7 @@ import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.DefaultClientService;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.composite.DefaultCompositeService;
-import cloud.wangyongjun.vxmq.service.msg.IgniteAndMapMsgService;
+import cloud.wangyongjun.vxmq.service.msg.HazelcastAndMapMsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
 import cloud.wangyongjun.vxmq.service.retain.IgniteRetainService;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;
@@ -52,8 +52,8 @@ public class ServiceFactory {
   }
 
   public static MsgService msgService(Vertx vertx) {
-//    return IgniteMsgService.getSingleton(vertx);
-    return IgniteAndMapMsgService.getSingleton(vertx);
+//    return HazelcastMsgService.getSingleton(vertx);
+    return HazelcastAndMapMsgService.getSingleton(vertx);
   }
 
   public static RetainService retainService(Vertx vertx) {

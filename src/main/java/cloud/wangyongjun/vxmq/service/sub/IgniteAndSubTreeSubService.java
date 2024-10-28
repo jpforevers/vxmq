@@ -18,22 +18,19 @@
 package cloud.wangyongjun.vxmq.service.sub;
 
 import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
-import cloud.wangyongjun.vxmq.assist.IgniteAssist;
-import cloud.wangyongjun.vxmq.assist.IgniteUtil;
+import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
+import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
 import cloud.wangyongjun.vxmq.assist.TopicUtil;
 import cloud.wangyongjun.vxmq.service.sub.share.ShareSubscriptionProcessor;
 import cloud.wangyongjun.vxmq.service.sub.tree.SubTree;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.IMap;
+import com.hazelcast.map.listener.*;
 import io.vertx.core.Future;
 import io.vertx.mutiny.core.Vertx;
-import org.apache.ignite.Ignite;
-import org.apache.ignite.IgniteCache;
-import org.apache.ignite.cache.query.ContinuousQuery;
-import org.apache.ignite.cache.query.QueryCursor;
-import org.apache.ignite.cache.query.ScanQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.cache.Cache;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,15 +55,15 @@ public class IgniteAndSubTreeSubService implements SubService {
   }
 
   private final SubTree subTree;
-  private final IgniteCache<SubscriptionKey, Subscription> exactSubscriptionCache;
-  private final IgniteCache<SubscriptionKey, Subscription> wildcardSubscriptionCache;
+  private final IMap<SubscriptionKey, Subscription> exactSubscriptionCache;
+  private final IMap<SubscriptionKey, Subscription> wildcardSubscriptionCache;
   private final ShareSubscriptionProcessor shareSubscriptionProcessor;
 
   private IgniteAndSubTreeSubService(Vertx vertx, ShareSubscriptionProcessor shareSubscriptionProcessor) {
     this.subTree = SubTree.subTree();
-    Ignite ignite = IgniteUtil.getIgnite(vertx);
-    this.exactSubscriptionCache = IgniteAssist.initExactSubscriptionCache(ignite);
-    this.wildcardSubscriptionCache = IgniteAssist.initWildcardSubscriptionCache(ignite);
+    HazelcastInstance hazelcastInstance = HazelcastUtil.getHazelcastInstance(vertx);
+    this.exactSubscriptionCache = HazelcastAssist.initExactSubscriptionCache(hazelcastInstance);
+    this.wildcardSubscriptionCache = HazelcastAssist.initWildcardSubscriptionCache(hazelcastInstance);
     this.shareSubscriptionProcessor = shareSubscriptionProcessor;
     vertx.<Void>executeBlocking(() -> {
       loadSubsToSubTreeAndInitContinuousQuery(exactSubscriptionCache);
@@ -75,21 +72,26 @@ public class IgniteAndSubTreeSubService implements SubService {
     }).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when load subscriptions to sub tree and init continuous query", t));
   }
 
-  private void loadSubsToSubTreeAndInitContinuousQuery(IgniteCache<SubscriptionKey, Subscription> subCache) {
-    ContinuousQuery<SubscriptionKey, Subscription> subsContinuousQuery = new ContinuousQuery<>();
-    subsContinuousQuery.setInitialQuery(new ScanQuery<>());
-    subsContinuousQuery.setLocalListener(cacheEntryEvents -> cacheEntryEvents.forEach(cacheEntryEvent -> {
-      if (LOGGER.isDebugEnabled()){
-        LOGGER.debug("Cache entry event received: {}", cacheEntryEvent.toString());
-      }
-      switch (cacheEntryEvent.getEventType()) {
-        case CREATED, UPDATED -> subTree.saveOrUpdateSubscription(cacheEntryEvent.getValue());
-        case REMOVED ->
-          subTree.removeSubscription(cacheEntryEvent.getValue().getSessionId(), cacheEntryEvent.getValue().getTopicFilter());
-      }
-    }));
-    QueryCursor<Cache.Entry<SubscriptionKey, Subscription>> subQueryCursor = subCache.query(subsContinuousQuery);
-    subQueryCursor.forEach(entry -> subTree.saveOrUpdateSubscription(entry.getValue()));
+  private void loadSubsToSubTreeAndInitContinuousQuery(IMap<SubscriptionKey, Subscription> subCache) {
+    subCache.addEntryListener((EntryAddedListener<SubscriptionKey, Subscription>) event -> {
+      subTree.saveOrUpdateSubscription(event.getValue());
+    }, true);
+    subCache.addEntryListener((EntryUpdatedListener<SubscriptionKey, Subscription>) event -> {
+      subTree.saveOrUpdateSubscription(event.getValue());
+    }, true);
+    subCache.addEntryListener((EntryLoadedListener<SubscriptionKey, Subscription>) event -> {
+      subTree.saveOrUpdateSubscription(event.getValue());
+    }, true);
+    subCache.addEntryListener((EntryEvictedListener<SubscriptionKey, Subscription>) event -> {
+      subTree.removeSubscription(event.getKey().getSessionId(), event.getValue().getTopicFilter());
+    }, true);
+    subCache.addEntryListener((EntryExpiredListener<SubscriptionKey, Subscription>) event -> {
+      subTree.removeSubscription(event.getKey().getSessionId(), event.getValue().getTopicFilter());
+    }, true);
+    subCache.addEntryListener((EntryRemovedListener<SubscriptionKey, Subscription>) event -> {
+      subTree.removeSubscription(event.getKey().getSessionId(), event.getOldValue().getTopicFilter());
+    }, true);
+    subCache.values().forEach(subTree::saveOrUpdateSubscription);
   }
 
   @Override
@@ -99,11 +101,8 @@ public class IgniteAndSubTreeSubService implements SubService {
     return Future.succeededFuture();
   }
 
-  private void clearSubs(String sessionId, IgniteCache<SubscriptionKey, Subscription> subscriptionCache) {
-    QueryCursor<SubscriptionKey> exactSubscriptionCursor = subscriptionCache
-      .<Cache.Entry<SubscriptionKey, Subscription>, SubscriptionKey>query(new ScanQuery<>((key, value) -> key.getSessionId().equals(sessionId)), Cache.Entry::getKey);
-    Set<SubscriptionKey> exactKeys = exactSubscriptionCursor.getAll().stream().collect(TreeSet::new, TreeSet::add, TreeSet::addAll);
-    subscriptionCache.removeAll(exactKeys);
+  private void clearSubs(String sessionId, IMap<SubscriptionKey, Subscription> subscriptionCache) {
+    subscriptionCache.removeAll(mapEntry -> mapEntry.getKey().getSessionId().equals(sessionId));
   }
 
   @Override
@@ -122,9 +121,9 @@ public class IgniteAndSubTreeSubService implements SubService {
   @Override
   public Future<Boolean> removeSub(String sessionId, String topicFilter) {
     if (!TopicUtil.containsWildcard(topicFilter)) {
-      return Future.succeededFuture(exactSubscriptionCache.remove(new SubscriptionKey(sessionId, topicFilter)));
+      return Future.succeededFuture(exactSubscriptionCache.remove(new SubscriptionKey(sessionId, topicFilter)) != null);
     } else {
-      return Future.succeededFuture(wildcardSubscriptionCache.remove(new SubscriptionKey(sessionId, topicFilter)));
+      return Future.succeededFuture(wildcardSubscriptionCache.remove(new SubscriptionKey(sessionId, topicFilter)) != null);
     }
   }
 

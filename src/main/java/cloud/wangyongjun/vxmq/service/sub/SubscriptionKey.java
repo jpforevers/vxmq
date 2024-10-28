@@ -20,8 +20,6 @@ package cloud.wangyongjun.vxmq.service.sub;
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
-import org.apache.ignite.cache.affinity.AffinityKeyMapped;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -29,7 +27,6 @@ import java.util.Objects;
 public class SubscriptionKey implements Comparable<SubscriptionKey> {
 
   private String sessionId;
-  @AffinityKeyMapped
   private String topicFilter;
 
   public SubscriptionKey() {
@@ -66,7 +63,7 @@ public class SubscriptionKey implements Comparable<SubscriptionKey> {
   }
 
   @Override
-  public int compareTo(@NotNull SubscriptionKey o) {
+  public int compareTo(SubscriptionKey o) {
     if (!this.getSessionId().equals(o.getSessionId())) {
       return this.getSessionId().compareTo(o.getSessionId());
     } else {

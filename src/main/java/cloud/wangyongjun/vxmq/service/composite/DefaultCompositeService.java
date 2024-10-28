@@ -18,8 +18,8 @@
 package cloud.wangyongjun.vxmq.service.composite;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.assist.IgniteAssist;
-import cloud.wangyongjun.vxmq.assist.IgniteUtil;
+import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
+import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
 import cloud.wangyongjun.vxmq.http.api.ApiErrorCode;
 import cloud.wangyongjun.vxmq.http.api.ApiException;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
@@ -203,7 +203,7 @@ public class DefaultCompositeService implements CompositeService {
   // Send offline messages sequentially through recursion!
   @Override
   public Uni<Void> sendOfflineMsg(String sessionId) {
-    MsgToClient msgToClient = IgniteAssist.getOfflineMsgQueueOfSession(IgniteUtil.getIgnite(vertx), sessionId).poll();
+    MsgToClient msgToClient = HazelcastAssist.getOfflineMsgQueueOfSession(HazelcastUtil.getHazelcastInstance(vertx), sessionId).poll();
     if (msgToClient != null) {
       Instant now = Instant.now();
       if (msgToClient.getMessageExpiryInterval() != null && msgToClient.getMessageExpiryInterval() != 0

@@ -31,17 +31,11 @@ import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.mutiny.core.Vertx;
-import io.vertx.spi.cluster.ignite.IgniteClusterManager;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ignite.configuration.IgniteConfiguration;
-import org.apache.ignite.logger.slf4j.Slf4jLogger;
-import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
-import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.Arrays;
 
 public class VxmqLauncher {
 
@@ -79,20 +73,11 @@ public class VxmqLauncher {
   }
 
   private Uni<Void> initVertx() {
-    TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
-    TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
-    tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(), ",")).toList());
-    tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort());
-    tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
-
-    IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
-    igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);
-    igniteConfiguration.setGridLogger(new Slf4jLogger());
-    igniteConfiguration.setMetricsLogFrequency(0);
-    ClusterManager clusterManager = new IgniteClusterManager(igniteConfiguration);
+//    com.hazelcast.config.Config config = new com.hazelcast.config.Config();
+//    ClusterManager clusterManager = new HazelcastClusterManager(config);
 
     VertxOptions vertxOptions = buildVertxOptions();
-    return Vertx.builder().with(vertxOptions).withClusterManager(clusterManager).buildClustered()
+    return Vertx.builder().with(vertxOptions).buildClustered()
       .onItem().invoke(vtx -> this.vertx = vtx)
       .onItem().invoke(() -> {
         if (Config.getMetricsEnable()) {

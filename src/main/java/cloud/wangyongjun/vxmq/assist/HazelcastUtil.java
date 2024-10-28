@@ -17,14 +17,14 @@
 
 package cloud.wangyongjun.vxmq.assist;
 
+import com.hazelcast.core.HazelcastInstance;
 import io.vertx.mutiny.core.Vertx;
-import io.vertx.spi.cluster.ignite.IgniteClusterManager;
-import org.apache.ignite.Ignite;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
-public class IgniteUtil {
+public class HazelcastUtil {
 
-  public static Ignite getIgnite(Vertx vertx) {
-    return ((IgniteClusterManager) (VertxUtil.getVertxInternal(vertx).getClusterManager())).getIgniteInstance();
+  public static HazelcastInstance getHazelcastInstance(Vertx vertx) {
+    return ((HazelcastClusterManager) (VertxUtil.getVertxInternal(vertx).getClusterManager())).getHazelcastInstance();
   }
 
 }

@@ -17,18 +17,14 @@
 
 package cloud.wangyongjun.vxmq.service.retain;
 
-import cloud.wangyongjun.vxmq.assist.IgniteAssist;
+import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
+import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
 import cloud.wangyongjun.vxmq.assist.TopicUtil;
-import cloud.wangyongjun.vxmq.assist.IgniteUtil;
+import com.hazelcast.map.IMap;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
-import org.apache.ignite.IgniteCache;
-import org.apache.ignite.cache.query.QueryCursor;
-import org.apache.ignite.cache.query.ScanQuery;
 
-import javax.cache.Cache;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class IgniteRetainService implements RetainService {
 
@@ -45,10 +41,10 @@ public class IgniteRetainService implements RetainService {
     return igniteRetainService;
   }
 
-  private final IgniteCache<String, Retain> retainCache;
+  private final IMap<String, Retain> retainCache;
 
   private IgniteRetainService(Vertx vertx) {
-    this.retainCache = IgniteAssist.initRetainCache(IgniteUtil.getIgnite(vertx));
+    this.retainCache = HazelcastAssist.initRetainCache(HazelcastUtil.getHazelcastInstance(vertx));
   }
 
   @Override
@@ -65,20 +61,17 @@ public class IgniteRetainService implements RetainService {
 
   @Override
   public Uni<List<Retain>> allTopicMatchRetains(String topicFilter) {
-    QueryCursor<Cache.Entry<String, Retain>> cursor = retainCache.query(new ScanQuery<>((key, value) -> TopicUtil.matches(topicFilter, key)));
-    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
+    return Uni.createFrom().item(retainCache.values(mapEntry -> TopicUtil.matches(topicFilter, mapEntry.getKey())).stream().toList());
   }
 
   @Override
   public Uni<List<Retain>> allRetains() {
-    QueryCursor<Cache.Entry<String, Retain>> cursor = retainCache.query(new ScanQuery<>());
-    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
+    return Uni.createFrom().item(retainCache.values().stream().toList());
   }
 
   @Override
   public Uni<Long> count() {
-    QueryCursor<String> cursor = retainCache.<Cache.Entry<String, Retain>, String>query(new ScanQuery<>(), Cache.Entry::getKey);
-    return Uni.createFrom().item((long) cursor.getAll().size());
+    return Uni.createFrom().item((long) retainCache.size());
   }
 
 }

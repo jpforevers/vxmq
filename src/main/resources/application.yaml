@@ -26,12 +26,6 @@ vxmq:
         enable: false
       WriteMqttEventToMqtt:
         enable: false
-  ignite:
-    backups: 0
-    discovery:
-      tcp:
-        addresses: localhost:47500
-        port: 47500
   session:
     # Max offline message amount, 0 for no limit.
     queued-message:

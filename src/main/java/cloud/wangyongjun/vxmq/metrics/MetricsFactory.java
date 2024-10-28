@@ -7,9 +7,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import io.vertx.micrometer.backends.BackendRegistries;
 import io.vertx.mutiny.core.Vertx;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import jakarta.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MetricsFactory {
@@ -73,7 +71,7 @@ public class MetricsFactory {
     }
 
     @Override
-    public void bindTo(@NotNull MeterRegistry registry) {
+    public void bindTo(MeterRegistry registry) {
       Gauge.builder("packets.publish.received.rate", this, PacketsPublishReceivedRateGaugeMetrics::getRate)
         .register(registry);
     }
@@ -105,7 +103,7 @@ public class MetricsFactory {
     }
 
     @Override
-    public void bindTo(@NotNull MeterRegistry registry) {
+    public void bindTo(MeterRegistry registry) {
       Gauge.builder("packets.publish.sent.rate", this, PacketsPublishSentRateGaugeMetrics::getRate)
         .register(registry);
     }

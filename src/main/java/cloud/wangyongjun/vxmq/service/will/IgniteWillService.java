@@ -17,18 +17,13 @@
 
 package cloud.wangyongjun.vxmq.service.will;
 
-import cloud.wangyongjun.vxmq.assist.IgniteAssist;
-import cloud.wangyongjun.vxmq.assist.IgniteUtil;
+import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
+import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
+import com.hazelcast.map.IMap;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
-import org.apache.ignite.IgniteCache;
-import org.apache.ignite.cache.query.QueryCursor;
-import org.apache.ignite.cache.query.ScanQuery;
 
-import javax.cache.Cache;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class IgniteWillService implements WillService {
 
@@ -45,10 +40,10 @@ public class IgniteWillService implements WillService {
     return igniteWillService;
   }
 
-  private final IgniteCache<String, Will> willCache;
+  private final IMap<String, Will> willCache;
 
   private IgniteWillService(Vertx vertx) {
-    this.willCache = IgniteAssist.initWillCache(IgniteUtil.getIgnite(vertx));
+    this.willCache = HazelcastAssist.initWillCache(HazelcastUtil.getHazelcastInstance(vertx));
   }
 
   @Override
@@ -70,14 +65,12 @@ public class IgniteWillService implements WillService {
 
   @Override
   public Uni<List<Will>> allWills() {
-    QueryCursor<Cache.Entry<String, Will>> cursor = willCache.query(new ScanQuery<>());
-    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
+    return Uni.createFrom().item(willCache.values().stream().toList());
   }
 
   @Override
   public Uni<Long> count() {
-    QueryCursor<String> cursor = willCache.<Cache.Entry<String, Will>, String>query(new ScanQuery<>(), Cache.Entry::getKey);
-    return Uni.createFrom().item((long) cursor.getAll().size());
+    return Uni.createFrom().item((long) willCache.size());
   }
 
 }

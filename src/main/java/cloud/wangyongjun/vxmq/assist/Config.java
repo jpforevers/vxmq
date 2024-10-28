@@ -21,7 +21,6 @@ import cloud.wangyongjun.vxmq.service.authentication.MqttAuthType;
 import io.smallrye.config.SmallRyeConfig;
 import io.vertx.core.impl.cpu.CpuCoreSensor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import java.util.Arrays;
@@ -60,15 +59,6 @@ public class Config {
 
   public static final String KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX = "vxmq.session.queued-message.max";
   public static final int DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX = 1000;
-
-  public static final String KEY_VXMQ_IGNITE_BACKUPS = "vxmq.ignite.backups";
-  public static final int DEFAULT_VXMQ_IGNITE_BACKUPS = 1;
-
-  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT = "vxmq.ignite.discovery.tcp.port";
-  public static final int DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT = TcpDiscoverySpi.DFLT_PORT;
-
-  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "vxmq.ignite.discovery.tcp.addresses";
-  public static final String DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "localhost:47500";
 
   public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE = "vxmq.rule.static.WriteMqttEventToMqtt.enable";
   public static final boolean DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE = false;
@@ -135,18 +125,6 @@ public class Config {
 
   public static int getSessionQueuedMessageMax() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX, Integer.class).orElse(DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX);
-  }
-
-  public static int getIgniteBackups() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_BACKUPS, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_BACKUPS);
-  }
-
-  public static int getIgniteDiscoveryTcpPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT);
-  }
-
-  public static String getIgniteDiscoveryTcpAddresses() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES, String.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES);
   }
 
   public static boolean getRuleStaticWriteMqttEventToMqttEnable() {

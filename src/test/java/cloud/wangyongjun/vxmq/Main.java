@@ -17,10 +17,19 @@
 
 package cloud.wangyongjun.vxmq;
 
+import io.smallrye.mutiny.Uni;
+import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.shareddata.Lock;
+
 public class Main {
 
   public static void main(String[] args) {
-
+    Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> Vertx.builder().buildClustered())
+      .onItem().transformToUni(vertx -> vertx.sharedData().getLockWithTimeout("xxx", 2000))
+      .onItem().invoke(Lock::release)
+      .onItem().invoke(v -> System.out.println("---------------------"))
+      .subscribe().with(v -> {}, Throwable::printStackTrace);
   }
 
 }
