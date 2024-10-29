@@ -112,6 +112,7 @@ public class ClientVerticle extends AbstractVerticle {
         return outboundTopicAliasService.processTopicAlias(msgToClient, mqttEndpoint.clientIdentifier(), topicAliasMax);
       })
       .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
+      // TODO 提供一个只读取sessionId的方法，避免整体序列化
       .onItem().transformToUni(session -> {
         MqttQoS mqttQoS = MqttQoS.valueOf(msgToClient.getQos());
         return switch (mqttQoS) {

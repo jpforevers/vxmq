@@ -1,9 +1,9 @@
 package io.github.jpforevers.vxmq.mqtt;
 
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.ServiceFactory;
 import io.github.jpforevers.vxmq.service.client.ClientService;
-import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;

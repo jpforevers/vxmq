@@ -18,8 +18,8 @@
 package io.github.jpforevers.vxmq.shell.cmd;
 
 import io.github.jpforevers.vxmq.assist.ModelConstants;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
-import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.github.jpforevers.vxmq.shell.ShellCmdConstants;
 import io.vertx.core.cli.Option;
@@ -103,10 +103,10 @@ public class SessionCmdBuilder {
       List<String> row = new ArrayList<>();
       row.add(session.getSessionId());
       row.add(session.getClientId());
-      row.add(String.valueOf(session.isOnline()));
+      row.add(String.valueOf(session.getOnline()));
       row.add(session.getVerticleId());
       row.add(session.getNodeId());
-      row.add(String.valueOf(session.isCleanSession()));
+      row.add(String.valueOf(session.getCleanSession()));
       row.add(String.valueOf(session.getKeepAlive()));
       row.add(String.valueOf(session.getProtocolLevel()));
       row.add(String.valueOf(session.getSessionExpiryInterval()));

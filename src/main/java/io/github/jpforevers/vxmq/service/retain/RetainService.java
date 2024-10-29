@@ -17,6 +17,7 @@
 
 package io.github.jpforevers.vxmq.service.retain;
 
+import io.github.jpforevers.vxmq.model.Retain;
 import io.smallrye.mutiny.Uni;
 
 import java.util.List;

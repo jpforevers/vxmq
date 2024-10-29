@@ -18,8 +18,8 @@
 package io.github.jpforevers.vxmq.shell.cmd;
 
 import io.github.jpforevers.vxmq.assist.ModelConstants;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.client.ClientService;
-import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.github.jpforevers.vxmq.shell.ShellCmdConstants;
 import io.vertx.core.cli.Option;

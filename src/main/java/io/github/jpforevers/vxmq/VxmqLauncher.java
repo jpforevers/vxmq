@@ -20,6 +20,7 @@ package io.github.jpforevers.vxmq;
 import io.github.jpforevers.vxmq.assist.Config;
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
 import io.github.jpforevers.vxmq.metrics.MetricsFactory;
+import io.github.jpforevers.vxmq.service.IgniteAssist;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;

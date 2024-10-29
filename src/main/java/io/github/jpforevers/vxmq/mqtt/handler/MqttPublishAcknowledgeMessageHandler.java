@@ -69,6 +69,7 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
       LOGGER.debug("PUBACK from {}: {}", mqttEndpoint.clientIdentifier(), pubAckInfo(mqttPubAckMessage));
     }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
+      // TODO 提供一个只读取sessionId的方法，避免整体序列化
       .onItem().transformToUni(session -> msgService.getAndRemoveOutboundQos1Pub(session.getSessionId(), mqttPubAckMessage.messageId()))
       .onItem().transformToUni(outboundQos1Pub -> {
         if (outboundQos1Pub == null) {

@@ -18,19 +18,18 @@
 package io.github.jpforevers.vxmq.service.composite;
 
 import io.github.jpforevers.vxmq.assist.Config;
-import io.github.jpforevers.vxmq.assist.IgniteAssist;
-import io.github.jpforevers.vxmq.assist.IgniteUtil;
+import io.github.jpforevers.vxmq.service.IgniteAssist;
+import io.github.jpforevers.vxmq.service.IgniteUtil;
 import io.github.jpforevers.vxmq.http.api.ApiErrorCode;
 import io.github.jpforevers.vxmq.http.api.ApiException;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.alias.InboundTopicAliasService;
 import io.github.jpforevers.vxmq.service.client.ClientService;
 import io.github.jpforevers.vxmq.service.client.CloseMqttEndpointRequest;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgToClient;
 import io.github.jpforevers.vxmq.service.msg.MsgToTopic;
-import io.github.jpforevers.vxmq.service.retain.Retain;
 import io.github.jpforevers.vxmq.service.retain.RetainService;
-import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.github.jpforevers.vxmq.service.sub.Subscription;
 import io.github.jpforevers.vxmq.service.sub.mutiny.SubService;
@@ -93,7 +92,9 @@ public class DefaultCompositeService implements CompositeService {
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> sessionService.getSession(clientId))
       .onItem().ifNotNull().transformToUni(session -> Uni.createFrom().voidItem()
+        // TODO 提供一个只读取sessionId的方法，避免整体序列化
         .onItem().transformToUni(v -> msgService.clearMsgs(session.getSessionId()))
+        // TODO 提供一个只读取sessionId的方法，避免整体序列化
         .onItem().transformToUni(v -> subService.clearSubs(session.getSessionId()))
         .onItem().transformToUni(v -> sessionService.removeSession(clientId)));
   }
@@ -135,11 +136,11 @@ public class DefaultCompositeService implements CompositeService {
   @Override
   public Uni<Void> sendToClient(Session session, MsgToClient msgToClient) {
     if (session != null) {
-      if (session.isOnline()) {
+      if (session.getOnline()) {
         return clientService.sendPublish(session.getVerticleId(), msgToClient);
       } else {
         if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-          if (!session.isCleanSession()) {
+          if (!session.getCleanSession()) {
             // For MQTT 3.1.1, should saving offline message when the cleanSession is false.
             return msgService.saveOfflineMsg(msgToClient);
           } else {
@@ -230,7 +231,7 @@ public class DefaultCompositeService implements CompositeService {
         if (session == null) {
           return Uni.createFrom().failure(new ApiException(ApiErrorCode.COMMON_NOT_FOUND, "Client session not found: " + clientId));
         } else {
-          if (session.isOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
+          if (session.getOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
             return clientService.closeMqttEndpoint(session.getVerticleId(), new CloseMqttEndpointRequest());
           } else {
             return Uni.createFrom().voidItem()

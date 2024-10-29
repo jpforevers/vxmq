@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.jpforevers.vxmq.assist;
+package io.github.jpforevers.vxmq.service;
 
+import io.github.jpforevers.vxmq.assist.VertxUtil;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.ignite.IgniteClusterManager;
 import org.apache.ignite.Ignite;

@@ -18,8 +18,8 @@
 package io.github.jpforevers.vxmq.service.sub;
 
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
-import io.github.jpforevers.vxmq.assist.IgniteAssist;
-import io.github.jpforevers.vxmq.assist.IgniteUtil;
+import io.github.jpforevers.vxmq.service.IgniteAssist;
+import io.github.jpforevers.vxmq.service.IgniteUtil;
 import io.github.jpforevers.vxmq.assist.TopicUtil;
 import io.github.jpforevers.vxmq.service.sub.share.ShareSubscriptionProcessor;
 import io.github.jpforevers.vxmq.service.sub.tree.SubTree;

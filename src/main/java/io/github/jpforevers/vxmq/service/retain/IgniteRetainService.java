@@ -17,12 +17,14 @@
 
 package io.github.jpforevers.vxmq.service.retain;
 
-import io.github.jpforevers.vxmq.assist.IgniteAssist;
+import io.github.jpforevers.vxmq.model.Retain;
+import io.github.jpforevers.vxmq.service.IgniteAssist;
 import io.github.jpforevers.vxmq.assist.TopicUtil;
-import io.github.jpforevers.vxmq.assist.IgniteUtil;
+import io.github.jpforevers.vxmq.service.IgniteUtil;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.IgniteCache;
+import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
 
@@ -45,7 +47,7 @@ public class IgniteRetainService implements RetainService {
     return igniteRetainService;
   }
 
-  private final IgniteCache<String, Retain> retainCache;
+  private final IgniteCache<String, BinaryObject> retainCache;
 
   private IgniteRetainService(Vertx vertx) {
     this.retainCache = IgniteAssist.initRetainCache(IgniteUtil.getIgnite(vertx));

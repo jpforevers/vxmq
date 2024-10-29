@@ -17,9 +17,10 @@
 
 package io.github.jpforevers.vxmq.service.session;
 
-import io.github.jpforevers.vxmq.assist.IgniteAssist;
+import io.github.jpforevers.vxmq.service.IgniteAssist;
 import io.github.jpforevers.vxmq.assist.ModelConstants;
-import io.github.jpforevers.vxmq.assist.IgniteUtil;
+import io.github.jpforevers.vxmq.service.IgniteUtil;
+import io.github.jpforevers.vxmq.model.Session;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.IgniteCache;

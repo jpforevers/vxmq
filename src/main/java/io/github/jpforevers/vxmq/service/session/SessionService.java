@@ -18,6 +18,7 @@
 package io.github.jpforevers.vxmq.service.session;
 
 import io.github.jpforevers.vxmq.assist.Nullable;
+import io.github.jpforevers.vxmq.model.Session;
 import io.smallrye.mutiny.Uni;
 
 import java.util.List;

@@ -61,6 +61,7 @@ public class InboundTopicAliasService {
           } else {
             // topic alias mapped not exist, close connection with 0x82
             return sessionService.getSession(msgToTopic.getClientId())
+              // TODO 提供一个只读取verticleId的方法，避免整体序列化
               .onItem().transformToUni(session -> {
                 DisconnectRequest disconnectRequest = new DisconnectRequest(MqttDisconnectReasonCode.PROTOCOL_ERROR, MqttProperties.NO_PROPERTIES);
                 return clientService.disconnect(session.getVerticleId(), disconnectRequest);
@@ -70,6 +71,7 @@ public class InboundTopicAliasService {
       } else {
         // topic alias invalid, close connection with 0x94
         return sessionService.getSession(msgToTopic.getClientId())
+          // TODO 提供一个只读取verticleId的方法，避免整体序列化
           .onItem().transformToUni(session -> {
             DisconnectRequest disconnectRequest = new DisconnectRequest(MqttDisconnectReasonCode.TOPIC_ALIAS_INVALID, MqttProperties.NO_PROPERTIES);
             return clientService.disconnect(session.getVerticleId(), disconnectRequest);

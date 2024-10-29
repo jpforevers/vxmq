@@ -62,6 +62,7 @@ public class MqttPublishCompletionMessageHandler implements Consumer<MqttPubComp
       LOGGER.debug("PUBCOMP from {}: {}", mqttEndpoint.clientIdentifier(), pubCompInfo(mqttPubCompMessage));
     }
     sessionService.getSession(mqttEndpoint.clientIdentifier())
+      // TODO 提供一个只读取sessionId的方法，避免整体序列化
       .onItem().transformToUni(session -> msgService.getAndRemoveOutboundQos2Rel(session.getSessionId(), mqttPubCompMessage.messageId()))
       .onItem().transformToUni(outboundQos2Rel -> {
         if (outboundQos2Rel == null) {

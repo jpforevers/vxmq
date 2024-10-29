@@ -15,17 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.jpforevers.vxmq.assist;
+package io.github.jpforevers.vxmq.service;
 
-import io.github.jpforevers.vxmq.service.retain.Retain;
-import io.github.jpforevers.vxmq.service.session.Session;
+import io.github.jpforevers.vxmq.assist.Config;
+import io.github.jpforevers.vxmq.assist.ModelConstants;
+import io.github.jpforevers.vxmq.model.Retain;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.sub.Subscription;
 import io.github.jpforevers.vxmq.service.sub.SubscriptionKey;
 import io.github.jpforevers.vxmq.service.will.Will;
 import io.github.jpforevers.vxmq.service.msg.*;
+import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteQueue;
+import org.apache.ignite.binary.BinaryObject;
+import org.apache.ignite.binary.BinaryObjectBuilder;
 import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.CacheWriteSynchronizationMode;
@@ -33,6 +38,9 @@ import org.apache.ignite.cache.eviction.lru.LruEvictionPolicyFactory;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.CollectionConfiguration;
 import org.apache.ignite.configuration.NearCacheConfiguration;
+
+import java.util.Optional;
+import java.util.OptionalInt;
 
 public class IgniteAssist {
 
@@ -91,8 +99,8 @@ public class IgniteAssist {
     return ignite.queue(IgniteAssist.OFFLINE_MSG_QUEUE_PREFIX + sessionId, Config.getSessionQueuedMessageMax(), colCfg);
   }
 
-  public static IgniteCache<String, Retain> initRetainCache(Ignite ignite) {
-    CacheConfiguration<String, Retain> retainCacheConfiguration = new CacheConfiguration<>();
+  public static IgniteCache<String, BinaryObject> initRetainCache(Ignite ignite) {
+    CacheConfiguration<String, BinaryObject> retainCacheConfiguration = new CacheConfiguration<>();
     retainCacheConfiguration.setName(IgniteAssist.RETAIN_CACHE_NAME);
     retainCacheConfiguration.setWriteSynchronizationMode(CacheWriteSynchronizationMode.PRIMARY_SYNC);
     retainCacheConfiguration.setCacheMode(CacheMode.PARTITIONED);
@@ -145,6 +153,21 @@ public class IgniteAssist {
     willCacheConfiguration.setBackups(Config.getIgniteBackups());
     willCacheConfiguration.setAtomicityMode(CacheAtomicityMode.ATOMIC);
     return ignite.getOrCreateCache(willCacheConfiguration);
+  }
+
+  public static BinaryObject toBinaryObject(Vertx vertx, Retain retain) {
+    BinaryObjectBuilder binaryObjectBuilder = IgniteUtil.getIgnite(vertx).binary().builder(Retain.class.getName());
+    binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_TOPIC_NAME, retain.getTopicName());
+    binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_QOS, retain.getQos());
+    binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_PAYLOAD, retain.getPayload());
+    if (retain.hasPayloadFormatIndicator()) {
+      binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, retain.getPayloadFormatIndicator());
+    }
+    if (retain.hasContentType()) {
+      binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_CONTENT_TYPE, retain.getContentType());
+    }
+    binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_CREATED_TIME, retain.getCreatedTime());
+    return binaryObjectBuilder.build();
   }
 
 }

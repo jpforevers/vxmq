@@ -22,7 +22,7 @@ import io.github.jpforevers.vxmq.assist.MqttPropertiesUtil;
 import io.github.jpforevers.vxmq.event.Event;
 import io.github.jpforevers.vxmq.event.EventService;
 import io.github.jpforevers.vxmq.event.mqtt.MqttDisconnectedEvent;
-import io.github.jpforevers.vxmq.service.session.Session;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.github.jpforevers.vxmq.service.will.WillService;
 import io.netty.handler.codec.mqtt.MqttProperties;
@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -102,15 +103,13 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
     if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
       return Uni.createFrom().voidItem();
     } else {
-      MqttProperties.MqttProperty sessionExpiryIntervalProperty = mqttDisconnectMessage.properties().getProperty(MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL.value());
-      Integer sessionExpiryInterval = sessionExpiryIntervalProperty == null ? null : (Integer) sessionExpiryIntervalProperty.value();
-      if (session.getSessionExpiryInterval() != null && session.getSessionExpiryInterval() == 0 && sessionExpiryInterval != null && sessionExpiryInterval != 0) {
+      Optional<Integer> sessionExpiryIntervalOptional = Optional.ofNullable(MqttPropertiesUtil.getValue(mqttDisconnectMessage.properties(), MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class));
+      if (session.hasSessionExpiryInterval() && session.getSessionExpiryInterval() == 0 && sessionExpiryIntervalOptional.isPresent() && sessionExpiryIntervalOptional.get() != 0) {
         // From MQTT 5 specification: If the Session Expiry Interval in the CONNECT packet was zero, then it is a Protocol Error to set a non-zero Session Expiry Interval in the DISCONNECT packet sent by the Client
         return Uni.createFrom().voidItem();
       } else {
-        if (sessionExpiryInterval != null) {
-          session.setSessionExpiryInterval(sessionExpiryInterval);
-          return sessionService.saveOrUpdateSession(session);
+        if (sessionExpiryIntervalOptional.isPresent()) {
+          return sessionService.saveOrUpdateSession(session.toBuilder().setSessionExpiryInterval(sessionExpiryIntervalOptional.get()).build());
         } else {
           return Uni.createFrom().voidItem();
         }

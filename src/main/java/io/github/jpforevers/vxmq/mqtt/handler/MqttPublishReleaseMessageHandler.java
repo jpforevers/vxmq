@@ -72,6 +72,7 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
 
     MqttProperties pubCompProperties = new MqttProperties();
     sessionService.getSession(clientId)
+      // TODO 提供一个只读取sessionId的方法，避免整体序列化
       .onItem().transformToUni(session -> msgService.getAndRemoveInboundQos2Pub(session.getSessionId(), mqttPubRelMessage.messageId()))
       .onItem().transformToUni(inboundQos2Pub -> {
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {

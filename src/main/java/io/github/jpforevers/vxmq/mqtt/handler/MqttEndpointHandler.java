@@ -24,6 +24,7 @@ import io.github.jpforevers.vxmq.event.mqtt.MqttConnectFailedEvent;
 import io.github.jpforevers.vxmq.event.mqtt.MqttConnectedEvent;
 import io.github.jpforevers.vxmq.event.mqtt.MqttEndpointClosedEvent;
 import io.github.jpforevers.vxmq.event.mqtt.MqttSessionTakenOverEvent;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.mqtt.exception.MqttConnectException;
 import io.github.jpforevers.vxmq.service.alias.InboundTopicAliasService;
 import io.github.jpforevers.vxmq.service.alias.OutboundTopicAliasService;
@@ -36,7 +37,6 @@ import io.github.jpforevers.vxmq.service.client.DisconnectRequest;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.retain.RetainService;
-import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.github.jpforevers.vxmq.service.sub.mutiny.SubService;
 import io.github.jpforevers.vxmq.service.will.Will;
@@ -67,6 +67,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -274,7 +275,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     return Uni.createFrom().emitter(uniEmitter ->
       sessionService.getSession(mqttEndpoint.clientIdentifier())
         .onItem().transformToUni(session -> {
-          if (session != null && session.isOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
+          if (session != null && session.getOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
             LOGGER.warn("Kick off existing connection for: {}", mqttEndpoint.clientIdentifier());
             // Whether the above code can receive EVENT_MQTT_ENDPOINT_CLOSED_EVENT, always continue to run forward after a period of time.
             long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
@@ -383,13 +384,13 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    */
   private Uni<Session> handleSession(MqttEndpoint mqttEndpoint, String clientVerticleId) {
     String nodeId = VertxUtil.getNodeId(vertx);
-    Integer sessionExpiryInterval;
+    Optional<Integer> sessionExpiryIntervalOptional;
     if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-      sessionExpiryInterval = null;
+      sessionExpiryIntervalOptional = Optional.empty();
     } else {
-      MqttProperties.MqttProperty sessionExpiryIntervalMqttProperty = mqttEndpoint.connectProperties().getProperty(MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL.value());
+      Integer sessionExpiryInterval = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
       // From MQTT 5 specification: If the Session Expiry Interval is absent the value 0 is used
-      sessionExpiryInterval = sessionExpiryIntervalMqttProperty == null ? 0 : (Integer) sessionExpiryIntervalMqttProperty.value();
+      sessionExpiryIntervalOptional = sessionExpiryInterval == null ? Optional.of(0) : Optional.of(sessionExpiryInterval);
     }
     Instant now = Instant.now();
     return sessionService.getSession(mqttEndpoint.clientIdentifier()).onItem().transformToUni(previousSession -> {
@@ -402,11 +403,14 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
               return Uni.createFrom().voidItem();
             }
           }).onItem().transformToUni(v -> {
-            Session newSession = new Session().setSessionId(UUIDUtil.timeBasedUuid().toString())
+            Session.Builder builder = Session.newBuilder();
+            builder.setSessionId(UUIDUtil.timeBasedUuid().toString())
               .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
               .setCleanSession(true).setKeepAlive(mqttEndpoint.keepAliveTimeSeconds())
-              .setProtocolLevel(mqttEndpoint.protocolVersion()).setSessionExpiryInterval(sessionExpiryInterval)
-              .setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli());
+              .setProtocolLevel(mqttEndpoint.protocolVersion());
+            sessionExpiryIntervalOptional.ifPresent(builder::setSessionExpiryInterval);
+            builder.setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli()).build();
+            Session newSession = builder.build();
             return sessionService.saveOrUpdateSession(newSession).replaceWith(newSession);
           });
       } else {
@@ -418,18 +422,24 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
             resendOutboundQos2Rel(mqttEndpoint, previousSession.getSessionId()).subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending outboundQos2Rel", t));
           });
           vertx.setTimer(1000, l -> compositeService.sendOfflineMsg(previousSession.getSessionId())
-            .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending offline messages of " + mqttEndpoint.clientIdentifier(), t)));
+            .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when sending offline messages of {}", mqttEndpoint.clientIdentifier(), t)));
 
-          Session updatedSession = previousSession.copy().setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
-            .setCleanSession(false).setProtocolLevel(mqttEndpoint.protocolVersion()).setSessionExpiryInterval(sessionExpiryInterval)
-            .setUpdatedTime(now.toEpochMilli());
+          Session.Builder builder = previousSession.toBuilder();
+          builder.setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
+            .setCleanSession(false).setProtocolLevel(mqttEndpoint.protocolVersion());
+          sessionExpiryIntervalOptional.ifPresent(builder::setSessionExpiryInterval);
+          builder.setUpdatedTime(now.toEpochMilli());
+          Session updatedSession = builder.build();
           return sessionService.saveOrUpdateSession(updatedSession).replaceWith(updatedSession);
         } else {
-          Session newSession = new Session().setSessionId(UUIDUtil.timeBasedUuid().toString())
+          Session.Builder builder = Session.newBuilder();
+          builder.setSessionId(UUIDUtil.timeBasedUuid().toString())
             .setClientId(mqttEndpoint.clientIdentifier()).setOnline(true).setVerticleId(clientVerticleId).setNodeId(nodeId)
             .setCleanSession(false).setKeepAlive(mqttEndpoint.keepAliveTimeSeconds())
-            .setProtocolLevel(mqttEndpoint.protocolVersion()).setSessionExpiryInterval(sessionExpiryInterval)
-            .setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli());
+            .setProtocolLevel(mqttEndpoint.protocolVersion());
+          sessionExpiryIntervalOptional.ifPresent(builder::setSessionExpiryInterval);
+          builder.setCreatedTime(now.toEpochMilli()).setUpdatedTime(now.toEpochMilli());
+          Session newSession = builder.build();
           return sessionService.saveOrUpdateSession(newSession).replaceWith(newSession);
         }
       }

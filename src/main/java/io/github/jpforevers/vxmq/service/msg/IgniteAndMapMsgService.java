@@ -17,8 +17,8 @@
 
 package io.github.jpforevers.vxmq.service.msg;
 
-import io.github.jpforevers.vxmq.assist.IgniteAssist;
-import io.github.jpforevers.vxmq.assist.IgniteUtil;
+import io.github.jpforevers.vxmq.service.IgniteAssist;
+import io.github.jpforevers.vxmq.service.IgniteUtil;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import org.apache.ignite.Ignite;

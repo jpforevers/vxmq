@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package mqtt;
+
+option java_multiple_files = true;
+option java_package = "io.github.jpforevers.vxmq.model";
+option java_outer_classname = "ModelProto";
+
+message Session {
+  string sessionId = 1;
+  string clientId = 2;
+  bool online = 3;
+  optional string verticleId = 4;
+  optional string nodeId = 5;
+  bool cleanSession = 6;
+  int32 keepAlive = 7;
+  int32 protocolLevel = 8;
+  // MqttProperties
+  optional int32 sessionExpiryInterval = 9;  // seconds
+  int64 createdTime = 10;
+  int64 updatedTime = 11;
+}
+
+message Retain {
+  string topicName = 1;  // don't contain wildcard
+  int32 qos = 2;
+  bytes payload = 3;
+  optional int32 payloadFormatIndicator = 4;
+  optional string contentType = 5;
+  int64 createdTime = 6;
+}
+
+message MqttAuthData {
+  int32 protocolLevel = 1;
+  string clientId = 2;
+  optional string username = 3;
+  optional bytes password = 4;
+  optional bytes cert = 5;
+  optional string remoteAddr = 6;
+  optional int32  remotePort = 7;
+}
+
+message MqttAuthResult {
+  int32  code = 1;
+  optional string reason = 2;
+}

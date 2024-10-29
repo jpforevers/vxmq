@@ -17,9 +17,9 @@
 
 package io.github.jpforevers.vxmq.service.composite;
 
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.msg.MsgToClient;
 import io.github.jpforevers.vxmq.service.msg.MsgToTopic;
-import io.github.jpforevers.vxmq.service.session.Session;
 import io.smallrye.mutiny.Uni;
 
 public interface CompositeService {

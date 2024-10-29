@@ -17,6 +17,7 @@
 
 package io.github.jpforevers.vxmq.mqtt.handler;
 
+import com.google.protobuf.ByteString;
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
 import io.github.jpforevers.vxmq.assist.VertxUtil;
 import io.github.jpforevers.vxmq.event.Event;
@@ -24,14 +25,14 @@ import io.github.jpforevers.vxmq.event.EventService;
 import io.github.jpforevers.vxmq.event.mqtt.MqttPublishInboundAcceptedEvent;
 import io.github.jpforevers.vxmq.assist.MqttPropertiesUtil;
 import io.github.jpforevers.vxmq.assist.TopicUtil;
+import io.github.jpforevers.vxmq.model.Retain;
+import io.github.jpforevers.vxmq.model.Session;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
 import io.github.jpforevers.vxmq.mqtt.exception.MqttPublishException;
 import io.github.jpforevers.vxmq.service.msg.InboundQos2Pub;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgToTopic;
-import io.github.jpforevers.vxmq.service.retain.Retain;
 import io.github.jpforevers.vxmq.service.retain.RetainService;
-import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.micrometer.core.instrument.Counter;
 import io.netty.handler.codec.mqtt.MqttProperties;
@@ -240,6 +241,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
       case AT_MOST_ONCE, AT_LEAST_ONCE ->
         // Nothing need to do.
         Uni.createFrom().voidItem();
+      // TODO 提供一个只读取sessionId的方法，避免整体序列化
       case EXACTLY_ONCE -> sessionService.getSession(mqttEndpoint.clientIdentifier())
         .onItem().transformToUni(session -> {
           Integer messageExpiryInterval = null;
@@ -271,6 +273,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     };
   }
 
+  // TODO 提供一个只读取sessionId的方法，避免整体序列化
   private Uni<Void> publishEvent(Session session, MqttPublishMessage mqttPublishMessage){
     Event event = new MqttPublishInboundAcceptedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
       mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
@@ -301,6 +304,10 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
         }
         Retain retainMessage = new Retain(mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
           mqttPublishMessage.payload().getDelegate(), payloadFormatIndicator, contentType, Instant.now().toEpochMilli());
+        Retain retainMessage = Retain.newBuilder().setTopicName(mqttPublishMessage.topicName()).setQos(mqttPublishMessage.qosLevel().value())
+          .setPayload(ByteString.copyFrom(mqttPublishMessage.payload().getBytes()))
+          .build();
+
         return retainService.saveOrUpdateRetain(retainMessage);
       } else {
         return retainService.removeRetain(mqttPublishMessage.topicName());
