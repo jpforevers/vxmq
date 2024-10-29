@@ -68,6 +68,8 @@ public class MqttDisconnectedEvent implements MqttEvent {
     this.time = jsonObject.getLong("time");
     this.nodeId = jsonObject.getString("nodeId");
     this.clientId = jsonObject.getString("clientId");
+    this.sessionId = jsonObject.getString("sessionId");
+    this.code = MqttDisconnectReasonCode.valueOf(jsonObject.getString("code"));
     return this;
   }
 
