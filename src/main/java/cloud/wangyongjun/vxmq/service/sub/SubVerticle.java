@@ -29,7 +29,7 @@ public class SubVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
-    SubService subService = IgniteAndSubTreeSubService.getInstance(vertx, ShareSubscriptionProcessor.getInstance(vertx));
+    SubService subService = HazelcastAndSubTreeSubService.getInstance(vertx, ShareSubscriptionProcessor.getInstance(vertx));
     new ServiceBinder(vertx.getDelegate()).setAddress(EBServices.SUB_SERVICE.getEbAddress())
       .registerLocal(SubService.class, subService);
     return Uni.createFrom().voidItem();

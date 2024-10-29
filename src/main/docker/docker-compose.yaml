@@ -10,8 +10,6 @@ services:
       timeout: 3s
       retries: 5
     environment:
-      VXMQ_IGNITE_DISCOVERY_TCP_PORT: 47500
-      VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
       VXMQ_METRICS_ENABLE: true
       VXMQ_LOGS_LEVEL: DEBUG
       VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
@@ -28,8 +26,6 @@ services:
       timeout: 3s
       retries: 5
     environment:
-      VXMQ_IGNITE_DISCOVERY_TCP_PORT: 47500
-      VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
       VXMQ_METRICS_ENABLE: true
       VXMQ_LOGS_LEVEL: DEBUG
       VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true
@@ -46,8 +42,6 @@ services:
       timeout: 3s
       retries: 5
     environment:
-      VXMQ_IGNITE_DISCOVERY_TCP_PORT: 47500
-      VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES: vxmq-vxmq1:47500,vxmq-vxmq2:47500,vxmq-vxmq3:47500
       VXMQ_METRICS_ENABLE: true
       VXMQ_LOGS_LEVEL: DEBUG
       VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE: true

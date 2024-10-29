@@ -19,7 +19,6 @@ package cloud.wangyongjun.vxmq.assist;
 
 public class EBAddress {
 
-  public static final String SERVICE_NOTHING_SERVICE = "service.NothingService";
   public static final String SERVICE_SUB_SERVICE = "service.SubService";
   public static final String SERVICE_AUTHENTICATION_SERVICE = "service.AuthenticationService";
 

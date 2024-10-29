@@ -29,9 +29,6 @@
     </encoder>
   </appender>
 
-  <!-- Set org.apache.ignite log level to WARN -->
-  <logger name="org.apache.ignite" level="WARN" />
-
   <!-- Set org.apache.kafka log level to WARN -->
   <logger name="org.apache.kafka" level="WARN" />
 

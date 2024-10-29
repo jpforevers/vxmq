@@ -25,24 +25,24 @@ import io.vertx.mutiny.core.Vertx;
 
 import java.util.List;
 
-public class IgniteWillService implements WillService {
+public class HazelcastWillService implements WillService {
 
-  private static volatile IgniteWillService igniteWillService;
+  private static volatile HazelcastWillService hazelcastWillService;
 
-  public static IgniteWillService getSingleton(Vertx vertx) {
-    if (igniteWillService == null) {
-      synchronized (IgniteWillService.class) {
-        if (igniteWillService == null) {
-          igniteWillService = new IgniteWillService(vertx);
+  public static HazelcastWillService getSingleton(Vertx vertx) {
+    if (hazelcastWillService == null) {
+      synchronized (HazelcastWillService.class) {
+        if (hazelcastWillService == null) {
+          hazelcastWillService = new HazelcastWillService(vertx);
         }
       }
     }
-    return igniteWillService;
+    return hazelcastWillService;
   }
 
   private final IMap<String, Will> willCache;
 
-  private IgniteWillService(Vertx vertx) {
+  private HazelcastWillService(Vertx vertx) {
     this.willCache = HazelcastAssist.initWillCache(HazelcastUtil.getHazelcastInstance(vertx));
   }
 

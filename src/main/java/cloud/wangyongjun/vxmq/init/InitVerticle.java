@@ -28,6 +28,11 @@ public class InitVerticle extends AbstractVerticle {
 
   @Override
   public Uni<Void> asyncStart() {
+    return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> registerEventBusDefaultCodec());
+  }
+
+  private Uni<Void> registerEventBusDefaultCodec() {
     EventBus eventBus = vertx.eventBus();
     eventBus.getDelegate().registerDefaultCodec(ToClientVerticleMsg.class, new ToClientVerticleMsgCodec());
     return Uni.createFrom().voidItem();

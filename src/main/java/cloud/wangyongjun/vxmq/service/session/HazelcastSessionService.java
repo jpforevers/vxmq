@@ -25,24 +25,24 @@ import io.vertx.mutiny.core.Vertx;
 
 import java.util.List;
 
-public class IgniteSessionService implements SessionService {
+public class HazelcastSessionService implements SessionService {
 
-  private static volatile IgniteSessionService igniteSessionService;
+  private static volatile HazelcastSessionService hazelcastSessionService;
 
-  public static IgniteSessionService getSingleton(Vertx vertx) {
-    if (igniteSessionService == null) {
-      synchronized (IgniteSessionService.class) {
-        if (igniteSessionService == null) {
-          igniteSessionService = new IgniteSessionService(vertx);
+  public static HazelcastSessionService getSingleton(Vertx vertx) {
+    if (hazelcastSessionService == null) {
+      synchronized (HazelcastSessionService.class) {
+        if (hazelcastSessionService == null) {
+          hazelcastSessionService = new HazelcastSessionService(vertx);
         }
       }
     }
-    return igniteSessionService;
+    return hazelcastSessionService;
   }
 
   private final IMap<String, Session> sessionCache;
 
-  private IgniteSessionService(Vertx vertx) {
+  private HazelcastSessionService(Vertx vertx) {
     this.sessionCache = HazelcastAssist.initSessionCache(HazelcastUtil.getHazelcastInstance(vertx));
   }
 

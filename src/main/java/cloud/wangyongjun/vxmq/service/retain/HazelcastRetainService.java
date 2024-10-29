@@ -26,24 +26,24 @@ import io.vertx.mutiny.core.Vertx;
 
 import java.util.List;
 
-public class IgniteRetainService implements RetainService {
+public class HazelcastRetainService implements RetainService {
 
-  private static volatile IgniteRetainService igniteRetainService;
+  private static volatile HazelcastRetainService hazelcastRetainService;
 
-  public static IgniteRetainService getSingleton(Vertx vertx) {
-    if (igniteRetainService == null) {
-      synchronized (IgniteRetainService.class) {
-        if (igniteRetainService == null) {
-          igniteRetainService = new IgniteRetainService(vertx);
+  public static HazelcastRetainService getSingleton(Vertx vertx) {
+    if (hazelcastRetainService == null) {
+      synchronized (HazelcastRetainService.class) {
+        if (hazelcastRetainService == null) {
+          hazelcastRetainService = new HazelcastRetainService(vertx);
         }
       }
     }
-    return igniteRetainService;
+    return hazelcastRetainService;
   }
 
   private final IMap<String, Retain> retainCache;
 
-  private IgniteRetainService(Vertx vertx) {
+  private HazelcastRetainService(Vertx vertx) {
     this.retainCache = HazelcastAssist.initRetainCache(HazelcastUtil.getHazelcastInstance(vertx));
   }
 

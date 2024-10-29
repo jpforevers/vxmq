@@ -37,21 +37,21 @@ import java.util.stream.Collectors;
 /**
  * Singleton. SubTree is not thread safe.
  */
-public class IgniteAndSubTreeSubService implements SubService {
+public class HazelcastAndSubTreeSubService implements SubService {
 
-  private final static Logger LOGGER = LoggerFactory.getLogger(IgniteAndSubTreeSubService.class);
+  private final static Logger LOGGER = LoggerFactory.getLogger(HazelcastAndSubTreeSubService.class);
 
-  private static volatile IgniteAndSubTreeSubService igniteAndSubTreeSubService;
+  private static volatile HazelcastAndSubTreeSubService hazelcastAndSubTreeSubService;
 
-  public static IgniteAndSubTreeSubService getInstance(Vertx vertx, ShareSubscriptionProcessor shareSubscriptionProcessor) {
-    if (igniteAndSubTreeSubService == null) {
-      synchronized (IgniteAndSubTreeSubService.class) {
-        if (igniteAndSubTreeSubService == null) {
-          igniteAndSubTreeSubService = new IgniteAndSubTreeSubService(vertx, shareSubscriptionProcessor);
+  public static HazelcastAndSubTreeSubService getInstance(Vertx vertx, ShareSubscriptionProcessor shareSubscriptionProcessor) {
+    if (hazelcastAndSubTreeSubService == null) {
+      synchronized (HazelcastAndSubTreeSubService.class) {
+        if (hazelcastAndSubTreeSubService == null) {
+          hazelcastAndSubTreeSubService = new HazelcastAndSubTreeSubService(vertx, shareSubscriptionProcessor);
         }
       }
     }
-    return igniteAndSubTreeSubService;
+    return hazelcastAndSubTreeSubService;
   }
 
   private final SubTree subTree;
@@ -59,7 +59,7 @@ public class IgniteAndSubTreeSubService implements SubService {
   private final IMap<SubscriptionKey, Subscription> wildcardSubscriptionCache;
   private final ShareSubscriptionProcessor shareSubscriptionProcessor;
 
-  private IgniteAndSubTreeSubService(Vertx vertx, ShareSubscriptionProcessor shareSubscriptionProcessor) {
+  private HazelcastAndSubTreeSubService(Vertx vertx, ShareSubscriptionProcessor shareSubscriptionProcessor) {
     this.subTree = SubTree.subTree();
     HazelcastInstance hazelcastInstance = HazelcastUtil.getHazelcastInstance(vertx);
     this.exactSubscriptionCache = HazelcastAssist.initExactSubscriptionCache(hazelcastInstance);

@@ -28,19 +28,19 @@ import cloud.wangyongjun.vxmq.service.composite.CompositeService;
 import cloud.wangyongjun.vxmq.service.composite.DefaultCompositeService;
 import cloud.wangyongjun.vxmq.service.msg.HazelcastAndMapMsgService;
 import cloud.wangyongjun.vxmq.service.msg.MsgService;
-import cloud.wangyongjun.vxmq.service.retain.IgniteRetainService;
+import cloud.wangyongjun.vxmq.service.retain.HazelcastRetainService;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;
-import cloud.wangyongjun.vxmq.service.session.IgniteSessionService;
+import cloud.wangyongjun.vxmq.service.session.HazelcastSessionService;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
-import cloud.wangyongjun.vxmq.service.will.IgniteWillService;
+import cloud.wangyongjun.vxmq.service.will.HazelcastWillService;
 import cloud.wangyongjun.vxmq.service.will.WillService;
 import io.vertx.mutiny.core.Vertx;
 
 public class ServiceFactory {
 
   public static SessionService sessionService(Vertx vertx) {
-    return IgniteSessionService.getSingleton(vertx);
+    return HazelcastSessionService.getSingleton(vertx);
   }
 
   public static SubService subService(Vertx vertx) {
@@ -57,11 +57,11 @@ public class ServiceFactory {
   }
 
   public static RetainService retainService(Vertx vertx) {
-    return IgniteRetainService.getSingleton(vertx);
+    return HazelcastRetainService.getSingleton(vertx);
   }
 
   public static WillService willService(Vertx vertx) {
-    return IgniteWillService.getSingleton(vertx);
+    return HazelcastWillService.getSingleton(vertx);
   }
 
   public static CompositeService compositeService(Vertx vertx) {

@@ -17,14 +17,11 @@
 
 package cloud.wangyongjun.vxmq.service.client;
 
-import cloud.wangyongjun.vxmq.assist.EBHeader;
 import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.impl.Deployment;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.shareddata.Lock;
 

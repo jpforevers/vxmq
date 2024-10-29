@@ -185,4 +185,3 @@ nbdist/
 !.vscode/extensions.json
 
 logs/
-ignite/
