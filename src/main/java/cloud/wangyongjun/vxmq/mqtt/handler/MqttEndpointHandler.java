@@ -67,6 +67,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
  * If an MQTT client connect to the server a new MqttEndpoint instance will be created and passed to the handler.
@@ -236,7 +237,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .password(mqttAuth == null ? null : mqttAuth.getPassword().getBytes(StandardCharsets.UTF_8))
       .build();
     LOGGER.debug("Mqtt auth data: {}", mqttAuthData.toJson());
-    if (Config.getMqttAuthWhitelist().contains(mqttEndpoint.clientIdentifier())) {
+    if (ifInWhitelist(mqttEndpoint.clientIdentifier())) {
       LOGGER.debug("Client id {} in white list, skip authenticate", mqttEndpoint.clientIdentifier());
       return Uni.createFrom().voidItem();
     } else {
@@ -250,6 +251,15 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
           }
         });
     }
+  }
+
+  private boolean ifInWhitelist(String clientIdentifier) {
+    for (String s : Config.getMqttAuthWhitelist()) {
+      if (Pattern.matches(s, clientIdentifier)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
