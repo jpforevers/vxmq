@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package mqtt;
+
+option java_multiple_files = true;
+option java_package = "cloud.wangyongjun.vxmq.model";
+option java_outer_classname = "InternalModelProto";
+
+message Session {
+  string sessionId = 1;
+  string clientId = 2;
+  bool online = 3;
+  string verticleId = 4;
+  string nodeId = 5;
+  bool cleanSession = 6;
+  int32 keepAlive = 7;
+  int32 protocolLevel = 8;
+  // MqttProperties
+  optional int32 sessionExpiryInterval = 9;  // seconds
+  int64 createdTime = 10;
+  int64 updatedTime = 11;
+}

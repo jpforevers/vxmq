@@ -17,6 +17,8 @@
 
 package cloud.wangyongjun.vxmq;
 
+import cloud.wangyongjun.vxmq.model.Session;
+import com.google.protobuf.Int32Value;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.shareddata.Lock;
@@ -24,12 +26,23 @@ import io.vertx.mutiny.core.shareddata.Lock;
 public class Main {
 
   public static void main(String[] args) {
-    Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> Vertx.builder().buildClustered())
-      .onItem().transformToUni(vertx -> vertx.sharedData().getLockWithTimeout("xxx", 2000))
-      .onItem().invoke(Lock::release)
-      .onItem().invoke(v -> System.out.println("---------------------"))
-      .subscribe().with(v -> {}, Throwable::printStackTrace);
+//    Uni.createFrom().voidItem()
+//      .onItem().transformToUni(v -> Vertx.builder().buildClustered())
+//      .onItem().transformToUni(vertx -> vertx.sharedData().getLockWithTimeout("xxx", 2000))
+//      .onItem().invoke(Lock::release)
+//      .onItem().invoke(v -> System.out.println("---------------------"))
+//      .subscribe().with(v -> {}, Throwable::printStackTrace);
+    Session session1 = Session.newBuilder().setSessionId("s1").build();
+    System.out.println(session1.hasSessionExpiryInterval());
+    System.out.println(session1.getSessionExpiryInterval());
+
+    Session session2 = Session.newBuilder().setSessionId("s2").setSessionExpiryInterval(0).build();
+    System.out.println(session2.hasSessionExpiryInterval());
+    System.out.println(session2.getSessionExpiryInterval());
+
+    Session session3 = Session.newBuilder().setSessionId("s2").setSessionExpiryInterval(122).build();
+    System.out.println(session3.hasSessionExpiryInterval());
+    System.out.println(session3.getSessionExpiryInterval());
   }
 
 }
