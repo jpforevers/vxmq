@@ -102,12 +102,18 @@ public class IgniteSessionService implements SessionService {
   @Override
   public Uni<List<Session>> allSessions() {
     QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(new ScanQuery<>());
-    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
+    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).toList());
   }
 
   public Uni<List<Session>> search(String nodeId) {
     QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(new ScanQuery<>((k ,v) -> v.getNodeId().equals(nodeId)));
-    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).collect(Collectors.toList()));
+    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).toList());
+  }
+
+  @Override
+  public Uni<Session> getSessionByVerticleId(String verticleId) {
+    QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(new ScanQuery<>((k ,v) -> v.getVerticleId().equals(verticleId)));
+    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).toList().get(0));
   }
 
   @Override

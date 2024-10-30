@@ -37,6 +37,8 @@ public interface SessionService {
 
   Uni<List<Session>> search(String nodeId);
 
+  Uni<Session> getSessionByVerticleId(String verticleId);
+
   Uni<Long> count();
 
 }
