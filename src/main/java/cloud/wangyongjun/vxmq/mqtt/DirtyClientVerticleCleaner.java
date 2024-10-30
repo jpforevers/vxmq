@@ -1,5 +1,6 @@
 package cloud.wangyongjun.vxmq.mqtt;
 
+import cloud.wangyongjun.vxmq.assist.ConsumerUtil;
 import cloud.wangyongjun.vxmq.service.ServiceFactory;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.session.Session;
@@ -34,8 +35,16 @@ public class DirtyClientVerticleCleaner extends AbstractVerticle {
           for (String verticleId : verticleIds) {
             Optional<Session> sessionOptional = sessions.stream().filter(session -> Objects.equals(verticleId, session.getVerticleId())).findAny();
             if (sessionOptional.isEmpty()) {
-              LOGGER.warn("Undeploy client verticle without having related session: {}", verticleId);
-              vertx.undeployAndForget(verticleId);
+              sessionService.getSessionByVerticleId(verticleId)
+                .onItem().transformToUni(session -> {
+                  if (session == null) {
+                    LOGGER.warn("Undeploy client verticle without having related session: {}", verticleId);
+                    return vertx.undeploy(verticleId);
+                  } else {
+                    return Uni.createFrom().voidItem();
+                  }
+                })
+                .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when try to undeploy client verticle", t));
             }
           }
         }), true)
