@@ -17,9 +17,9 @@
 
 package cloud.wangyongjun.vxmq.service.composite;
 
+import cloud.wangyongjun.vxmq.model.Session;
 import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import cloud.wangyongjun.vxmq.service.msg.MsgToTopic;
-import cloud.wangyongjun.vxmq.service.session.Session;
 import io.smallrye.mutiny.Uni;
 
 public interface CompositeService {

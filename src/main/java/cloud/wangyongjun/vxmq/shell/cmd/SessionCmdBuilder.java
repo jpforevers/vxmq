@@ -18,8 +18,8 @@
 package cloud.wangyongjun.vxmq.shell.cmd;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.model.Session;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
-import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
 import io.vertx.core.cli.Option;
@@ -103,10 +103,10 @@ public class SessionCmdBuilder {
       List<String> row = new ArrayList<>();
       row.add(session.getSessionId());
       row.add(session.getClientId());
-      row.add(String.valueOf(session.isOnline()));
+      row.add(String.valueOf(session.getOnline()));
       row.add(session.getVerticleId());
       row.add(session.getNodeId());
-      row.add(String.valueOf(session.isCleanSession()));
+      row.add(String.valueOf(session.getCleanSession()));
       row.add(String.valueOf(session.getKeepAlive()));
       row.add(String.valueOf(session.getProtocolLevel()));
       row.add(String.valueOf(session.getSessionExpiryInterval()));

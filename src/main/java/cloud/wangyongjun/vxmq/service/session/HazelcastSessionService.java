@@ -17,8 +17,9 @@
 
 package cloud.wangyongjun.vxmq.service.session;
 
-import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
-import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
+import cloud.wangyongjun.vxmq.model.Session;
+import cloud.wangyongjun.vxmq.service.HazelcastAssist;
+import cloud.wangyongjun.vxmq.service.HazelcastUtil;
 import com.hazelcast.map.IMap;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
@@ -60,7 +61,7 @@ public class HazelcastSessionService implements SessionService {
   @Override
   public Uni<Void> updateLatestUpdatedTime(String clientId, long time) {
     sessionCache.computeIfPresent(clientId, (k, v) -> {
-      v.setUpdatedTime(time);
+      v = v.toBuilder().setUpdatedTime(time).build();
       return v;
     });
     return Uni.createFrom().voidItem();

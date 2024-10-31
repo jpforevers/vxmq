@@ -22,12 +22,12 @@ import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import cloud.wangyongjun.vxmq.event.Event;
 import cloud.wangyongjun.vxmq.event.EventService;
 import cloud.wangyongjun.vxmq.event.mqtt.MqttEndpointClosedEvent;
+import cloud.wangyongjun.vxmq.model.Session;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.alias.OutboundTopicAliasService;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
 import cloud.wangyongjun.vxmq.service.client.UndeployClientVerticleRequest;
 import cloud.wangyongjun.vxmq.service.composite.CompositeService;
-import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.service.will.WillService;
 import io.netty.handler.codec.mqtt.MqttVersion;
@@ -117,7 +117,7 @@ public class MqttCloseHandler implements Runnable {
             } else {
               vertx.setTimer(will.getWillDelayInterval() * 1000, l -> sessionService.getSession(session.getClientId())
                 .onItem().transformToUni(sessionNow -> {
-                  if (sessionNow.isOnline()) {
+                  if (sessionNow.getOnline()) {
                     // If a new Network Connection to this Session is made before the Will Delay Interval has passed, the Server MUST NOT send the Will Message
                     return Uni.createFrom().voidItem();
                   } else {
@@ -155,22 +155,22 @@ public class MqttCloseHandler implements Runnable {
   private Uni<Void> handleSession(Session session) {
     if (session != null) {
       if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-        if (session.isCleanSession()) {
+        if (session.getCleanSession()) {
           return compositeService.clearSessionData(session.getClientId());
         } else {
-          return sessionService.saveOrUpdateSession(session.copy().setOnline(false).setVerticleId(null).setNodeId(null).setUpdatedTime(Instant.now().toEpochMilli()));
+          return sessionService.saveOrUpdateSession(session.toBuilder().setOnline(false).clearVerticleId().clearNodeId().setUpdatedTime(Instant.now().toEpochMilli()).build());
         }
       } else {
-        if (session.getSessionExpiryInterval() == null || session.getSessionExpiryInterval() == 0) {
+        if (session.hasSessionExpiryInterval() || session.getSessionExpiryInterval() == 0) {
           return compositeService.clearSessionData(session.getClientId())
             .onItem().transformToUni(v -> compositeService.publishWill(session.getSessionId()));
         } else {
           // From MQTT 5 specification: If the Session Expiry Interval is 0xFFFFFFFF (UINT_MAX), the Session does not expire.
           // The result of Integer.valueOf(0xFFFFFFFF) is -1.
           if (session.getSessionExpiryInterval() != -1) {
-            vertx.setTimer(session.getSessionExpiryInterval() * 1000, l -> sessionService.getSession(session.getClientId())
+            vertx.setTimer(session.getSessionExpiryInterval() * 1000L, l -> sessionService.getSession(session.getClientId())
               .onItem().transformToUni(sessionX -> {
-                if (sessionX.isOnline()) {
+                if (sessionX.getOnline()) {
                   return Uni.createFrom().voidItem();
                 } else {
                   return compositeService.clearSessionData(sessionX.getClientId())
@@ -179,7 +179,7 @@ public class MqttCloseHandler implements Runnable {
               })
               .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when clear session on session expiry interval passed")));
           }
-          return sessionService.saveOrUpdateSession(session.copy().setOnline(false).setVerticleId(null).setNodeId(null).setUpdatedTime(Instant.now().toEpochMilli()));
+          return sessionService.saveOrUpdateSession(session.toBuilder().setOnline(false).clearVerticleId().clearNodeId().setUpdatedTime(Instant.now().toEpochMilli()).build());
         }
       }
     } else {

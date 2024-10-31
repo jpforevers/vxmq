@@ -32,17 +32,9 @@ public class Main {
 //      .onItem().invoke(Lock::release)
 //      .onItem().invoke(v -> System.out.println("---------------------"))
 //      .subscribe().with(v -> {}, Throwable::printStackTrace);
-    Session session1 = Session.newBuilder().setSessionId("s1").build();
+    Session session1 = Session.newBuilder().setSessionId("s1").clearVerticleId().build();
     System.out.println(session1.hasSessionExpiryInterval());
     System.out.println(session1.getSessionExpiryInterval());
-
-    Session session2 = Session.newBuilder().setSessionId("s2").setSessionExpiryInterval(0).build();
-    System.out.println(session2.hasSessionExpiryInterval());
-    System.out.println(session2.getSessionExpiryInterval());
-
-    Session session3 = Session.newBuilder().setSessionId("s2").setSessionExpiryInterval(122).build();
-    System.out.println(session3.hasSessionExpiryInterval());
-    System.out.println(session3.getSessionExpiryInterval());
   }
 
 }

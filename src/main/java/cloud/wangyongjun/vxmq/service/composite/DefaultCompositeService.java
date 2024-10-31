@@ -18,8 +18,9 @@
 package cloud.wangyongjun.vxmq.service.composite;
 
 import cloud.wangyongjun.vxmq.assist.Config;
-import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
-import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
+import cloud.wangyongjun.vxmq.model.Session;
+import cloud.wangyongjun.vxmq.service.HazelcastAssist;
+import cloud.wangyongjun.vxmq.service.HazelcastUtil;
 import cloud.wangyongjun.vxmq.http.api.ApiErrorCode;
 import cloud.wangyongjun.vxmq.http.api.ApiException;
 import cloud.wangyongjun.vxmq.service.alias.InboundTopicAliasService;
@@ -30,7 +31,6 @@ import cloud.wangyongjun.vxmq.service.msg.MsgToClient;
 import cloud.wangyongjun.vxmq.service.msg.MsgToTopic;
 import cloud.wangyongjun.vxmq.service.retain.Retain;
 import cloud.wangyongjun.vxmq.service.retain.RetainService;
-import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.service.sub.Subscription;
 import cloud.wangyongjun.vxmq.service.sub.mutiny.SubService;
@@ -135,11 +135,11 @@ public class DefaultCompositeService implements CompositeService {
   @Override
   public Uni<Void> sendToClient(Session session, MsgToClient msgToClient) {
     if (session != null) {
-      if (session.isOnline()) {
+      if (session.getOnline()) {
         return clientService.sendPublish(session.getVerticleId(), msgToClient);
       } else {
         if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-          if (!session.isCleanSession()) {
+          if (!session.getCleanSession()) {
             // For MQTT 3.1.1, should saving offline message when the cleanSession is false.
             return msgService.saveOfflineMsg(msgToClient);
           } else {
@@ -230,7 +230,7 @@ public class DefaultCompositeService implements CompositeService {
         if (session == null) {
           return Uni.createFrom().failure(new ApiException(ApiErrorCode.COMMON_NOT_FOUND, "Client session not found: " + clientId));
         } else {
-          if (session.isOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
+          if (session.getOnline() && StringUtils.isNotBlank(session.getVerticleId())) {
             return clientService.closeMqttEndpoint(session.getVerticleId(), new CloseMqttEndpointRequest());
           } else {
             return Uni.createFrom().voidItem()

@@ -15,17 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cloud.wangyongjun.vxmq.assist;
+package cloud.wangyongjun.vxmq.service;
 
+import cloud.wangyongjun.vxmq.model.Session;
 import cloud.wangyongjun.vxmq.service.msg.*;
 import cloud.wangyongjun.vxmq.service.retain.Retain;
-import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.sub.Subscription;
 import cloud.wangyongjun.vxmq.service.sub.SubscriptionKey;
 import cloud.wangyongjun.vxmq.service.will.Will;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.hazelcast.collection.IQueue;
+import com.hazelcast.config.SerializationConfig;
+import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
+import com.hazelcast.nio.ObjectDataInput;
+import com.hazelcast.nio.ObjectDataOutput;
+import com.hazelcast.nio.serialization.StreamSerializer;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
 
 public class HazelcastAssist {
 
@@ -74,6 +83,11 @@ public class HazelcastAssist {
   }
 
   public static IMap<String, Session> initSessionCache(HazelcastInstance hazelcastInstance) {
+    SerializationConfig serializationConfig = hazelcastInstance.getConfig().getSerializationConfig();
+    SerializerConfig sessionSerializerConfig = new SerializerConfig()
+      .setTypeClass(Session.class)
+      .setImplementation(new SessionSerializer());
+    serializationConfig.addSerializerConfig(sessionSerializerConfig);
 
     return hazelcastInstance.getMap(SESSION_CACHE_NAME);
   }
@@ -91,6 +105,37 @@ public class HazelcastAssist {
   public static IMap<String, Will> initWillCache(HazelcastInstance hazelcastInstance) {
 
     return hazelcastInstance.getMap(WILL_CACHE_NAME);
+  }
+
+  public static class SessionSerializer implements StreamSerializer<Session> {
+
+    @Override
+    public void write(@Nonnull ObjectDataOutput out, @Nonnull Session session) throws IOException {
+      System.out.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+      byte[] data = session.toByteArray();  // Serialize Session to byte array
+      out.writeInt(data.length);  // Write byte array length
+      out.write(data);            // Write byte array
+    }
+
+    @Nonnull
+    @Override
+    public Session read(@Nonnull ObjectDataInput in) throws IOException {
+      System.out.println("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+      int length = in.readInt(); // Read byte array length
+      byte[] data = new byte[length];
+      in.readFully(data);         // Read byte array
+      try {
+        return Session.parseFrom(data); // Deserialize byte array to Session
+      } catch (InvalidProtocolBufferException e) {
+        throw new IOException("Failed to deserialize Session", e);
+      }
+    }
+
+    @Override
+    public int getTypeId() {
+      return 1;
+    }
+
   }
 
 }

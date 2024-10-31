@@ -17,8 +17,8 @@
 
 package cloud.wangyongjun.vxmq.service.msg;
 
-import cloud.wangyongjun.vxmq.assist.HazelcastAssist;
-import cloud.wangyongjun.vxmq.assist.HazelcastUtil;
+import cloud.wangyongjun.vxmq.service.HazelcastAssist;
+import cloud.wangyongjun.vxmq.service.HazelcastUtil;
 import com.hazelcast.core.HazelcastInstance;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;

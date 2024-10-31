@@ -18,8 +18,8 @@
 package cloud.wangyongjun.vxmq.shell.cmd;
 
 import cloud.wangyongjun.vxmq.assist.ModelConstants;
+import cloud.wangyongjun.vxmq.model.Session;
 import cloud.wangyongjun.vxmq.service.client.ClientService;
-import cloud.wangyongjun.vxmq.service.session.Session;
 import cloud.wangyongjun.vxmq.service.session.SessionService;
 import cloud.wangyongjun.vxmq.shell.ShellCmdConstants;
 import io.vertx.core.cli.Option;

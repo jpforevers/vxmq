@@ -15,8 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cloud.wangyongjun.vxmq.assist;
+package cloud.wangyongjun.vxmq.service;
 
+import cloud.wangyongjun.vxmq.assist.VertxUtil;
 import com.hazelcast.core.HazelcastInstance;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
