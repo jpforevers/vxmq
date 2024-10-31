@@ -38,8 +38,8 @@
   <!-- Set io.vertx.mqtt log level to WARN -->
   <logger name="io.vertx.mqtt" level="WARN" />
 
-  <!-- Set cloud.wangyongjun.vxmq log level by env LOGS_LEVEL, default to INFO -->
-  <logger name="cloud.wangyongjun.vxmq" level="${VXMQ_LOGS_LEVEL:-INFO}" />
+  <!-- Set io.github.jpforevers.vxmq log level by env LOGS_LEVEL, default to INFO -->
+  <logger name="io.github.jpforevers.vxmq" level="${VXMQ_LOGS_LEVEL:-INFO}" />
 
   <!-- Root Logger configuration -->
   <root level="INFO">
