@@ -37,15 +37,15 @@ public class TestRetain extends BaseTest{
 
   @Test
   void testMqtt311Retain(Vertx vertx, VertxTestContext testContext) throws Throwable {
-    String topicFilter = "abc/def/+";
-    String topicName = "abc/def/123";
-    String retainPayload1 = "p1";
-    String retainPayload2 = "p2";
+    String topicFilter = "test/retain/+";
+    String topicName = "test/retain/abc";
+    String retainPayload1 = "retainPayload1";
+    String retainPayload2 = "retainPayload2";
     Mqtt3AsyncClient mqtt3AsyncClient1 = Mqtt3Client.builder()
-      .identifier("c1")
+      .identifier("testMqtt311Retain1")
       .buildAsync();
     Mqtt3AsyncClient mqtt3AsyncClient2 = Mqtt3Client.builder()
-      .identifier("c2")
+      .identifier("testMqtt311Retain2")
       .buildAsync();
     mqtt3AsyncClient1.connect()
       .thenCompose(v -> mqtt3AsyncClient2.connect())
