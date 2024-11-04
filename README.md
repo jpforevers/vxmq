@@ -1,3 +1,5 @@
+![Project Logo](./color_logo.png)
+
 # VXMQ
 
 VXMQ is a high performance MQTT Broker - Tailored for Modern IoT Needs.
