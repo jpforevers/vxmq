@@ -30,9 +30,9 @@ import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
 
 import javax.cache.Cache;
-import javax.cache.processor.EntryProcessorException;
-import javax.cache.processor.MutableEntry;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class IgniteSessionService implements SessionService {
 
@@ -61,34 +61,51 @@ public class IgniteSessionService implements SessionService {
   }
 
   @Override
+  public Uni<Map<Session.Field, Object>> getSessionByFields(String clientId, Session.Field[] fields) {
+    BinaryObject binaryObject = sessionCache.<String, BinaryObject>withKeepBinary().get(clientId);
+    if (binaryObject == null) {
+      return Uni.createFrom().item(Map.of());
+    } else {
+      Map<Session.Field, Object> result = new HashMap<>(fields.length);
+      for (Session.Field field : fields) {
+        Object value = binaryObject.field(field.name());
+        result.put(field, value);
+      }
+      return Uni.createFrom().item(result);
+    }
+  }
+
+  @Override
   public Uni<Void> saveOrUpdateSession(Session session) {
     sessionCache.put(session.getClientId(), session);
     return Uni.createFrom().voidItem();
   }
 
   @Override
+  public Uni<Void> updateSessionByFields(String clientId, Map<Session.Field, Object> fields) {
+    sessionCache.<String, BinaryObject>withKeepBinary()
+      .invoke(clientId, (CacheEntryProcessor<String, BinaryObject, Object>) (entry, arguments) -> {
+        BinaryObjectBuilder binaryObjectBuilder = entry.getValue().toBuilder();
+        for (Map.Entry<Session.Field, Object> fieldObjectEntry : fields.entrySet()) {
+          Session.Field field = fieldObjectEntry.getKey();
+          Object value = fieldObjectEntry.getValue();
+          binaryObjectBuilder.setField(field.name(), value);
+        }
+        entry.setValue(binaryObjectBuilder.build());
+        return null;
+      });
+    return Uni.createFrom().voidItem();
+  }
+
+  @Override
   public Uni<Void> updateLatestUpdatedTime(String clientId, long time) {
     sessionCache.<String, BinaryObject>withKeepBinary()
-        .invoke(clientId, new CacheEntryProcessor<String, BinaryObject, Object>() {
-          @Override
-          public Object process(MutableEntry<String, BinaryObject> entry, Object... arguments) throws EntryProcessorException {
-            BinaryObjectBuilder binaryObjectBuilder = entry.getValue().toBuilder();
-            binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_UPDATED_TIME, time);
-            entry.setValue(binaryObjectBuilder.build());
-            return null;
-          }
+        .invoke(clientId, (CacheEntryProcessor<String, BinaryObject, Object>) (entry, arguments) -> {
+          BinaryObjectBuilder binaryObjectBuilder = entry.getValue().toBuilder();
+          binaryObjectBuilder.setField(ModelConstants.FIELD_NAME_UPDATED_TIME, time);
+          entry.setValue(binaryObjectBuilder.build());
+          return null;
         });
-
-    // 将上面的匿名类写法改成下面的lambda写法会报错，可能和java 17有关
-    // java.lang.UnsupportedOperationException: can't get field offset on a hidden class: private final long io.github.jpforevers.vxmq.service.session.IgniteSessionService$$Lambda$1745/0x0000000801254fb0.arg$1
-//    sessionCache.
-//      <String, BinaryObject>withKeepBinary()
-//      .invoke(clientId, (CacheEntryProcessor<String, BinaryObject, Object>) (entry, arguments) -> {
-//        BinaryObjectBuilder binaryObjectBuilder = entry.getValue().toBuilder();
-//        binaryObjectBuilder.setField(ModelConstants.FIELD_UPDATED_TIME, time);
-//        entry.setValue(binaryObjectBuilder.build());
-//        return null;
-//      });
     return Uni.createFrom().voidItem();
   }
 
