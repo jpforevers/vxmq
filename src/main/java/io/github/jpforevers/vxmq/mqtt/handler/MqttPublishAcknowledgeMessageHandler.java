@@ -25,6 +25,7 @@ import io.github.jpforevers.vxmq.event.EventService;
 import io.github.jpforevers.vxmq.event.mqtt.MqttPublishOutboundAckedEvent;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos1Pub;
+import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
@@ -68,8 +69,8 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("PUBACK from {}: {}", mqttEndpoint.clientIdentifier(), pubAckInfo(mqttPubAckMessage));
     }
-    sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.getAndRemoveOutboundQos1Pub(session.getSessionId(), mqttPubAckMessage.messageId()))
+    sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId})
+      .onItem().transformToUni(sessionFields -> msgService.getAndRemoveOutboundQos1Pub((String) sessionFields.get(Session.Field.sessionId), mqttPubAckMessage.messageId()))
       .onItem().transformToUni(outboundQos1Pub -> {
         if (outboundQos1Pub == null) {
           LOGGER.warn("PUBACK from {} with messageId {} without having related PUBLISH packet", mqttEndpoint.clientIdentifier(), mqttPubAckMessage.messageId());

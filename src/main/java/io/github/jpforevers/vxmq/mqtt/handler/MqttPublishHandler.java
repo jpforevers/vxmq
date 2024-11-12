@@ -18,14 +18,14 @@
 package io.github.jpforevers.vxmq.mqtt.handler;
 
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
+import io.github.jpforevers.vxmq.assist.MqttPropertiesUtil;
+import io.github.jpforevers.vxmq.assist.TopicUtil;
 import io.github.jpforevers.vxmq.assist.VertxUtil;
 import io.github.jpforevers.vxmq.event.Event;
 import io.github.jpforevers.vxmq.event.EventService;
 import io.github.jpforevers.vxmq.event.mqtt.MqttPublishInboundAcceptedEvent;
-import io.github.jpforevers.vxmq.assist.MqttPropertiesUtil;
-import io.github.jpforevers.vxmq.assist.TopicUtil;
-import io.github.jpforevers.vxmq.service.composite.CompositeService;
 import io.github.jpforevers.vxmq.mqtt.exception.MqttPublishException;
+import io.github.jpforevers.vxmq.service.composite.CompositeService;
 import io.github.jpforevers.vxmq.service.msg.InboundQos2Pub;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgToTopic;
@@ -81,7 +81,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
 
   @Override
   public void accept(MqttPublishMessage mqttPublishMessage) {
-    if (LOGGER.isDebugEnabled()){
+    if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("PUBLISH from {}: {}", mqttEndpoint.clientIdentifier(), publicationInfo(mqttPublishMessage));
     }
 
@@ -97,11 +97,11 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> checkTopic(mqttPublishMessage))
       .onItem().transformToUni(v -> authorize(mqttPublishMessage))
-      .onItem().transformToUni(v -> handleQos(mqttPublishMessage))
-      .onItem().call(v -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-        .onItem().transformToUni(session -> publishEvent(session, mqttPublishMessage)))
+      .onItem().transformToUni(v -> sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId}))
+      .onItem().call(sessionFields -> handleQos(mqttPublishMessage, (String) sessionFields.get(Session.Field.sessionId)))
+      .onItem().call(sessionFields -> publishEvent((String) sessionFields.get(Session.Field.sessionId), mqttPublishMessage))
       .subscribe().with(v -> {
-        if (LOGGER.isDebugEnabled()){
+        if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("PUBLISH from {} to {} accepted", mqttEndpoint.clientIdentifier(), mqttPublishMessage.topicName());
         }
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -151,7 +151,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
             switch (mqttPublishMessage.qosLevel()) {
               case AT_MOST_ONCE:
                 break;
-              case AT_LEAST_ONCE:{
+              case AT_LEAST_ONCE: {
                 // If the value of Request Problem Information is 0, the Server MAY return a Reason String or User Properties on a CONNACK or DISCONNECT packet, but MUST NOT send a Reason String or User Properties on any packet other than PUBLISH, CONNACK, or DISCONNECT [MQTT-3.1.2-29]
                 if (requestProblemInformation == null || requestProblemInformation == 1) {
                   pubAckProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
@@ -233,15 +233,16 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
    * Handle QoS.
    *
    * @param mqttPublishMessage mqttPublishMessage
+   * @param sessionId          sessionId
    * @return Void
    */
-  private Uni<Void> handleQos(MqttPublishMessage mqttPublishMessage) {
+  private Uni<Void> handleQos(MqttPublishMessage mqttPublishMessage, String sessionId) {
     return switch (mqttPublishMessage.qosLevel()) {
       case AT_MOST_ONCE, AT_LEAST_ONCE ->
         // Nothing need to do.
         Uni.createFrom().voidItem();
-      case EXACTLY_ONCE -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-        .onItem().transformToUni(session -> {
+      case EXACTLY_ONCE -> Uni.createFrom().voidItem()
+        .onItem().transformToUni(v -> {
           Integer messageExpiryInterval = null;
           Integer payloadFormatIndicator = null;
           String responseTopic = null;
@@ -259,7 +260,7 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
             topicAlias = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.TOPIC_ALIAS, MqttProperties.IntegerProperty.class);
             userProperties = MqttPropertiesUtil.getValues(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.USER_PROPERTY, MqttProperties.UserProperty.class);
           }
-          InboundQos2Pub inboundQos2Pub = new InboundQos2Pub(session.getSessionId(), mqttEndpoint.clientIdentifier(),
+          InboundQos2Pub inboundQos2Pub = new InboundQos2Pub(sessionId, mqttEndpoint.clientIdentifier(),
             mqttPublishMessage.messageId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
             mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain(),
             messageExpiryInterval, payloadFormatIndicator, contentType,
@@ -271,11 +272,11 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     };
   }
 
-  private Uni<Void> publishEvent(Session session, MqttPublishMessage mqttPublishMessage){
+  private Uni<Void> publishEvent(String sessionId, MqttPublishMessage mqttPublishMessage) {
     Event event = new MqttPublishInboundAcceptedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-      mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
+      mqttEndpoint.clientIdentifier(), sessionId, mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
       mqttPublishMessage.messageId(), mqttPublishMessage.payload().getDelegate(), mqttPublishMessage.isDup(), mqttPublishMessage.isRetain());
-    if (LOGGER.isDebugEnabled()){
+    if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("Publishing event: {}, ", event.toJson());
     }
     return eventService.publishEvent(event);

@@ -91,10 +91,10 @@ public class DefaultCompositeService implements CompositeService {
   @Override
   public Uni<Void> clearSessionData(String clientId) {
     return Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> sessionService.getSession(clientId))
-      .onItem().ifNotNull().transformToUni(session -> Uni.createFrom().voidItem()
-        .onItem().transformToUni(v -> msgService.clearMsgs(session.getSessionId()))
-        .onItem().transformToUni(v -> subService.clearSubs(session.getSessionId()))
+      .onItem().transformToUni(v -> sessionService.getSessionByFields(clientId, new Session.Field[]{Session.Field.sessionId}))
+      .onItem().ifNotNull().transformToUni(sessionFields -> Uni.createFrom().voidItem()
+        .onItem().transformToUni(v -> msgService.clearMsgs((String) sessionFields.get(Session.Field.sessionId)))
+        .onItem().transformToUni(v -> subService.clearSubs((String) sessionFields.get(Session.Field.sessionId)))
         .onItem().transformToUni(v -> sessionService.removeSession(clientId)));
   }
 

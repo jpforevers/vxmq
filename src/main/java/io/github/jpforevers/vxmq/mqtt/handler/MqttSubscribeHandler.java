@@ -120,8 +120,8 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
             LOGGER.debug("SUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicSubscription.topicName());
           }
         })
-        .onItem().call(() -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-          .onItem().transformToUni(session -> publishEvent(session, topicSubscription)))
+        .onItem().call(() -> sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId})
+          .onItem().transformToUni(sessionFields -> publishEvent((String) sessionFields.get(Session.Field.sessionId), topicSubscription)))
         .onFailure().invoke(t -> {
           LOGGER.error("Error occurred when processing SUBSCRIBE from " + mqttEndpoint.clientIdentifier() + " to " + topicSubscription.topicName(), t);
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -216,29 +216,30 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
    * @return If subscription already exist.
    */
   private Uni<Boolean> saveSub(String clientId, String topicFilter, int qos, MqttProperties subProperties, MqttSubscriptionOption subscriptionOption) {
-    return sessionService.getSession(clientId).onItem().transformToUni(session -> {
-      String shareName = null;
-      String realTopic = topicFilter;
-      if (TopicUtil.isSharedSubscriptionTopic(topicFilter)) {
-        shareName = TopicUtil.getShareNameFromSharedSubTopicFilter(topicFilter);
-        realTopic = TopicUtil.getRealTopicFromSharedSubTopicFilter(topicFilter);
-      }
-      Subscription subscription;
-      if (session != null) {
-        if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
-          subscription = new Subscription().setSessionId(session.getSessionId()).setClientId(clientId).setTopicFilter(realTopic).setQos(qos)
-            .setShareName(shareName).setCreatedTime(Instant.now().toEpochMilli());
-        } else {
-          Integer subscriptionIdentifier = MqttPropertiesUtil.getValue(subProperties, MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER, MqttProperties.IntegerProperty.class);
-          subscription = new Subscription().setSessionId(session.getSessionId()).setClientId(clientId).setTopicFilter(realTopic).setQos(qos)
-            .setNoLocal(subscriptionOption.isNoLocal()).setRetainAsPublished(subscriptionOption.isRetainAsPublished()).setRetainHandling(subscriptionOption.retainHandling().value())
-            .setSubscriptionIdentifier(subscriptionIdentifier).setShareName(shareName).setCreatedTime(Instant.now().toEpochMilli());
+    return sessionService.getSessionByFields(clientId, new Session.Field[]{Session.Field.sessionId})
+      .onItem().transformToUni(sessionFields -> {
+        String shareName = null;
+        String realTopic = topicFilter;
+        if (TopicUtil.isSharedSubscriptionTopic(topicFilter)) {
+          shareName = TopicUtil.getShareNameFromSharedSubTopicFilter(topicFilter);
+          realTopic = TopicUtil.getRealTopicFromSharedSubTopicFilter(topicFilter);
         }
-        return subService.saveOrUpdateSub(subscription);
-      } else {
-        return Uni.createFrom().failure(new MqttSubscribeException(MqttSubAckReasonCode.UNSPECIFIED_ERROR));
-      }
-    });
+        Subscription subscription;
+        if (sessionFields.size() != 0) {
+          if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
+            subscription = new Subscription().setSessionId((String) sessionFields.get(Session.Field.sessionId)).setClientId(clientId).setTopicFilter(realTopic).setQos(qos)
+              .setShareName(shareName).setCreatedTime(Instant.now().toEpochMilli());
+          } else {
+            Integer subscriptionIdentifier = MqttPropertiesUtil.getValue(subProperties, MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER, MqttProperties.IntegerProperty.class);
+            subscription = new Subscription().setSessionId((String) sessionFields.get(Session.Field.sessionId)).setClientId(clientId).setTopicFilter(realTopic).setQos(qos)
+              .setNoLocal(subscriptionOption.isNoLocal()).setRetainAsPublished(subscriptionOption.isRetainAsPublished()).setRetainHandling(subscriptionOption.retainHandling().value())
+              .setSubscriptionIdentifier(subscriptionIdentifier).setShareName(shareName).setCreatedTime(Instant.now().toEpochMilli());
+          }
+          return subService.saveOrUpdateSub(subscription);
+        } else {
+          return Uni.createFrom().failure(new MqttSubscribeException(MqttSubAckReasonCode.UNSPECIFIED_ERROR));
+        }
+      });
   }
 
   /**
@@ -290,9 +291,9 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
     }
   }
 
-  private Uni<Void> publishEvent(Session session, MqttTopicSubscription topicSubscription){
+  private Uni<Void> publishEvent(String sessionId, MqttTopicSubscription topicSubscription){
     Event event = new MqttSubscribedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-      mqttEndpoint.clientIdentifier(), session.getSessionId(), topicSubscription.topicName(), topicSubscription.qualityOfService().value());
+      mqttEndpoint.clientIdentifier(), sessionId, topicSubscription.topicName(), topicSubscription.qualityOfService().value());
     if (LOGGER.isDebugEnabled()){
       LOGGER.debug("Publishing event: {}, ", event.toJson());
     }

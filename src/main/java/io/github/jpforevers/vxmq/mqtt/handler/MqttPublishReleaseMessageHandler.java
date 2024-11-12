@@ -22,6 +22,7 @@ import io.github.jpforevers.vxmq.assist.MqttPropertiesUtil;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgToTopic;
+import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
@@ -71,8 +72,8 @@ public class MqttPublishReleaseMessageHandler implements Consumer<MqttPubRelMess
     }
 
     MqttProperties pubCompProperties = new MqttProperties();
-    sessionService.getSession(clientId)
-      .onItem().transformToUni(session -> msgService.getAndRemoveInboundQos2Pub(session.getSessionId(), mqttPubRelMessage.messageId()))
+    sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId})
+      .onItem().transformToUni(sessionFields -> msgService.getAndRemoveInboundQos2Pub((String) sessionFields.get(Session.Field.sessionId), mqttPubRelMessage.messageId()))
       .onItem().transformToUni(inboundQos2Pub -> {
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
           if (inboundQos2Pub == null) {

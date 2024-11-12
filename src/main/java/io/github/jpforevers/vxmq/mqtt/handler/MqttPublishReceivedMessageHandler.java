@@ -26,6 +26,7 @@ import io.github.jpforevers.vxmq.event.mqtt.MqttPublishOutboundAckedEvent;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos2Pub;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos2Rel;
+import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.netty.handler.codec.mqtt.MqttVersion;
@@ -77,8 +78,8 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
       LOGGER.debug("PUBREC from {}: {}", mqttEndpoint.clientIdentifier(), pubRecInfo(mqttPubRecMessage));
     }
     MqttProperties pubRelProperties = new MqttProperties();
-    sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.getAndRemoveOutboundQos2Pub(session.getSessionId(), mqttPubRecMessage.messageId())
+    sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId})
+      .onItem().transformToUni(sessionFields -> msgService.getAndRemoveOutboundQos2Pub((String) sessionFields.get(Session.Field.sessionId), mqttPubRecMessage.messageId())
         .onItem().transformToUni(outboundQos2Pub -> {
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
             if (outboundQos2Pub == null) {
@@ -102,7 +103,7 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
               }
             });
         })
-        .onItem().transformToUni(v -> msgService.saveOutboundQos2Rel(new OutboundQos2Rel(session.getSessionId(), mqttEndpoint.clientIdentifier(), mqttPubRecMessage.messageId(), Instant.now().toEpochMilli()))))
+        .onItem().transformToUni(v -> msgService.saveOutboundQos2Rel(new OutboundQos2Rel((String) sessionFields.get(Session.Field.sessionId), mqttEndpoint.clientIdentifier(), mqttPubRecMessage.messageId(), Instant.now().toEpochMilli()))))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing PUBREC from {}", mqttEndpoint.clientIdentifier(), t));
   }
 

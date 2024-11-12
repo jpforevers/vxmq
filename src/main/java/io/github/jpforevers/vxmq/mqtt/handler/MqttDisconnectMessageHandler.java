@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -65,11 +66,11 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
     if (LOGGER.isDebugEnabled()){
       LOGGER.debug("DISCONNECT from {}: {}", mqttEndpoint.clientIdentifier(), disconnectInfo(mqttDisconnectMessage));
     }
-    sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().call(session -> handleWill(session.getProtocolLevel(), session.getSessionId(), mqttDisconnectMessage.code()))
-      .onItem().call(session -> processSessionExpiryInterval(mqttDisconnectMessage, session))
+    sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId, Session.Field.protocolLevel, Session.Field.sessionExpiryInterval})
+      .onItem().call(sessionFields -> handleWill((int) sessionFields.get(Session.Field.protocolLevel), (String) sessionFields.get(Session.Field.sessionId), mqttDisconnectMessage.code()))
+      .onItem().call(sessionFields -> processSessionExpiryInterval(mqttDisconnectMessage, (int) sessionFields.get(Session.Field.protocolLevel), (Integer) sessionFields.get(Session.Field.sessionExpiryInterval)))
       // Publish EVENT_MQTT_DISCONNECTED_EVENT
-      .onItem().call(session -> publishEvent(mqttEndpoint, session, mqttDisconnectMessage))
+      .onItem().call(sessionFields -> publishEvent(mqttEndpoint, (String) sessionFields.get(Session.Field.sessionId), mqttDisconnectMessage))
       .subscribe().with(v -> {
         if (LOGGER.isDebugEnabled()){
           LOGGER.debug("Mqtt client {} disconnected", mqttEndpoint.clientIdentifier());
@@ -98,19 +99,18 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
   /**
    * <a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901211">Session expiry in DISCONNECT in MQTT5 specification</a>
    */
-  private Uni<Void> processSessionExpiryInterval(MqttDisconnectMessage mqttDisconnectMessage, Session session) {
-    if (session.getProtocolLevel() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
+  private Uni<Void> processSessionExpiryInterval(MqttDisconnectMessage mqttDisconnectMessage, int protocolLevel, Integer sessionExpiryInterval) {
+    if (protocolLevel <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
       return Uni.createFrom().voidItem();
     } else {
-      MqttProperties.MqttProperty sessionExpiryIntervalProperty = mqttDisconnectMessage.properties().getProperty(MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL.value());
-      Integer sessionExpiryInterval = sessionExpiryIntervalProperty == null ? null : (Integer) sessionExpiryIntervalProperty.value();
-      if (session.getSessionExpiryInterval() != null && session.getSessionExpiryInterval() == 0 && sessionExpiryInterval != null && sessionExpiryInterval != 0) {
+      Integer disconnectSessionExpiryInterval = MqttPropertiesUtil.getValue(mqttDisconnectMessage.properties(), MqttProperties.MqttPropertyType.SESSION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
+      if (sessionExpiryInterval != null && sessionExpiryInterval == 0 && disconnectSessionExpiryInterval != null && disconnectSessionExpiryInterval != 0) {
         // From MQTT 5 specification: If the Session Expiry Interval in the CONNECT packet was zero, then it is a Protocol Error to set a non-zero Session Expiry Interval in the DISCONNECT packet sent by the Client
         return Uni.createFrom().voidItem();
       } else {
-        if (sessionExpiryInterval != null) {
-          session.setSessionExpiryInterval(sessionExpiryInterval);
-          return sessionService.saveOrUpdateSession(session);
+        if (disconnectSessionExpiryInterval != null) {
+          Map<Session.Field, Object> fieldsToUpdate = Map.of(Session.Field.sessionExpiryInterval, disconnectSessionExpiryInterval);
+          return sessionService.updateSessionByFields(mqttEndpoint.clientIdentifier(), fieldsToUpdate);
         } else {
           return Uni.createFrom().voidItem();
         }
@@ -118,9 +118,9 @@ public class MqttDisconnectMessageHandler implements Consumer<MqttDisconnectMess
     }
   }
 
-  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint, Session session, MqttDisconnectMessage mqttDisconnectMessage){
+  private Uni<Void> publishEvent(MqttEndpoint mqttEndpoint, String sessionId, MqttDisconnectMessage mqttDisconnectMessage){
     Event event = new MqttDisconnectedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-      mqttEndpoint.clientIdentifier(), session.getSessionId(), mqttDisconnectMessage.code());
+      mqttEndpoint.clientIdentifier(), sessionId, mqttDisconnectMessage.code());
     if (LOGGER.isDebugEnabled()){
       LOGGER.debug("Publishing event: {}, ", event.toJson());
     }

@@ -4,6 +4,7 @@ import io.github.jpforevers.vxmq.assist.Config;
 import io.github.jpforevers.vxmq.service.client.ClientService;
 import io.github.jpforevers.vxmq.service.client.DisconnectRequest;
 import io.github.jpforevers.vxmq.service.msg.MsgToTopic;
+import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.netty.handler.codec.mqtt.MqttProperties;
 import io.smallrye.mutiny.Uni;
@@ -60,19 +61,19 @@ public class InboundTopicAliasService {
             return Uni.createFrom().voidItem();
           } else {
             // topic alias mapped not exist, close connection with 0x82
-            return sessionService.getSession(msgToTopic.getClientId())
-              .onItem().transformToUni(session -> {
+            return sessionService.getSessionByFields(msgToTopic.getClientId(), new Session.Field[]{Session.Field.verticleId})
+              .onItem().transformToUni(sessionFields -> {
                 DisconnectRequest disconnectRequest = new DisconnectRequest(MqttDisconnectReasonCode.PROTOCOL_ERROR, MqttProperties.NO_PROPERTIES);
-                return clientService.disconnect(session.getVerticleId(), disconnectRequest);
+                return clientService.disconnect((String) sessionFields.get(Session.Field.verticleId), disconnectRequest);
               });
           }
         }
       } else {
         // topic alias invalid, close connection with 0x94
-        return sessionService.getSession(msgToTopic.getClientId())
-          .onItem().transformToUni(session -> {
+        return sessionService.getSessionByFields(msgToTopic.getClientId(), new Session.Field[]{Session.Field.verticleId})
+          .onItem().transformToUni(sessionFields -> {
             DisconnectRequest disconnectRequest = new DisconnectRequest(MqttDisconnectReasonCode.TOPIC_ALIAS_INVALID, MqttProperties.NO_PROPERTIES);
-            return clientService.disconnect(session.getVerticleId(), disconnectRequest);
+            return clientService.disconnect((String) sessionFields.get(Session.Field.verticleId), disconnectRequest);
           });
       }
     } else {
