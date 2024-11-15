@@ -21,13 +21,18 @@ import io.github.jpforevers.vxmq.assist.Nullable;
 import io.smallrye.mutiny.Uni;
 
 import java.util.List;
+import java.util.Map;
 
 public interface SessionService {
 
   @Nullable
   Uni<Session> getSession(String clientId);
 
+  Uni<Map<Session.Field, Object>> getSessionByFields(String clientId, Session.Field[] fields);
+
   Uni<Void> saveOrUpdateSession(Session session);
+
+  Uni<Void> updateSessionByFields(String clientId, Map<Session.Field, Object> fields);
 
   Uni<Void> updateLatestUpdatedTime(String clientId, long time);
 

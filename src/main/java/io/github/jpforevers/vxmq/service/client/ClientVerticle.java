@@ -24,6 +24,7 @@ import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgToClient;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos1Pub;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos2Pub;
+import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.micrometer.core.instrument.Counter;
 import io.netty.handler.codec.mqtt.MqttProperties;
@@ -111,12 +112,12 @@ public class ClientVerticle extends AbstractVerticle {
         Integer topicAliasMax = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.TOPIC_ALIAS_MAXIMUM, MqttProperties.IntegerProperty.class);
         return outboundTopicAliasService.processTopicAlias(msgToClient, mqttEndpoint.clientIdentifier(), topicAliasMax);
       })
-      .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
-      .onItem().transformToUni(session -> {
+      .onItem().transformToUni(v -> sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId, Session.Field.clientId}))
+      .onItem().transformToUni(sessionFields -> {
         MqttQoS mqttQoS = MqttQoS.valueOf(msgToClient.getQos());
         return switch (mqttQoS) {
           case AT_LEAST_ONCE ->
-            msgService.saveOutboundQos1Pub(new OutboundQos1Pub(session.getSessionId(), session.getClientId(),
+            msgService.saveOutboundQos1Pub(new OutboundQos1Pub((String) sessionFields.get(Session.Field.sessionId), (String) sessionFields.get(Session.Field.clientId),
               messageId, msgToClient.getTopic(), msgToClient.getQos(), msgToClient.getPayload(),
               msgToClient.isDup(), msgToClient.isRetain(),
               msgToClient.getMessageExpiryInterval(), msgToClient.getPayloadFormatIndicator(),
@@ -124,7 +125,7 @@ public class ClientVerticle extends AbstractVerticle {
               msgToClient.getSubscriptionIdentifier(), msgToClient.getTopicAlias(), msgToClient.getUserProperties(),
               Instant.now().toEpochMilli()));
           case EXACTLY_ONCE ->
-            msgService.saveOutboundQos2Pub(new OutboundQos2Pub(session.getSessionId(), session.getClientId(),
+            msgService.saveOutboundQos2Pub(new OutboundQos2Pub((String) sessionFields.get(Session.Field.sessionId), (String) sessionFields.get(Session.Field.clientId),
               messageId, msgToClient.getTopic(), msgToClient.getQos(), msgToClient.getPayload(),
               msgToClient.isDup(), msgToClient.isRetain(),
               msgToClient.getMessageExpiryInterval(), msgToClient.getPayloadFormatIndicator(),

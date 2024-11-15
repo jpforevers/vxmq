@@ -93,8 +93,8 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
       return Uni.createFrom().voidItem()
         .onItem().transformToUni(v -> checkTopicFilter(topicUnSub))
         .onItem().transformToUni(v -> authorize(mqttEndpoint.clientIdentifier(), topicUnSub))
-        .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
-        .onItem().transformToUni(session -> removeSub(session.getSessionId(), topicUnSub))
+        .onItem().transformToUni(v -> sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId}))
+        .onItem().call(sessionFields -> removeSub((String) sessionFields.get(Session.Field.sessionId), topicUnSub))
         .onItem().invoke(() -> {
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
             // http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/errata01/os/mqtt-v3.1.1-errata01-os-complete.html#_Toc442180893
@@ -106,8 +106,7 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
             LOGGER.debug("UNSUBSCRIBE from {} to {} accepted", mqttEndpoint.clientIdentifier(), topicUnSub);
           }
         })
-        .onItem().call(() -> sessionService.getSession(mqttEndpoint.clientIdentifier())
-          .onItem().transformToUni(session -> publishEvent(session, topicUnSub)))
+        .onItem().call(sessionFields -> publishEvent((String) sessionFields.get(Session.Field.sessionId), topicUnSub))
         .onFailure().invoke(t -> {
           LOGGER.error("Error occurred when processing UNSUBSCRIBE from {} to {}", mqttEndpoint.clientIdentifier(), topicUnSub, t);
           if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -189,9 +188,9 @@ public class MqttUnsubscribeHandler implements Consumer<MqttUnsubscribeMessage> 
       .onItem().transformToUni(absent -> absent ? Uni.createFrom().voidItem() : Uni.createFrom().failure(new MqttUnsubscribeException(MqttUnsubAckReasonCode.NO_SUBSCRIPTION_EXISTED)));
   }
 
-  private Uni<Void> publishEvent(Session session, String topicUnSub){
+  private Uni<Void> publishEvent(String sessionId, String topicUnSub){
     Event event = new MqttUnsubscribedEvent(Instant.now().toEpochMilli(), VertxUtil.getNodeId(vertx),
-      mqttEndpoint.clientIdentifier(), session.getSessionId(), topicUnSub);
+      mqttEndpoint.clientIdentifier(), sessionId, topicUnSub);
     if (LOGGER.isDebugEnabled()){
       LOGGER.debug("Publishing event: {}, ", event.toJson());
     }

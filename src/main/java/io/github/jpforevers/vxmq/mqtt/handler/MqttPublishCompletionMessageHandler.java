@@ -20,6 +20,7 @@ package io.github.jpforevers.vxmq.mqtt.handler;
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
 import io.github.jpforevers.vxmq.assist.MqttPropertiesUtil;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
+import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
@@ -61,8 +62,8 @@ public class MqttPublishCompletionMessageHandler implements Consumer<MqttPubComp
     if (LOGGER.isDebugEnabled()){
       LOGGER.debug("PUBCOMP from {}: {}", mqttEndpoint.clientIdentifier(), pubCompInfo(mqttPubCompMessage));
     }
-    sessionService.getSession(mqttEndpoint.clientIdentifier())
-      .onItem().transformToUni(session -> msgService.getAndRemoveOutboundQos2Rel(session.getSessionId(), mqttPubCompMessage.messageId()))
+    sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId})
+      .onItem().transformToUni(sessionFields -> msgService.getAndRemoveOutboundQos2Rel((String) sessionFields.get(Session.Field.sessionId), mqttPubCompMessage.messageId()))
       .onItem().transformToUni(outboundQos2Rel -> {
         if (outboundQos2Rel == null) {
           LOGGER.warn("PUBCOMP from {} without having related PUBREL packet", mqttEndpoint.clientIdentifier());

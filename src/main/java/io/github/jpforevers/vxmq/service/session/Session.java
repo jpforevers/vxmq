@@ -181,4 +181,10 @@ public class Session {
     this.updatedTime = updatedTime;
     return this;
   }
+
+  public enum Field {
+    sessionId, clientId, online, verticleId, nodeId, cleanSession,
+    keepAlive, protocolLevel, sessionExpiryInterval, createdTime, updatedTime
+  }
+
 }
