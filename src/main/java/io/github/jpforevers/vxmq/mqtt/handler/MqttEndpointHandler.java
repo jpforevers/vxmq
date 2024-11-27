@@ -142,8 +142,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       if (StringUtils.isBlank(clientIdOriginal)) {
         conAckMqttProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.ASSIGNED_CLIENT_IDENTIFIER.value(), mqttEndpoint.clientIdentifier()));
       }
-      // TODO When these MQTT 5 features implemented, change 0 to 1
-      conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER_AVAILABLE.value(), 0));
+      conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER_AVAILABLE.value(), 1));
       conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SHARED_SUBSCRIPTION_AVAILABLE.value(), 1));
       conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.TOPIC_ALIAS_MAXIMUM.value(), Config.getMqttTopicAliasMax()));
     }
