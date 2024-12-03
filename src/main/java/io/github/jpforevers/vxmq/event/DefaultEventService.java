@@ -48,6 +48,16 @@ public class DefaultEventService implements EventService {
 
   private DefaultEventService(Vertx vertx) {
     this.vertx = vertx;
+
+    // I found a huge performance difference between version 1.6.0 and versions after 1.7.0:
+    // On my work computer, version 1.6.0 can run smoothly under 40000 loads, with a memory usage of 1.5G and a CPU usage of 300%, while versions after 1.7.0 are not, after a certain period of time, the memory will be exhausted and the CPU will rise to 800%.
+    // After careful verification, I found that it was caused by the deletion of the following code(commit is: https://github.com/jpforevers/vxmq/commit/5ce841078cfbd78e8c6d0642d184ec388cc93495).
+    // I have submitted a comment in the related issue of Vert.x: https://github.com/eclipse-vertx/vert.x/issues/5257#issuecomment-2513917472.
+    // Before Vert.x resolving this issue, restore the following code.
+    for (EventType eventType : EventType.values()) {
+      vertx.eventBus().<JsonObject>consumer(eventType.getEbAddress(), message -> LOGGER.trace("Event {} received, nothing need to do", message.body()));
+    }
+
   }
 
   @Override
