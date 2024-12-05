@@ -19,6 +19,8 @@ package io.github.jpforevers.vxmq.event;
 
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.ReplyException;
+import io.vertx.core.eventbus.ReplyFailure;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.eventbus.MessageConsumer;
@@ -64,8 +66,8 @@ public class DefaultEventService implements EventService {
   public Uni<Void> publishEvent(Event event) {
     DeliveryOptions deliveryOptions = new DeliveryOptions();
     deliveryOptions.setLocalOnly(event.isLocal());
-    vertx.eventBus().publish(event.getEventType().getEbAddress(), event.toJson(), deliveryOptions);
-    return Uni.createFrom().voidItem();
+    return vertx.eventBus().publisher(event.getEventType().getEbAddress(), deliveryOptions).write(event.toJson())
+      .onFailure().recoverWithUni(t -> t instanceof ReplyException && ReplyFailure.NO_HANDLERS.equals(((ReplyException)t).failureType()) ? Uni.createFrom().voidItem() : Uni.createFrom().failure(t));
   }
 
   @Override
