@@ -23,6 +23,7 @@ import org.apache.ignite.cache.affinity.AffinityKeyMapped;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+
 public class OutboundQos2PubKey implements Comparable<OutboundQos2PubKey> {
 
   @AffinityKeyMapped

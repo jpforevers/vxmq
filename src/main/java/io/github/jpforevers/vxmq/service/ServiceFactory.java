@@ -52,7 +52,6 @@ public class ServiceFactory {
   }
 
   public static MsgService msgService(Vertx vertx) {
-//    return IgniteMsgService.getSingleton(vertx);
     return IgniteAndMapMsgService.getSingleton(vertx);
   }
 
