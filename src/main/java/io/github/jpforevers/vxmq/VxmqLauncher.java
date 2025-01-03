@@ -26,6 +26,7 @@ import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
@@ -81,7 +82,11 @@ public class VxmqLauncher {
   private Uni<Void> initVertx() {
     TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
     TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
-    tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(), ",")).toList());
+    Config.getIgniteDiscoveryTcpMulticastPort().ifPresent(tcpDiscoveryMulticastIpFinder::setMulticastPort);
+    Config.getIgniteDiscoveryTcpMulticastGroup().ifPresent(tcpDiscoveryMulticastIpFinder::setMulticastGroup);
+    Config.getIgniteDiscoveryTcpAddresses().map(s -> Arrays.stream(StringUtils.split(s, ",")).toList()).ifPresent(tcpDiscoveryMulticastIpFinder::setAddresses);
+
+    Config.getIgniteDiscoveryTcpAddress().ifPresent(tcpDiscoverySpi::setLocalAddress);
     tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort());
     tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
 
@@ -120,6 +125,12 @@ public class VxmqLauncher {
       micrometerMetricsOptions.setPrometheusOptions(vertxPrometheusOptions);
       vertxOptions.setMetricsOptions(micrometerMetricsOptions);
     }
+    EventBusOptions eventBusOptions = new EventBusOptions();
+    Config.getVertxEventbusHost().ifPresent(eventBusOptions::setHost);
+    eventBusOptions.setPort(Config.getVertxEventbusPort());
+    Config.getVertxEventbusPublicHost().ifPresent(eventBusOptions::setClusterPublicHost);
+    eventBusOptions.setClusterPublicPort(Config.getVertxEventbusPublicPort());
+    vertxOptions.setEventBusOptions(eventBusOptions);
     return vertxOptions;
   }
 

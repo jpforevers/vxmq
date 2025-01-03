@@ -14,6 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 vxmq:
+  vertx:
+    eventbus:
+      host:
+      port: 52014
+      public-host:
+      public-port: 52014
   rule:
     static:
       ReadMqttPublishFromKafka:
@@ -30,8 +36,13 @@ vxmq:
     backups: 0
     discovery:
       tcp:
-        addresses: localhost:47500
+        address:
         port: 47500
+        addresses:
+        multicast:
+          port:
+          group:
+
   session:
     # Max offline message amount, 0 for no limit.
     queued-message:
