@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class VxmqLauncher {
 
@@ -95,15 +96,14 @@ public class VxmqLauncher {
         Config.getIgniteDiscoveryTcpIpFinderMulticastAddresses().map(s -> Arrays.stream(StringUtils.split(s, ",")).toList()).ifPresent(addresses -> ((TcpDiscoveryMulticastIpFinder) tcpDiscoveryIpFinder).setAddresses(addresses));
       }
       case kubernetes -> {
-        tcpDiscoveryIpFinder = new TcpDiscoveryKubernetesIpFinder();
         KubernetesConnectionConfiguration kubernetesConnectionConfiguration = new KubernetesConnectionConfiguration();
         kubernetesConnectionConfiguration.setDiscoveryPort(Config.getIgniteDiscoveryTcpPort());
         Config.getIgniteDiscoveryTcpIpFinderKubernetesNamespace().ifPresent(kubernetesConnectionConfiguration::setNamespace);
         Config.getIgniteDiscoveryTcpIpFinderKubernetesServicename().ifPresent(kubernetesConnectionConfiguration::setServiceName);
+        tcpDiscoveryIpFinder = new TcpDiscoveryKubernetesIpFinder(kubernetesConnectionConfiguration);
       }
-      default -> throw new IllegalArgumentException("Unsupported ignite discovery tpc ip finder type: " + igniteTcpDiscoveryIpFinderType);
+      default -> throw new IllegalArgumentException("Unsupported ignite discovery tcp ip finder type: " + igniteTcpDiscoveryIpFinderType);
     }
-
 
     Config.getIgniteDiscoveryTcpAddress().ifPresent(tcpDiscoverySpi::setLocalAddress);
     tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort());
