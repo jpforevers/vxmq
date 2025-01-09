@@ -38,11 +38,15 @@ vxmq:
       tcp:
         address:
         port: 47500
-        addresses:
-        multicast:
-          port:
-          group:
-
+        ip-finder:
+          type: multicast
+          multicast:
+            port:
+            group:
+            addresses:
+          kubernetes:
+            namespace:
+            servicename:
   session:
     # Max offline message amount, 0 for no limit.
     queued-message:

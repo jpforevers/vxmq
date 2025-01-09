@@ -70,11 +70,22 @@ public class Config {
   public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT = "vxmq.ignite.discovery.tcp.port";
   public static final int DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT = TcpDiscoverySpi.DFLT_PORT;
 
-  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES = "vxmq.ignite.discovery.tcp.addresses";
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE = "vxmq.ignite.discovery.tcp.ip-finder.type";
+  public static final IgniteTcpDiscoveryIpFinderType DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE = IgniteTcpDiscoveryIpFinderType.multicast;
 
-  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_MULTICAST_PORT = "vxmq.ignite.discovery.tcp.multicast.port";
+  public enum IgniteTcpDiscoveryIpFinderType {
+    multicast, kubernetes
+  }
 
-  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_MULTICAST_GROUP = "vxmq.ignite.discovery.tcp.multicast.group";
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_PORT = "vxmq.ignite.discovery.tcp.ip-finder.multicast.port";
+
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_GROUP = "vxmq.ignite.discovery.tcp.ip-finder.multicast.group";
+
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_ADDRESSES = "vxmq.ignite.discovery.tcp.ip-finder.multicast.addresses";
+
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_NAMESPACE = "vxmq.ignite.discovery.tcp.ip-finder.kubernetes.namespace";
+
+  public static final String KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_SERVICENAME = "vxmq.ignite.discovery.tcp.ip-finder.kubernetes.servicename";
 
   public static final String KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE = "vxmq.rule.static.WriteMqttEventToMqtt.enable";
   public static final boolean DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE = false;
@@ -165,16 +176,28 @@ public class Config {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT);
   }
 
-  public static Optional<String> getIgniteDiscoveryTcpAddresses() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESSES, String.class);
+  public static IgniteTcpDiscoveryIpFinderType getIgniteDiscoveryTcpIpFinderType() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE, IgniteTcpDiscoveryIpFinderType.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE);
   }
 
-  public static Optional<Integer> getIgniteDiscoveryTcpMulticastPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_MULTICAST_PORT, Integer.class);
+  public static Optional<Integer> getIgniteDiscoveryTcpIpFinderMulticastPort() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_PORT, Integer.class);
   }
 
-  public static Optional<String> getIgniteDiscoveryTcpMulticastGroup() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_MULTICAST_GROUP, String.class);
+  public static Optional<String> getIgniteDiscoveryTcpIpFinderMulticastGroup() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_GROUP, String.class);
+  }
+
+  public static Optional<String> getIgniteDiscoveryTcpIpFinderMulticastAddresses() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_ADDRESSES, String.class);
+  }
+
+  public static Optional<String> getIgniteDiscoveryTcpIpFinderKubernetesNamespace() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_NAMESPACE, String.class);
+  }
+
+  public static Optional<String> getIgniteDiscoveryTcpIpFinderKubernetesServicename() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_SERVICENAME, String.class);
   }
 
   public static boolean getRuleStaticWriteMqttEventToMqttEnable() {

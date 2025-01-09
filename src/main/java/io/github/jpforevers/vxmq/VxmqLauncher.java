@@ -35,8 +35,11 @@ import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.ignite.IgniteClusterManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.kubernetes.configuration.KubernetesConnectionConfiguration;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.TcpDiscoveryIpFinder;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,14 +84,30 @@ public class VxmqLauncher {
 
   private Uni<Void> initVertx() {
     TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
-    TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
-    Config.getIgniteDiscoveryTcpMulticastPort().ifPresent(tcpDiscoveryMulticastIpFinder::setMulticastPort);
-    Config.getIgniteDiscoveryTcpMulticastGroup().ifPresent(tcpDiscoveryMulticastIpFinder::setMulticastGroup);
-    Config.getIgniteDiscoveryTcpAddresses().map(s -> Arrays.stream(StringUtils.split(s, ",")).toList()).ifPresent(tcpDiscoveryMulticastIpFinder::setAddresses);
+
+    TcpDiscoveryIpFinder tcpDiscoveryIpFinder;
+    Config.IgniteTcpDiscoveryIpFinderType igniteTcpDiscoveryIpFinderType = Config.getIgniteDiscoveryTcpIpFinderType();
+    switch (igniteTcpDiscoveryIpFinderType) {
+      case multicast -> {
+        tcpDiscoveryIpFinder = new TcpDiscoveryMulticastIpFinder();
+        Config.getIgniteDiscoveryTcpIpFinderMulticastPort().ifPresent(port -> ((TcpDiscoveryMulticastIpFinder) tcpDiscoveryIpFinder).setMulticastPort(port));
+        Config.getIgniteDiscoveryTcpIpFinderMulticastGroup().ifPresent(group -> ((TcpDiscoveryMulticastIpFinder) tcpDiscoveryIpFinder).setMulticastGroup(group));
+        Config.getIgniteDiscoveryTcpIpFinderMulticastAddresses().map(s -> Arrays.stream(StringUtils.split(s, ",")).toList()).ifPresent(addresses -> ((TcpDiscoveryMulticastIpFinder) tcpDiscoveryIpFinder).setAddresses(addresses));
+      }
+      case kubernetes -> {
+        tcpDiscoveryIpFinder = new TcpDiscoveryKubernetesIpFinder();
+        KubernetesConnectionConfiguration kubernetesConnectionConfiguration = new KubernetesConnectionConfiguration();
+        kubernetesConnectionConfiguration.setDiscoveryPort(Config.getIgniteDiscoveryTcpPort());
+        Config.getIgniteDiscoveryTcpIpFinderKubernetesNamespace().ifPresent(kubernetesConnectionConfiguration::setNamespace);
+        Config.getIgniteDiscoveryTcpIpFinderKubernetesServicename().ifPresent(kubernetesConnectionConfiguration::setServiceName);
+      }
+      default -> throw new IllegalArgumentException("Unsupported ignite discovery tpc ip finder type: " + igniteTcpDiscoveryIpFinderType);
+    }
+
 
     Config.getIgniteDiscoveryTcpAddress().ifPresent(tcpDiscoverySpi::setLocalAddress);
     tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort());
-    tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
+    tcpDiscoverySpi.setIpFinder(tcpDiscoveryIpFinder);
 
     IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
     igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);
