@@ -25,4 +25,21 @@ VXMQ built in Java, fully implementing all features of MQTT 5, specifically desi
 ```
 
 # Cluster
+## docker compose
 In the `src/main/docker` folder, there is an example file `docker-compose.yaml` for starting a local cluster through Docker Compose, just `cd` into and typing `docker compose up -d`
+
+## docker in different host
+
+Host1:
+
+```
+docker run -d --name vxmq --network host -e VXMQ_HTTP_SERVER_PORT=8060 -e VXMQ_MQTT_SERVER_PORT=1883 -e VXMQ_SHELL_SERVER_PORT=10022 -e VXMQ_IGNITE_DISCOVERY_TCP_PORT=47500 -e VXMQ_IGNITE_DISCOVERY_TCP_ADDRESS=192.168.16.197 -e VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_ADDRESSES='192.168.16.197:47500,192.168.16.249:47500' -e VXMQ_VERTX_EVENTBUS_HOST=192.168.16.197 -e VXMQ_VERTX_EVENTBUS_PORT=52014 jpforevers/vxmq:latest
+```
+
+Host2:
+
+```
+docker run -d --name vxmq --network host -e VXMQ_HTTP_SERVER_PORT=8060 -e VXMQ_MQTT_SERVER_PORT=1883 -e VXMQ_SHELL_SERVER_PORT=10022 -e VXMQ_IGNITE_DISCOVERY_TCP_PORT=47500 -e VXMQ_IGNITE_DISCOVERY_TCP_ADDRESS=192.168.16.249 -e VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_ADDRESSES='192.168.16.197:47500,192.168.16.249:47500' -e VXMQ_VERTX_EVENTBUS_HOST=192.168.16.249 -e VXMQ_VERTX_EVENTBUS_PORT=52014 jpforevers/vxmq:latest
+```
+
+## kubernetes

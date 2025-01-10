@@ -26,6 +26,7 @@ import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
@@ -34,14 +35,18 @@ import io.vertx.mutiny.core.Vertx;
 import io.vertx.spi.cluster.ignite.IgniteClusterManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.kubernetes.configuration.KubernetesConnectionConfiguration;
 import org.apache.ignite.logger.slf4j.Slf4jLogger;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.TcpDiscoveryIpFinder;
+import org.apache.ignite.spi.discovery.tcp.ipfinder.kubernetes.TcpDiscoveryKubernetesIpFinder;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class VxmqLauncher {
 
@@ -80,10 +85,29 @@ public class VxmqLauncher {
 
   private Uni<Void> initVertx() {
     TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
-    TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
-    tcpDiscoveryMulticastIpFinder.setAddresses(Arrays.stream(StringUtils.split(Config.getIgniteDiscoveryTcpAddresses(), ",")).toList());
+
+    TcpDiscoveryIpFinder tcpDiscoveryIpFinder;
+    Config.IgniteTcpDiscoveryIpFinderType igniteTcpDiscoveryIpFinderType = Config.getIgniteDiscoveryTcpIpFinderType();
+    switch (igniteTcpDiscoveryIpFinderType) {
+      case multicast -> {
+        tcpDiscoveryIpFinder = new TcpDiscoveryMulticastIpFinder();
+        Config.getIgniteDiscoveryTcpIpFinderMulticastPort().ifPresent(port -> ((TcpDiscoveryMulticastIpFinder) tcpDiscoveryIpFinder).setMulticastPort(port));
+        Config.getIgniteDiscoveryTcpIpFinderMulticastGroup().ifPresent(group -> ((TcpDiscoveryMulticastIpFinder) tcpDiscoveryIpFinder).setMulticastGroup(group));
+        Config.getIgniteDiscoveryTcpIpFinderMulticastAddresses().map(s -> Arrays.stream(StringUtils.split(s, ",")).toList()).ifPresent(addresses -> ((TcpDiscoveryMulticastIpFinder) tcpDiscoveryIpFinder).setAddresses(addresses));
+      }
+      case kubernetes -> {
+        KubernetesConnectionConfiguration kubernetesConnectionConfiguration = new KubernetesConnectionConfiguration();
+        kubernetesConnectionConfiguration.setDiscoveryPort(Config.getIgniteDiscoveryTcpPort());
+        Config.getIgniteDiscoveryTcpIpFinderKubernetesNamespace().ifPresent(kubernetesConnectionConfiguration::setNamespace);
+        Config.getIgniteDiscoveryTcpIpFinderKubernetesServicename().ifPresent(kubernetesConnectionConfiguration::setServiceName);
+        tcpDiscoveryIpFinder = new TcpDiscoveryKubernetesIpFinder(kubernetesConnectionConfiguration);
+      }
+      default -> throw new IllegalArgumentException("Unsupported ignite discovery tcp ip finder type: " + igniteTcpDiscoveryIpFinderType);
+    }
+
+    Config.getIgniteDiscoveryTcpAddress().ifPresent(tcpDiscoverySpi::setLocalAddress);
     tcpDiscoverySpi.setLocalPort(Config.getIgniteDiscoveryTcpPort());
-    tcpDiscoverySpi.setIpFinder(tcpDiscoveryMulticastIpFinder);
+    tcpDiscoverySpi.setIpFinder(tcpDiscoveryIpFinder);
 
     IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
     igniteConfiguration.setDiscoverySpi(tcpDiscoverySpi);
@@ -120,6 +144,12 @@ public class VxmqLauncher {
       micrometerMetricsOptions.setPrometheusOptions(vertxPrometheusOptions);
       vertxOptions.setMetricsOptions(micrometerMetricsOptions);
     }
+    EventBusOptions eventBusOptions = new EventBusOptions();
+    Config.getVertxEventbusHost().ifPresent(eventBusOptions::setHost);
+    eventBusOptions.setPort(Config.getVertxEventbusPort());
+    Config.getVertxEventbusPublicHost().ifPresent(eventBusOptions::setClusterPublicHost);
+    eventBusOptions.setClusterPublicPort(Config.getVertxEventbusPublicPort());
+    vertxOptions.setEventBusOptions(eventBusOptions);
     return vertxOptions;
   }
 
