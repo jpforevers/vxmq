@@ -344,6 +344,7 @@
               <port>1883/tcp</port>
               <port>10022/tcp</port>
               <port>47500/tcp</port>
+              <port>52014/tcp</port>
             </ports>
             <environment>
               <IGNITE_HOME>/vxmq/ignite</IGNITE_HOME>
