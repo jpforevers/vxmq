@@ -66,6 +66,7 @@ vxmq:
       proxy-protocol:
         enable: false
       port: 1883
+      log-activity: false
     topic:
       levels:
         max: 128
@@ -81,5 +82,6 @@ vxmq:
   http:
     server:
       port: 8060
+      log-activity: false
   metrics:
     enable: false

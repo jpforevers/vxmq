@@ -39,6 +39,7 @@ public class MqttServerVerticle extends AbstractVerticle {
       .setAutoClientId(false)
       .setPort(Config.getMqttServerPort())
       .setUseProxyProtocol(Config.getMqttProxyProtocolEnable());
+    mqttServerOptions.setLogActivity(Config.getMqttServerLogActivity());
     MqttServer mqttServer = MqttServer.create(vertx, mqttServerOptions);
     mqttServer.endpointHandler(new MqttEndpointHandler(vertx,
       ServiceFactory.sessionService(vertx),

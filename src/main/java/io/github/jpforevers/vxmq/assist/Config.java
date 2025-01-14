@@ -37,8 +37,12 @@ public class Config {
 
   public static final String KEY_VXMQ_HTTP_SERVER_PORT = "vxmq.http.server.port";
   public static final int DEFAULT_VXMQ_HTTP_SERVER_PORT = 8060;
+  public static final String KEY_VXMQ_HTTP_SERVER_LOG_ACTIVITY = "vxmq.http.server.log-activity";
+  public static final boolean DEFAULT_VXMQ_HTTP_SERVER_LOG_ACTIVITY = false;
   public static final String KEY_VXMQ_MQTT_SERVER_PORT = "vxmq.mqtt.server.port";
   public static final int DEFAULT_VXMQ_MQTT_SERVER_PORT = 1883;
+  public static final String KEY_VXMQ_MQTT_SERVER_LOG_ACTIVITY = "vxmq.mqtt.server.log-activity";
+  public static final boolean DEFAULT_VXMQ_MQTT_SERVER_LOG_ACTIVITY = false;
   public static final String KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = "vxmq.mqtt.server.proxy-protocol.enable";
   public static final boolean DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE = false;
   public static final String KEY_VXMQ_MQTT_AUTH_WHITELIST = "vxmq.mqtt.auth.whitelist";
@@ -119,8 +123,16 @@ public class Config {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_PORT);
   }
 
+  public static boolean getHttpServerLogActivity() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_LOG_ACTIVITY, Boolean.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_LOG_ACTIVITY);
+  }
+
   public static int getMqttServerPort() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_PORT);
+  }
+
+  public static boolean getMqttServerLogActivity() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_SERVER_LOG_ACTIVITY, Boolean.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_LOG_ACTIVITY);
   }
 
   public static boolean getMqttProxyProtocolEnable() {

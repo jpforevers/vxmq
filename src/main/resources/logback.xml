@@ -38,6 +38,9 @@
   <!-- Set io.vertx.mqtt log level to WARN -->
   <logger name="io.vertx.mqtt" level="WARN" />
 
+  <!-- Set io.netty.handler.logging.LoggingHandler log level to INFO -->
+  <logger name="io.netty.handler.logging.LoggingHandler" level="${VXMQ_LOGS_IO_NETTY_HANDLER_LOGGING_LOGGINGHANDLER_LEVEL:-INFO}"/>
+
   <!-- Set io.github.jpforevers.vxmq log level by env LOGS_LEVEL, default to INFO -->
   <logger name="io.github.jpforevers.vxmq" level="${VXMQ_LOGS_LEVEL:-INFO}" />
 

@@ -24,6 +24,7 @@ import io.github.jpforevers.vxmq.http.api.ApiRouterFactory;
 import io.github.jpforevers.vxmq.http.q.QRouterFactory;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.AllowForwardHeaders;
 import io.vertx.mutiny.ext.web.Router;
 import org.slf4j.Logger;
@@ -45,7 +46,9 @@ public class HttpServerVerticle extends AbstractVerticle {
       .failureHandler(new ApiFailureHandler())
       .subRouter(ApiRouterFactory.router(vertx));
 
-    return vertx.createHttpServer().requestHandler(rootRouter)
+    HttpServerOptions httpServerOptions = new HttpServerOptions();
+    httpServerOptions.setLogActivity(Config.getHttpServerLogActivity());
+    return vertx.createHttpServer(httpServerOptions).requestHandler(rootRouter)
       .exceptionHandler(t -> LOGGER.error("Error occurred at http server layer", t))
       .listen(Config.getHttpServerPort())
       .replaceWithVoid();
