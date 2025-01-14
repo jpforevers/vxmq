@@ -1,6 +1,6 @@
 package io.github.jpforevers.vxmq.service.flow;
 
-public interface FlowService {
+public interface FlowControlService {
 
   int incrementAndGetInboundReceive(String clientId);
 
