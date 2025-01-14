@@ -27,6 +27,7 @@ import io.github.jpforevers.vxmq.service.alias.OutboundTopicAliasService;
 import io.github.jpforevers.vxmq.service.client.ClientService;
 import io.github.jpforevers.vxmq.service.client.UndeployClientVerticleRequest;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
+import io.github.jpforevers.vxmq.service.flow.FlowService;
 import io.github.jpforevers.vxmq.service.session.Session;
 import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.github.jpforevers.vxmq.service.will.WillService;
@@ -55,6 +56,7 @@ public class MqttCloseHandler implements Runnable {
   private final EventService eventService;
   private final InboundTopicAliasService inboundTopicAliasService;
   private final OutboundTopicAliasService outboundTopicAliasService;
+  private final FlowService flowService;
 
   public MqttCloseHandler(MqttEndpoint mqttEndpoint, Vertx vertx,
                           ClientService clientService,
@@ -62,7 +64,7 @@ public class MqttCloseHandler implements Runnable {
                           SessionService sessionService,
                           WillService willService, EventService eventService,
                           InboundTopicAliasService inboundTopicAliasService,
-                          OutboundTopicAliasService outboundTopicAliasService) {
+                          OutboundTopicAliasService outboundTopicAliasService, FlowService flowService) {
     this.mqttEndpoint = mqttEndpoint;
     this.vertx = vertx;
     this.clientService = clientService;
@@ -72,6 +74,7 @@ public class MqttCloseHandler implements Runnable {
     this.eventService = eventService;
     this.inboundTopicAliasService = inboundTopicAliasService;
     this.outboundTopicAliasService = outboundTopicAliasService;
+    this.flowService = flowService;
   }
 
   @Override
@@ -89,6 +92,7 @@ public class MqttCloseHandler implements Runnable {
             .onItem().transformToUni(v -> handleWill(session))
             .onItem().transformToUni(v -> undeployClientVerticle(session))
             .onItem().transformToUni(v -> handleSession(session))
+            .onItem().invoke(() -> flowService.clearInboundReceive(mqttEndpoint.clientIdentifier()))
             // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
             .onItem().call(v -> publishEvent(mqttEndpoint, session));
         } else {

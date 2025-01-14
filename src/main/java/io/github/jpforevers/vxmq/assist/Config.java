@@ -115,6 +115,9 @@ public class Config {
   public static final String KEY_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT = "vxmq.vertx.eventbus.public-port";
   public static final int DEFAULT_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT = 52014;
 
+  public static final String KEY_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM = "vxmq.mqtt.flow-control.inbound.receive-maximum";
+  public static final int DEFAULT_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM = 65535;
+
   public static int getHttpServerPort() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_PORT);
   }
@@ -238,6 +241,10 @@ public class Config {
 
   public static int getVertxEventbusPublicPort() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT, Integer.class).orElse(DEFAULT_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT);
+  }
+
+  public static int getFlowControlInboundReceiveMaximum() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM);
   }
 
 }

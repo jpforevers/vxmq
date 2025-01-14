@@ -26,6 +26,8 @@ import io.github.jpforevers.vxmq.service.client.ClientService;
 import io.github.jpforevers.vxmq.service.client.DefaultClientService;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
 import io.github.jpforevers.vxmq.service.composite.DefaultCompositeService;
+import io.github.jpforevers.vxmq.service.flow.FlowService;
+import io.github.jpforevers.vxmq.service.flow.FlowServiceImpl;
 import io.github.jpforevers.vxmq.service.msg.IgniteAndMapMsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.retain.IgniteRetainService;
@@ -82,6 +84,10 @@ public class ServiceFactory {
 
   public static OutboundTopicAliasService outboundTopicAliasService(Vertx vertx) {
     return OutboundTopicAliasService.getSingleton(vertx);
+  }
+
+  public static FlowService flowService(Vertx vertx) {
+    return FlowServiceImpl.getSingleton(vertx);
   }
 
 }
