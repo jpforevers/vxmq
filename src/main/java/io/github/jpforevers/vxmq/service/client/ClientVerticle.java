@@ -36,12 +36,17 @@ import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.core.eventbus.Message;
 import io.vertx.mutiny.mqtt.MqttEndpoint;
 import org.apache.commons.lang3.StringUtils;
+import org.jctools.queues.SpscArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.concurrent.locks.LockSupport;
 
 public class ClientVerticle extends AbstractVerticle {
+
+  public static final int spinThreshold = 1000;
+  public static final int parkNanos = 1_000_000;
 
   private final static Logger LOGGER = LoggerFactory.getLogger(ClientVerticle.class);
 
@@ -53,24 +58,34 @@ public class ClientVerticle extends AbstractVerticle {
   private final OutboundTopicAliasService outboundTopicAliasService;
   private int messageIdCounter;
   private final Counter packetsPublishSentCounter;
+  private final SpscArrayQueue<MsgToClient> fixedSizeFifoOldOutQueue;
+  private final int outboundReceiveMaximum;
+
+  private boolean CVMTCCThreadThreadRunning;
 
   public ClientVerticle(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService,
-                        OutboundTopicAliasService outboundTopicAliasService, Counter packetsPublishSentCounter) {
+                        OutboundTopicAliasService outboundTopicAliasService, Counter packetsPublishSentCounter,
+                        int outboundQueueMaximum, int outboundReceiveMaximum) {
     this.mqttEndpoint = mqttEndpoint;
     this.sessionService = sessionService;
     this.msgService = msgService;
     this.outboundTopicAliasService = outboundTopicAliasService;
     this.packetsPublishSentCounter = packetsPublishSentCounter;
+    this.fixedSizeFifoOldOutQueue = new SpscArrayQueue<>(outboundQueueMaximum);
+    this.outboundReceiveMaximum = outboundReceiveMaximum;
   }
 
   @Override
   public Uni<Void> asyncStart() {
-    return vertx.eventBus().consumer(deploymentID(), this::ebMessageHandler).completionHandler();
+    return Uni.createFrom().voidItem()
+      .onItem().transformToUni(v -> vertx.eventBus().consumer(deploymentID(), this::ebMessageHandler).completionHandler())
+      .onItem().invoke(this::startMsgToClientConsumeThread);
   }
 
   @Override
   public Uni<Void> asyncStop() {
-    return Uni.createFrom().voidItem();
+    return Uni.createFrom().voidItem()
+      .onItem().invoke(this::stopMsgToClientConsumeThread);
   }
 
   private void ebMessageHandler(Message<ToClientVerticleMsg> actionMessage) {
@@ -100,6 +115,34 @@ public class ClientVerticle extends AbstractVerticle {
   }
 
   private void handleSendPublish(MsgToClient msgToClient) {
+    // eliminate old element when the queue is full
+    if (!fixedSizeFifoOldOutQueue.offer(msgToClient)) {
+      fixedSizeFifoOldOutQueue.poll(); // eliminate old element
+      fixedSizeFifoOldOutQueue.offer(msgToClient); // Offer new element
+    }
+  }
+
+  private void startMsgToClientConsumeThread() {
+    Thread thread = new Thread(() -> {
+      fixedSizeFifoOldOutQueue.drain(this::consumeMsgToClient, i -> {
+        if (i < spinThreshold) {
+          Thread.onSpinWait(); // Spin waiting
+        } else {
+          LockSupport.parkNanos(parkNanos);
+        }
+        return i + 1;
+      }, () -> CVMTCCThreadThreadRunning);
+    });
+    thread.setName("CVMTCCThread-" + getClientId());
+    thread.start();
+    CVMTCCThreadThreadRunning = true;
+  }
+
+  private void stopMsgToClientConsumeThread() {
+    CVMTCCThreadThreadRunning = false;
+  }
+
+  private void consumeMsgToClient(MsgToClient msgToClient) {
     int messageId;
     if (msgToClient.getMessageId() == null || msgToClient.getMessageId() <= 0 || msgToClient.getMessageId() >= MAX_MESSAGE_ID) {
       this.messageIdCounter = ((messageIdCounter % MAX_MESSAGE_ID) != 0) ? messageIdCounter + 1 : 1;

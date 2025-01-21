@@ -99,6 +99,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final Counter packetsPublishSentCounter;
   private final int inboundReceiveMaximum;
   private final FlowControlService flowControlService;
+  private final int outboundQueueMaximum;
+  private final int outboundReceiveMaximum;
 
   public MqttEndpointHandler(Vertx vertx,
                              SessionService sessionService,
@@ -115,7 +117,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              Counter packetsPublishReceivedCounter,
                              Counter packetsPublishSentCounter,
                              int inboundReceiveMaximum,
-                             FlowControlService flowControlService) {
+                             FlowControlService flowControlService,
+                             int outboundQueueMaximum,
+                             int outboundReceiveMaximum) {
     this.vertx = vertx;
     this.sessionService = sessionService;
     this.msgService = msgService;
@@ -132,6 +136,8 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.packetsPublishSentCounter = packetsPublishSentCounter;
     this.inboundReceiveMaximum = inboundReceiveMaximum;
     this.flowControlService = flowControlService;
+    this.outboundQueueMaximum = outboundQueueMaximum;
+    this.outboundReceiveMaximum = outboundReceiveMaximum;
   }
 
   @Override
@@ -163,7 +169,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint, context))
       .onItem().transformToUni(v -> registerHandler(mqttEndpoint))
       .onItem().transformToUni(v -> computeSessionPresent(mqttEndpoint, context))
-      .onItem().transformToUni(v -> deployClientVerticle(mqttEndpoint, packetsPublishSentCounter))
+      .onItem().transformToUni(v -> deployClientVerticle(mqttEndpoint, packetsPublishSentCounter, outboundQueueMaximum, outboundReceiveMaximum))
       .onItem().transformToUni(clientVerticleId -> handleSession(mqttEndpoint, clientVerticleId))
       .onItem().call(session -> publishMqttSessionTakenOverEvent(session, context))
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
@@ -376,8 +382,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @param mqttEndpoint mqttEndpoint
    * @return Client verticle deployment id;
    */
-  private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint, Counter packetsPublishSentCounter) {
-    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService, outboundTopicAliasService, packetsPublishSentCounter);
+  private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint, Counter packetsPublishSentCounter, int outboundQueueMaximum, int outboundReceiveMaximum) {
+    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService, outboundTopicAliasService,
+      packetsPublishSentCounter, outboundQueueMaximum, outboundReceiveMaximum);
     return vertx.deployVerticle(clientVerticle, new DeploymentOptions());
   }
 

@@ -118,6 +118,12 @@ public class Config {
   public static final String KEY_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM = "vxmq.mqtt.flow-control.inbound.receive-maximum";
   public static final int DEFAULT_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM = 65535;
 
+  public static final String KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_QUEUE_MAXIMUM = "vxmq.mqtt.flow-control.outbound.queue-maximum";
+  public static final int DEFAULT_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_QUEUE_MAXIMUM = 1000;
+
+  public static final String KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM = "vxmq.mqtt.flow-control.outbound.receive-maximum";
+  public static final int DEFAULT_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM = 65535;
+
   public static int getHttpServerPort() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_PORT);
   }
@@ -245,6 +251,14 @@ public class Config {
 
   public static int getFlowControlInboundReceiveMaximum() {
     return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM);
+  }
+
+  public static int getFlowControlOutboundQueueMaximum() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_QUEUE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_QUEUE_MAXIMUM);
+  }
+
+  public static int getFlowControlOutboundReceiveMaximum() {
+    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM);
   }
 
 }

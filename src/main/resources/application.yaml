@@ -81,6 +81,9 @@ vxmq:
     flow-control:
       inbound:
         receive-maximum: 65535
+      outbound:
+        queue-maximum: 1000
+        receive-maximum: 65535
   http:
     server:
       port: 8060
