@@ -41,6 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.LockSupport;
 
 public class ClientVerticle extends AbstractVerticle {
@@ -51,6 +53,9 @@ public class ClientVerticle extends AbstractVerticle {
   private final static Logger LOGGER = LoggerFactory.getLogger(ClientVerticle.class);
 
   private static final int MAX_MESSAGE_ID = 65535;
+
+  // CVMTCC - ClientVerticle MsgToClient Consumer
+  private static final ExecutorService CVMTCCExecutorService = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("CVMTCCThread-", 0).factory());
 
   private final MqttEndpoint mqttEndpoint;
   private final SessionService sessionService;
@@ -123,7 +128,7 @@ public class ClientVerticle extends AbstractVerticle {
   }
 
   private void startMsgToClientConsumeThread() {
-    Thread thread = new Thread(() -> {
+    CVMTCCExecutorService.submit(() -> {
       fixedSizeFifoOldOutQueue.drain(this::consumeMsgToClient, i -> {
         if (i < spinThreshold) {
           Thread.onSpinWait(); // Spin waiting
@@ -133,8 +138,6 @@ public class ClientVerticle extends AbstractVerticle {
         return i + 1;
       }, () -> CVMTCCThreadThreadRunning);
     });
-    thread.setName("CVMTCCThread-" + getClientId());
-    thread.start();
     CVMTCCThreadThreadRunning = true;
   }
 

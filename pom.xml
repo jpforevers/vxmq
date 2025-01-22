@@ -244,7 +244,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <release>17</release>
+          <release>21</release>
           <annotationProcessors>
             <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
           </annotationProcessors>
@@ -297,7 +297,7 @@
         <configuration>
           <allowInsecureRegistries>true</allowInsecureRegistries>
           <from>
-            <image>jpforevers/myjavabase:17</image>
+            <image>jpforevers/myjavabase:21</image>
           </from>
           <to>
             <image>jpforevers/${project.artifactId}</image>
