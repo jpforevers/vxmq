@@ -130,7 +130,7 @@ public class ClientVerticle extends AbstractVerticle {
   private void startMsgToClientConsumeThread() {
     CVMTCCExecutorService.submit(() -> {
       fixedSizeFifoOldOutQueue.drain(this::consumeMsgToClient, i -> {
-        if (i < spinThreshold) {
+        if (i < spinThreshold && !fixedSizeFifoOldOutQueue.isEmpty()) {
           Thread.onSpinWait(); // Spin waiting
         } else {
           LockSupport.parkNanos(parkNanos);
