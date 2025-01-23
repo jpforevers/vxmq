@@ -122,7 +122,8 @@ public class ClientVerticle extends AbstractVerticle {
   private void handleSendPublish(MsgToClient msgToClient) {
     // eliminate old element when the queue is full
     if (!fixedSizeFifoOldOutQueue.offer(msgToClient)) {
-      fixedSizeFifoOldOutQueue.poll(); // eliminate old element
+      MsgToClient msgToClientDropped = fixedSizeFifoOldOutQueue.poll(); // eliminate old element
+      LOGGER.warn("MsgToClient message dropped because of the queue is full: {}", msgToClientDropped);
       fixedSizeFifoOldOutQueue.offer(msgToClient); // Offer new element
     }
   }
