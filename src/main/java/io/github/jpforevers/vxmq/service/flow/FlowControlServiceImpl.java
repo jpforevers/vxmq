@@ -21,37 +21,42 @@ public class FlowControlServiceImpl implements FlowControlService {
 
   private final Vertx vertx;
   private final ConcurrentHashMap<String, Integer> clientIdToInboundReceiveMap;
+  private final ConcurrentHashMap<String, Integer> clientIdToOutboundReceiveMap;
 
   private FlowControlServiceImpl(Vertx vertx) {
     this.vertx = vertx;
     this.clientIdToInboundReceiveMap = new ConcurrentHashMap<>();
+    this.clientIdToOutboundReceiveMap = new ConcurrentHashMap<>();
   }
 
   @Override
   public int incrementAndGetInboundReceive(String clientId) {
-    return clientIdToInboundReceiveMap.compute(clientId, (k, v) -> {
-      if (v == null) {
-        return 1;
-      } else {
-        return ++v;
-      }
-    });
+    return clientIdToInboundReceiveMap.compute(clientId, (k, v) -> v == null ? 1 : v + 1);
   }
 
   @Override
-  public int decrementAndGetInboundReceive(String clientId) {
-    return clientIdToInboundReceiveMap.compute(clientId, (k, v) -> {
-      if (v == null) {
-        return 0;
-      } else {
-        return --v < 0 ? 0 : v;
-      }
-    });
+  public void decrementInboundReceive(String clientId) {
+    clientIdToInboundReceiveMap.compute(clientId, (k, v) -> v == null ? 0 : Math.max(--v , 0));
   }
 
   @Override
   public void clearInboundReceive(String clientId) {
     clientIdToInboundReceiveMap.remove(clientId);
+  }
+
+  @Override
+  public int getAndIncrementOutboundReceive(String clientId) {
+    return clientIdToOutboundReceiveMap.compute(clientId, (k, v) -> v == null ? 1 : v + 1) - 1;
+  }
+
+  @Override
+  public void decrementOutboundReceive(String clientId) {
+    clientIdToOutboundReceiveMap.compute(clientId, (k, v) -> v == null ? 0 : Math.max(--v , 0));
+  }
+
+  @Override
+  public void clearOutboundReceive(String clientId) {
+    clientIdToOutboundReceiveMap.remove(clientId);
   }
 
 }

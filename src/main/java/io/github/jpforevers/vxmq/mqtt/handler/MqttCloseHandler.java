@@ -92,7 +92,10 @@ public class MqttCloseHandler implements Runnable {
             .onItem().transformToUni(v -> handleWill(session))
             .onItem().transformToUni(v -> undeployClientVerticle(session))
             .onItem().transformToUni(v -> handleSession(session))
-            .onItem().invoke(() -> flowControlService.clearInboundReceive(mqttEndpoint.clientIdentifier()))
+            .onItem().invoke(() -> {
+              flowControlService.clearInboundReceive(mqttEndpoint.clientIdentifier());
+              flowControlService.clearOutboundReceive(mqttEndpoint.clientIdentifier());
+            })
             // Publish EVENT_MQTT_ENDPOINT_CLOSED_EVENT
             .onItem().call(v -> publishEvent(mqttEndpoint, session));
         } else {

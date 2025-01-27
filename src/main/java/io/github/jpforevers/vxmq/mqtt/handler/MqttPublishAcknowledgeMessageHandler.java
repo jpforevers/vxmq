@@ -23,6 +23,7 @@ import io.github.jpforevers.vxmq.assist.VertxUtil;
 import io.github.jpforevers.vxmq.event.Event;
 import io.github.jpforevers.vxmq.event.EventService;
 import io.github.jpforevers.vxmq.event.mqtt.MqttPublishOutboundAckedEvent;
+import io.github.jpforevers.vxmq.service.flow.FlowControlService;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos1Pub;
 import io.github.jpforevers.vxmq.service.session.Session;
@@ -54,13 +55,17 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
   private final SessionService sessionService;
   private final MsgService msgService;
   private final EventService eventService;
+  private final FlowControlService flowControlService;
   private final Vertx vertx;
 
-  public MqttPublishAcknowledgeMessageHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService, EventService eventService, Vertx vertx) {
+  public MqttPublishAcknowledgeMessageHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService,
+                                              EventService eventService, FlowControlService flowControlService,
+                                              Vertx vertx) {
     this.mqttEndpoint = mqttEndpoint;
     this.sessionService = sessionService;
     this.msgService = msgService;
     this.eventService = eventService;
+    this.flowControlService = flowControlService;
     this.vertx = vertx;
   }
 
@@ -69,6 +74,11 @@ public class MqttPublishAcknowledgeMessageHandler implements Consumer<MqttPubAck
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("PUBACK from {}: {}", mqttEndpoint.clientIdentifier(), pubAckInfo(mqttPubAckMessage));
     }
+
+    // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Server MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Client [MQTT-3.3.4-9]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Client uses DISCONNECT with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+    // So, The MQTT broker should decrement the outbound reception number after received a PUBACK message.
+    flowControlService.decrementOutboundReceive(mqttEndpoint.clientIdentifier());
+
     sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId})
       .onItem().transformToUni(sessionFields -> msgService.getAndRemoveOutboundQos1Pub((String) sessionFields.get(Session.Field.sessionId), mqttPubAckMessage.messageId()))
       .onItem().transformToUni(outboundQos1Pub -> {
