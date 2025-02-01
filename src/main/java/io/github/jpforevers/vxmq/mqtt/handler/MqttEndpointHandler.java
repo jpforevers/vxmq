@@ -34,6 +34,7 @@ import io.github.jpforevers.vxmq.service.client.ClientVerticle;
 import io.github.jpforevers.vxmq.service.client.CloseMqttEndpointRequest;
 import io.github.jpforevers.vxmq.service.client.DisconnectRequest;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
+import io.github.jpforevers.vxmq.service.flow.FlowControlService;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.retain.RetainService;
 import io.github.jpforevers.vxmq.service.session.Session;
@@ -96,6 +97,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
   private final OutboundTopicAliasService outboundTopicAliasService;
   private final Counter packetsPublishReceivedCounter;
   private final Counter packetsPublishSentCounter;
+  private final int inboundReceiveMaximum;
+  private final int outboundReceiveMaximum;
+  private final FlowControlService flowControlService;
 
   public MqttEndpointHandler(Vertx vertx,
                              SessionService sessionService,
@@ -110,7 +114,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
                              InboundTopicAliasService inboundTopicAliasService,
                              OutboundTopicAliasService outboundTopicAliasService,
                              Counter packetsPublishReceivedCounter,
-                             Counter packetsPublishSentCounter) {
+                             Counter packetsPublishSentCounter,
+                             int inboundReceiveMaximum, int outboundReceiveMaximum,
+                             FlowControlService flowControlService) {
     this.vertx = vertx;
     this.sessionService = sessionService;
     this.msgService = msgService;
@@ -125,6 +131,9 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
     this.outboundTopicAliasService = outboundTopicAliasService;
     this.packetsPublishReceivedCounter = packetsPublishReceivedCounter;
     this.packetsPublishSentCounter = packetsPublishSentCounter;
+    this.inboundReceiveMaximum = inboundReceiveMaximum;
+    this.outboundReceiveMaximum = outboundReceiveMaximum;
+    this.flowControlService = flowControlService;
   }
 
   @Override
@@ -145,6 +154,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SUBSCRIPTION_IDENTIFIER_AVAILABLE.value(), 1));
       conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.SHARED_SUBSCRIPTION_AVAILABLE.value(), 1));
       conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.TOPIC_ALIAS_MAXIMUM.value(), Config.getMqttTopicAliasMax()));
+      conAckMqttProperties.add(new MqttProperties.IntegerProperty(MqttProperties.MqttPropertyType.RECEIVE_MAXIMUM.value(), inboundReceiveMaximum));
     }
 
     Context context = Context.empty();
@@ -322,16 +332,16 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    */
   private Uni<Void> registerHandler(MqttEndpoint mqttEndpoint) {
     mqttEndpoint.disconnectMessageHandler(new MqttDisconnectMessageHandler(mqttEndpoint, vertx, sessionService, willService, eventService));
-    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService, inboundTopicAliasService, outboundTopicAliasService));
+    mqttEndpoint.closeHandler(new MqttCloseHandler(mqttEndpoint, vertx, clientService, compositeService, sessionService, willService, eventService, inboundTopicAliasService, outboundTopicAliasService, flowControlService));
     mqttEndpoint.pingHandler(new MqttPingHandler(mqttEndpoint, vertx, sessionService, eventService));
     mqttEndpoint.exceptionHandler(new MqttExceptionHandler(mqttEndpoint, vertx, eventService));
     mqttEndpoint.subscribeHandler(new MqttSubscribeHandler(mqttEndpoint, vertx, subService, sessionService, retainService, compositeService, eventService));
     mqttEndpoint.unsubscribeHandler(new MqttUnsubscribeHandler(mqttEndpoint, vertx, sessionService, subService, eventService));
-    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, vertx, msgService, sessionService, retainService, compositeService, eventService, packetsPublishReceivedCounter));
-    mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint, sessionService, msgService, compositeService));
-    mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint, sessionService, msgService, eventService, vertx));
-    mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint, sessionService, msgService, eventService, vertx));
-    mqttEndpoint.publishCompletionMessageHandler(new MqttPublishCompletionMessageHandler(mqttEndpoint, sessionService, msgService));
+    mqttEndpoint.publishHandler(new MqttPublishHandler(mqttEndpoint, vertx, msgService, sessionService, retainService, compositeService, eventService, packetsPublishReceivedCounter, inboundReceiveMaximum, flowControlService));
+    mqttEndpoint.publishReleaseMessageHandler(new MqttPublishReleaseMessageHandler(mqttEndpoint, sessionService, msgService, compositeService, flowControlService));
+    mqttEndpoint.publishAcknowledgeMessageHandler(new MqttPublishAcknowledgeMessageHandler(mqttEndpoint, sessionService, msgService, eventService, flowControlService, vertx));
+    mqttEndpoint.publishReceivedMessageHandler(new MqttPublishReceivedMessageHandler(mqttEndpoint, sessionService, msgService, eventService, flowControlService, vertx));
+    mqttEndpoint.publishCompletionMessageHandler(new MqttPublishCompletionMessageHandler(mqttEndpoint, sessionService, msgService, flowControlService));
     return Uni.createFrom().voidItem();
   }
 
@@ -369,7 +379,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
    * @return Client verticle deployment id;
    */
   private Uni<String> deployClientVerticle(MqttEndpoint mqttEndpoint, Counter packetsPublishSentCounter) {
-    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService, outboundTopicAliasService, packetsPublishSentCounter);
+    ClientVerticle clientVerticle = new ClientVerticle(mqttEndpoint, sessionService, msgService, outboundTopicAliasService, packetsPublishSentCounter, outboundReceiveMaximum, flowControlService);
     return vertx.deployVerticle(clientVerticle, new DeploymentOptions());
   }
 

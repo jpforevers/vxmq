@@ -26,6 +26,7 @@ import io.github.jpforevers.vxmq.event.EventService;
 import io.github.jpforevers.vxmq.event.mqtt.MqttPublishInboundAcceptedEvent;
 import io.github.jpforevers.vxmq.mqtt.exception.MqttPublishException;
 import io.github.jpforevers.vxmq.service.composite.CompositeService;
+import io.github.jpforevers.vxmq.service.flow.FlowControlService;
 import io.github.jpforevers.vxmq.service.msg.InboundQos2Pub;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgToTopic;
@@ -39,6 +40,7 @@ import io.netty.handler.codec.mqtt.MqttVersion;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.mqtt.messages.codes.MqttDisconnectReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubAckReasonCode;
 import io.vertx.mqtt.messages.codes.MqttPubRecReasonCode;
 import io.vertx.mutiny.core.Vertx;
@@ -64,11 +66,13 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
   private final CompositeService compositeService;
   private final EventService eventService;
   private final Counter packetsPublishReceivedCounter;
+  private final int inboundReceiveMaximum;
+  private final FlowControlService flowControlService;
 
   public MqttPublishHandler(MqttEndpoint mqttEndpoint, Vertx vertx,
                             MsgService msgService, SessionService sessionService,
                             RetainService retainService, CompositeService compositeService, EventService eventService,
-                            Counter packetsPublishReceivedCounter) {
+                            Counter packetsPublishReceivedCounter, int inboundReceiveMaximum, FlowControlService flowControlService) {
     this.mqttEndpoint = mqttEndpoint;
     this.vertx = vertx;
     this.msgService = msgService;
@@ -77,6 +81,8 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
     this.compositeService = compositeService;
     this.eventService = eventService;
     this.packetsPublishReceivedCounter = packetsPublishReceivedCounter;
+    this.inboundReceiveMaximum = inboundReceiveMaximum;
+    this.flowControlService = flowControlService;
   }
 
   @Override
@@ -87,6 +93,17 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
 
     if (packetsPublishReceivedCounter != null) {
       packetsPublishReceivedCounter.increment();
+    }
+
+    // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Client MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Server [MQTT-3.3.4-7]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Server uses a DISCONNECT packet with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+    // So, The MQTT broker should increment and check the inbound reception number when a PUBLISH received
+    if (mqttPublishMessage.qosLevel().value() > 0 && flowControlService.incrementAndGetInboundReceive(mqttEndpoint.clientIdentifier()) > inboundReceiveMaximum) {
+      if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+        mqttEndpoint.disconnect(MqttDisconnectReasonCode.RECEIVE_MAXIMUM_EXCEEDED, MqttProperties.NO_PROPERTIES);
+      } else {
+        mqttEndpoint.close();
+      }
+      return;
     }
 
     sessionService.updateLatestUpdatedTime(mqttEndpoint.clientIdentifier(), Instant.now().toEpochMilli())
@@ -108,15 +125,24 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
           switch (mqttPublishMessage.qosLevel()) {
             case AT_MOST_ONCE -> {
             }
-            case AT_LEAST_ONCE -> mqttEndpoint.publishAcknowledge(mqttPublishMessage.messageId());
+            case AT_LEAST_ONCE -> {
+              mqttEndpoint.publishAcknowledge(mqttPublishMessage.messageId());
+              // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Client MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Server [MQTT-3.3.4-7]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Server uses a DISCONNECT packet with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+              // So, The MQTT broker should decrement the inbound reception number when sent a PUBACK
+              flowControlService.decrementInboundReceive(mqttEndpoint.clientIdentifier());
+            }
             case EXACTLY_ONCE -> mqttEndpoint.publishReceived(mqttPublishMessage.messageId());
           }
         } else {
           switch (mqttPublishMessage.qosLevel()) {
             case AT_MOST_ONCE -> {
             }
-            case AT_LEAST_ONCE ->
+            case AT_LEAST_ONCE -> {
               mqttEndpoint.publishAcknowledge(mqttPublishMessage.messageId(), MqttPubAckReasonCode.SUCCESS, pubAckProperties);
+              // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Client MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Server [MQTT-3.3.4-7]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Server uses a DISCONNECT packet with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+              // So, The MQTT broker should decrement the inbound reception number when sent a PUBACK
+              flowControlService.decrementInboundReceive(mqttEndpoint.clientIdentifier());
+            }
             case EXACTLY_ONCE ->
               mqttEndpoint.publishReceived(mqttPublishMessage.messageId(), MqttPubRecReasonCode.SUCCESS, pubRecProperties);
           }
@@ -146,6 +172,11 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
                   pubRecProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
                 }
                 mqttEndpoint.publishReceived(mqttPublishMessage.messageId(), ((MqttPublishException) t).getMqttPubRecReasonCode(), pubRecProperties);
+                // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Client MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Server [MQTT-3.3.4-7]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Server uses a DISCONNECT packet with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+                // So, The MQTT broker should decrement the inbound reception number before sent a PUBREC message with a Reason Code of 128 or greater.
+                if (((MqttPublishException) t).getMqttPubRecReasonCode().isError()) {
+                  flowControlService.decrementInboundReceive(mqttEndpoint.clientIdentifier());
+                }
             }
           } else {
             switch (mqttPublishMessage.qosLevel()) {
@@ -165,6 +196,11 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
                   pubRecProperties.add(new MqttProperties.StringProperty(MqttProperties.MqttPropertyType.REASON_STRING.value(), t.getMessage()));
                 }
                 mqttEndpoint.publishReceived(mqttPublishMessage.messageId(), MqttPubRecReasonCode.UNSPECIFIED_ERROR, pubRecProperties);
+                // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Client MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Server [MQTT-3.3.4-7]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Server uses a DISCONNECT packet with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+                // So, The MQTT broker should decrement the inbound reception number before sent a PUBREC message with a Reason Code of 128 or greater.
+                if (((MqttPublishException) t).getMqttPubRecReasonCode().isError()) {
+                  flowControlService.decrementInboundReceive(mqttEndpoint.clientIdentifier());
+                }
             }
           }
         }

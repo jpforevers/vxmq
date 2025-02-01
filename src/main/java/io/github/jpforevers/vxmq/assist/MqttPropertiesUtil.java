@@ -113,7 +113,7 @@ public class MqttPropertiesUtil {
    * @param mqttProperties {@link MqttProperties}
    * @param mqttPropertyType {@link io.netty.handler.codec.mqtt.MqttProperties.MqttPropertyType}
    * @param clazz could only be: {@link io.netty.handler.codec.mqtt.MqttProperties.IntegerProperty}, {@link io.netty.handler.codec.mqtt.MqttProperties.StringProperty}, {@link io.netty.handler.codec.mqtt.MqttProperties.BinaryProperty}
-   * @return Mqtt property values
+   * @return Mqtt property values, may null
    */
   public static <T> T getValue(MqttProperties mqttProperties, MqttProperties.MqttPropertyType mqttPropertyType, Class<? extends MqttProperties.MqttProperty<T>> clazz) {
     return Optional.ofNullable(mqttProperties.getProperty(mqttPropertyType.value())).map(mqttProperty -> (T) mqttProperty.value()).orElse(null);

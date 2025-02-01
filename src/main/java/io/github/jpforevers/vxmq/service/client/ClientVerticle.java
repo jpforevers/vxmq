@@ -20,6 +20,7 @@ package io.github.jpforevers.vxmq.service.client;
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
 import io.github.jpforevers.vxmq.assist.MqttPropertiesUtil;
 import io.github.jpforevers.vxmq.service.alias.OutboundTopicAliasService;
+import io.github.jpforevers.vxmq.service.flow.FlowControlService;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.MsgToClient;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos1Pub;
@@ -53,14 +54,28 @@ public class ClientVerticle extends AbstractVerticle {
   private final OutboundTopicAliasService outboundTopicAliasService;
   private int messageIdCounter;
   private final Counter packetsPublishSentCounter;
+  private final int outboundReceiveMaximum;
+  private final FlowControlService flowControlService;
 
   public ClientVerticle(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService,
-                        OutboundTopicAliasService outboundTopicAliasService, Counter packetsPublishSentCounter) {
+                        OutboundTopicAliasService outboundTopicAliasService, Counter packetsPublishSentCounter,
+                        int outboundReceiveMaximum, FlowControlService flowControlService) {
     this.mqttEndpoint = mqttEndpoint;
     this.sessionService = sessionService;
     this.msgService = msgService;
     this.outboundTopicAliasService = outboundTopicAliasService;
     this.packetsPublishSentCounter = packetsPublishSentCounter;
+    if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+      Integer outboundReceiveMaximumFromClient = MqttPropertiesUtil.getValue(mqttEndpoint.connectProperties(), MqttProperties.MqttPropertyType.RECEIVE_MAXIMUM, MqttProperties.IntegerProperty.class);
+      if (outboundReceiveMaximumFromClient != null && outboundReceiveMaximumFromClient <= 65535 && outboundReceiveMaximumFromClient > 0) {
+        this.outboundReceiveMaximum = outboundReceiveMaximumFromClient;
+      } else {
+        this.outboundReceiveMaximum = outboundReceiveMaximum;
+      }
+    } else {
+      this.outboundReceiveMaximum = outboundReceiveMaximum;
+    }
+    this.flowControlService = flowControlService;
   }
 
   @Override
@@ -100,6 +115,13 @@ public class ClientVerticle extends AbstractVerticle {
   }
 
   private void handleSendPublish(MsgToClient msgToClient) {
+    // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Server MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Client [MQTT-3.3.4-9]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Client uses DISCONNECT with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+    // So, The MQTT broker should check and increment the outbound reception number before sending a PUBLISH message.
+    if (msgToClient.getQos() > 0 && flowControlService.getAndIncrementOutboundReceive(mqttEndpoint.clientIdentifier()) >= outboundReceiveMaximum) {
+      LOGGER.warn("MsgToClient dropped because of the outbound reception maximum {} exceeded, MsgToClient: {}", outboundReceiveMaximum, msgToClient);
+      return;
+    }
+
     int messageId;
     if (msgToClient.getMessageId() == null || msgToClient.getMessageId() <= 0 || msgToClient.getMessageId() >= MAX_MESSAGE_ID) {
       this.messageIdCounter = ((messageIdCounter % MAX_MESSAGE_ID) != 0) ? messageIdCounter + 1 : 1;

@@ -23,6 +23,7 @@ import io.github.jpforevers.vxmq.assist.VertxUtil;
 import io.github.jpforevers.vxmq.event.Event;
 import io.github.jpforevers.vxmq.event.EventService;
 import io.github.jpforevers.vxmq.event.mqtt.MqttPublishOutboundAckedEvent;
+import io.github.jpforevers.vxmq.service.flow.FlowControlService;
 import io.github.jpforevers.vxmq.service.msg.MsgService;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos2Pub;
 import io.github.jpforevers.vxmq.service.msg.OutboundQos2Rel;
@@ -62,13 +63,15 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
   private final SessionService sessionService;
   private final MsgService msgService;
   private final EventService eventService;
+  private final FlowControlService flowControlService;
   private final Vertx vertx;
 
-  public MqttPublishReceivedMessageHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService, EventService eventService, Vertx vertx) {
+  public MqttPublishReceivedMessageHandler(MqttEndpoint mqttEndpoint, SessionService sessionService, MsgService msgService, EventService eventService, FlowControlService flowControlService, Vertx vertx) {
     this.mqttEndpoint = mqttEndpoint;
     this.sessionService = sessionService;
     this.msgService = msgService;
     this.eventService = eventService;
+    this.flowControlService = flowControlService;
     this.vertx = vertx;
   }
 
@@ -77,6 +80,13 @@ public class MqttPublishReceivedMessageHandler implements Consumer<MqttPubRecMes
     if (LOGGER.isDebugEnabled()){
       LOGGER.debug("PUBREC from {}: {}", mqttEndpoint.clientIdentifier(), pubRecInfo(mqttPubRecMessage));
     }
+
+    // From https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901120: The Server MUST NOT send more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets for which it has not received PUBACK, PUBCOMP, or PUBREC with a Reason Code of 128 or greater from the Client [MQTT-3.3.4-9]. If it receives more than Receive Maximum QoS 1 and QoS 2 PUBLISH packets where it has not sent a PUBACK or PUBCOMP in response, the Client uses DISCONNECT with Reason Code 0x93 (Receive Maximum exceeded) as described in section 4.13 Handling errors.
+    // So, The MQTT broker should decrement the outbound reception number when received a PUBREC message with a Reason Code of 128 or greater.
+    if (mqttPubRecMessage.code().isError()) {
+      flowControlService.decrementOutboundReceive(mqttEndpoint.clientIdentifier());
+    }
+
     MqttProperties pubRelProperties = new MqttProperties();
     sessionService.getSessionByFields(mqttEndpoint.clientIdentifier(), new Session.Field[]{Session.Field.sessionId})
       .onItem().transformToUni(sessionFields -> msgService.getAndRemoveOutboundQos2Pub((String) sessionFields.get(Session.Field.sessionId), mqttPubRecMessage.messageId())

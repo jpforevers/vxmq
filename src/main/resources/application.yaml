@@ -79,6 +79,11 @@ vxmq:
     client-id:
       length:
         max: 1024
+    flow-control:
+      inbound:
+        receive-maximum: 65535
+      outbound:
+        receive-maximum: 65535
   http:
     server:
       port: 8060
