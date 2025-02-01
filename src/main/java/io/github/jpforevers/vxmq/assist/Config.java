@@ -33,7 +33,7 @@ public class Config {
 
   public static final int AVAILABLE_CPU_CORE_SENSORS = CpuCoreSensor.availableProcessors();
 
-  private static final SmallRyeConfig smallRyeConfig = ConfigProvider.getConfig().unwrap(SmallRyeConfig.class);
+  private static final SmallRyeConfig SMALL_RYE_CONFIG = ConfigProvider.getConfig().unwrap(SmallRyeConfig.class);
 
   public static final String KEY_VXMQ_HTTP_SERVER_PORT = "vxmq.http.server.port";
   public static final int DEFAULT_VXMQ_HTTP_SERVER_PORT = 8060;
@@ -122,136 +122,136 @@ public class Config {
   public static final int DEFAULT_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM = 65535;
 
   public static int getHttpServerPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_PORT);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_HTTP_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_PORT);
   }
 
   public static int getMqttServerPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_PORT);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_PORT);
   }
 
   public static boolean getMqttProxyProtocolEnable() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_PROXY_PROTOCOL_ENABLE);
   }
 
   public static Set<String> getMqttAuthWhitelist() {
-    String mqttAuthWhiteListString = smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_AUTH_WHITELIST, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_WHITELIST);
+    String mqttAuthWhiteListString = SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_AUTH_WHITELIST, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_WHITELIST);
     return StringUtils.isNotBlank(mqttAuthWhiteListString) ? Arrays.stream(StringUtils.split(mqttAuthWhiteListString, ',')).collect(Collectors.toSet()) : Set.of();
   }
 
   public static MqttAuthType getMqttAuthType() {
-    return MqttAuthType.valueOf(smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_AUTH_TYPE, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_TYPE));
+    return MqttAuthType.valueOf(SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_AUTH_TYPE, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_TYPE));
   }
 
   public static String getMqttAuthWebhookUrl() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_AUTH_WEBHOOK_URL, String.class).orElse(DEFAULT_VXMQ_MQTT_AUTH_WEBHOOK_URL);
   }
 
   public static int getMqttTopicLevelsMax() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_LEVELS_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_LEVELS_MAX);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_LEVELS_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_LEVELS_MAX);
   }
 
   public static int getMqttTopicAliasMax() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_ALIAS_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAX);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_TOPIC_ALIAS_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_TOPIC_ALIAS_MAX);
   }
 
   public static int getMqttMessageSizeMax() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_MESSAGE_SIZE_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_MESSAGE_SIZE_MAX);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_MESSAGE_SIZE_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_MESSAGE_SIZE_MAX);
   }
 
   public static int getMqttClientIdLengthMax() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX);
   }
 
   public static int getShellServerPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_SHELL_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_SHELL_SERVER_PORT);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_SHELL_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_SHELL_SERVER_PORT);
   }
 
   public static int getSessionQueuedMessageMax() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX, Integer.class).orElse(DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX, Integer.class).orElse(DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX);
   }
 
   public static int getIgniteBackups() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_BACKUPS, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_BACKUPS);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_BACKUPS, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_BACKUPS);
   }
 
   public static Optional<String> getIgniteDiscoveryTcpAddress() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESS, String.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_ADDRESS, String.class);
   }
 
   public static int getIgniteDiscoveryTcpPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_PORT, Integer.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_PORT);
   }
 
   public static IgniteTcpDiscoveryIpFinderType getIgniteDiscoveryTcpIpFinderType() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE, IgniteTcpDiscoveryIpFinderType.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE, IgniteTcpDiscoveryIpFinderType.class).orElse(DEFAULT_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE);
   }
 
   public static Optional<Integer> getIgniteDiscoveryTcpIpFinderMulticastPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_PORT, Integer.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_PORT, Integer.class);
   }
 
   public static Optional<String> getIgniteDiscoveryTcpIpFinderMulticastGroup() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_GROUP, String.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_GROUP, String.class);
   }
 
   public static Optional<String> getIgniteDiscoveryTcpIpFinderMulticastAddresses() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_ADDRESSES, String.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_MULTICAST_ADDRESSES, String.class);
   }
 
   public static Optional<String> getIgniteDiscoveryTcpIpFinderKubernetesNamespace() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_NAMESPACE, String.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_NAMESPACE, String.class);
   }
 
   public static Optional<String> getIgniteDiscoveryTcpIpFinderKubernetesServicename() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_SERVICENAME, String.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_SERVICENAME, String.class);
   }
 
   public static boolean getRuleStaticWriteMqttEventToMqttEnable() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_MQTT_ENABLE);
   }
 
   public static boolean getRuleStaticWriteMqttEventToKafkaEnable() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_ENABLE);
   }
 
   public static String getRuleStaticWriteMqttEventToKafkaKafkaServers() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS, String.class).orElse(DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS, String.class).orElse(DEFAULT_VXMQ_RULE_STATIC_WRITE_MQTT_EVENT_TO_KAFKA_KAFKA_SERVERS);
   }
 
   public static boolean getRuleStaticReadMqttPublishFromKafkaEnable() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_ENABLE);
   }
 
   public static String getRuleStaticReadMqttPublishFromKafkaKafkaServers() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS, String.class).orElse(DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS, String.class).orElse(DEFAULT_VXMQ_RULE_STATIC_READ_MQTT_PUBLISH_FROM_KAFKA_KAFKA_SERVERS);
   }
 
   public static boolean getMetricsEnable() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_METRICS_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_METRICS_ENABLE);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_METRICS_ENABLE, Boolean.class).orElse(DEFAULT_VXMQ_METRICS_ENABLE);
   }
 
   public static Optional<String> getVertxEventbusHost() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_HOST, String.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_HOST, String.class);
   }
 
   public static int getVertxEventbusPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_PORT, Integer.class).orElse(DEFAULT_VXMQ_VERTX_EVENTBUS_PORT);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_PORT, Integer.class).orElse(DEFAULT_VXMQ_VERTX_EVENTBUS_PORT);
   }
 
   public static Optional<String> getVertxEventbusPublicHost() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_PUBLIC_HOST, String.class);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_PUBLIC_HOST, String.class);
   }
 
   public static int getVertxEventbusPublicPort() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT, Integer.class).orElse(DEFAULT_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT, Integer.class).orElse(DEFAULT_VXMQ_VERTX_EVENTBUS_PUBLIC_PORT);
   }
 
   public static int getFlowControlInboundReceiveMaximum() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_INBOUND_RECEIVE_MAXIMUM);
   }
 
   public static int getFlowControlOutboundReceiveMaximum() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM, Integer.class).orElse(DEFAULT_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM);
   }
 
 }

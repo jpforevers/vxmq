@@ -12,7 +12,6 @@ import com.hivemq.client.mqtt.mqtt5.message.connect.Mqtt5ConnectRestrictions;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5Publish;
 import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PublishResult;
 import com.hivemq.client.mqtt.mqtt5.message.subscribe.Mqtt5Subscribe;
-import io.github.jpforevers.vxmq.assist.Config;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
 import org.junit.jupiter.api.Test;
@@ -31,11 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestOutboundReceptionMaximum extends BaseTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestOutboundReceptionMaximum.class);
-
-  private static final int OUTBOUND_RECEIVE_MAXIMUM = 10;
-  static {
-    System.setProperty(Config.KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM, String.valueOf(OUTBOUND_RECEIVE_MAXIMUM));
-  }
 
   @Test
   public void testMqtt311OutboundReceptionMaximum(Vertx vertx, VertxTestContext testContext) throws Throwable {

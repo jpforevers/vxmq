@@ -17,10 +17,12 @@
 
 package io.github.jpforevers.vxmq;
 
+import io.github.jpforevers.vxmq.assist.Config;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.buffer.Buffer;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -32,6 +34,11 @@ public class BaseTest {
 
   private static VxmqLauncher vxmqLauncher;
 
+  protected static final int OUTBOUND_RECEIVE_MAXIMUM = 10;
+  static {
+    System.setProperty(Config.KEY_VXMQ_MQTT_FLOW_CONTROL_OUTBOUND_RECEIVE_MAXIMUM, String.valueOf(OUTBOUND_RECEIVE_MAXIMUM));
+  }
+
   @BeforeAll
   static void startServer(Vertx vertx, VertxTestContext testContext) throws Throwable {
     if (vxmqLauncher == null) {
@@ -39,6 +46,13 @@ public class BaseTest {
       vxmqLauncher.start().subscribe().with(v -> testContext.completeNow(), testContext::failNow);
     } else {
       testContext.completeNow();
+    }
+  }
+
+  @AfterAll
+  static void stopServer(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    if (vxmqLauncher != null) {
+      vxmqLauncher.stop().subscribe().with(v -> testContext.completeNow(), testContext::failNow);
     }
   }
 
