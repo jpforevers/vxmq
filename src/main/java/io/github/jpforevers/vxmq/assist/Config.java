@@ -130,7 +130,7 @@ public class Config {
   }
 
   public static boolean getHttpServerLogActivity() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_HTTP_SERVER_LOG_ACTIVITY, Boolean.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_LOG_ACTIVITY);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_HTTP_SERVER_LOG_ACTIVITY, Boolean.class).orElse(DEFAULT_VXMQ_HTTP_SERVER_LOG_ACTIVITY);
   }
 
   public static int getMqttServerPort() {
@@ -138,7 +138,7 @@ public class Config {
   }
 
   public static boolean getMqttServerLogActivity() {
-    return smallRyeConfig.getOptionalValue(KEY_VXMQ_MQTT_SERVER_LOG_ACTIVITY, Boolean.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_LOG_ACTIVITY);
+    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_SERVER_LOG_ACTIVITY, Boolean.class).orElse(DEFAULT_VXMQ_MQTT_SERVER_LOG_ACTIVITY);
   }
 
   public static boolean getMqttProxyProtocolEnable() {
