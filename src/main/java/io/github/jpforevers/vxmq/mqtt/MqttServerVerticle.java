@@ -53,8 +53,8 @@ public class MqttServerVerticle extends AbstractVerticle {
       ServiceFactory.authenticationService(vertx),
       ServiceFactory.inboundTopicAliasService(vertx),
       ServiceFactory.outboundTopicAliasService(vertx),
-      MetricsFactory.getPacketsPublishReceivedCounter(),
-      MetricsFactory.getPacketsPublishSentCounter(),
+      MetricsFactory.getMqttPublishReceivedCounter(),
+      MetricsFactory.getMqttPublishSentCounter(),
       Config.getFlowControlInboundReceiveMaximum(),
       Config.getFlowControlOutboundReceiveMaximum(),
       ServiceFactory.flowService(vertx))

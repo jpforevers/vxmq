@@ -20,9 +20,6 @@ package io.github.jpforevers.vxmq;
 import io.github.jpforevers.vxmq.assist.Config;
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
 import io.github.jpforevers.vxmq.metrics.MetricsFactory;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
-import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.VertxOptions;
@@ -46,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Optional;
 
 public class VxmqLauncher {
 
@@ -63,6 +59,7 @@ public class VxmqLauncher {
     VxmqLauncher vxmqLauncher = new VxmqLauncher();
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> vxmqLauncher.start())
+      .onItem().invoke(() -> Runtime.getRuntime().addShutdownHook(new Thread(vxmqLauncher::stop)))
       .subscribe().with(ConsumerUtil.nothingToDo(), ConsumerUtil.nothingToDo());
   }
 
@@ -78,7 +75,9 @@ public class VxmqLauncher {
   }
 
   public Uni<Void> stop() {
+    LOGGER.info("Stopping VXMQ...");
     return Uni.createFrom().voidItem()
+      .onItem().invoke(v -> MetricsFactory.clean())
       .onItem().transformToUni(v -> vertx.undeploy(mainVerticleId))
       .onItem().transformToUni(v -> vertx.close());
   }
@@ -120,12 +119,7 @@ public class VxmqLauncher {
       .onItem().invoke(vtx -> this.vertx = vtx)
       .onItem().invoke(() -> {
         if (Config.getMetricsEnable()) {
-          MeterRegistry registry = BackendRegistries.getDefaultNow();
-          new UptimeMetrics().bindTo(registry);
-          new FileDescriptorMetrics().bindTo(registry);
-//          new LogbackMetrics().bindTo(registry);
-          new MetricsFactory.PacketsPublishReceivedRateGaugeMetrics(10, vertx, MetricsFactory.getPacketsPublishReceivedCounter()).bindTo(registry);
-          new MetricsFactory.PacketsPublishSentRateGaugeMetrics(10, vertx, MetricsFactory.getPacketsPublishSentCounter()).bindTo(registry);
+          MetricsFactory.init(BackendRegistries.getDefaultNow());
         }
       })
       .replaceWithVoid();
@@ -136,11 +130,10 @@ public class VxmqLauncher {
     if (Config.getMetricsEnable()) {
       VertxPrometheusOptions vertxPrometheusOptions = new VertxPrometheusOptions();
       vertxPrometheusOptions.setEnabled(true);
-//    vertxPrometheusOptions.setPublishQuantiles(true);
+      vertxPrometheusOptions.setPublishQuantiles(true);
 
       MicrometerMetricsOptions micrometerMetricsOptions = new MicrometerMetricsOptions();
       micrometerMetricsOptions.setEnabled(true);
-      micrometerMetricsOptions.setJvmMetricsEnabled(true);
       micrometerMetricsOptions.setPrometheusOptions(vertxPrometheusOptions);
       vertxOptions.setMetricsOptions(micrometerMetricsOptions);
     }
