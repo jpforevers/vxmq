@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.binder.logging.LogbackMetrics;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.vertx.mutiny.core.Vertx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ public class MetricsFactory {
 
   private static final List<MeterBinder> METRICS = new ArrayList<>();
 
-  public static void init(MeterRegistry registry) {
+  public static void init(Vertx vertx, MeterRegistry registry) {
     UptimeMetrics uptimeMetrics = new UptimeMetrics();
     uptimeMetrics.bindTo(registry);
     METRICS.add(uptimeMetrics);
@@ -61,13 +62,17 @@ public class MetricsFactory {
     jvmCompilationMetrics.bindTo(registry);
     METRICS.add(jvmCompilationMetrics);
 
-    MqttPublishReceivedMetrics mqttPublishReceivedMetrics = new MqttPublishReceivedMetrics();
-    mqttPublishReceivedMetrics.bindTo(registry);
-    METRICS.add(mqttPublishReceivedMetrics);
+    MqttPublishMetrics mqttPublishMetrics = new MqttPublishMetrics();
+    mqttPublishMetrics.bindTo(registry);
+    METRICS.add(mqttPublishMetrics);
 
-    MqttPublishSentMetrics mqttPublishSentMetrics = new MqttPublishSentMetrics();
-    mqttPublishSentMetrics.bindTo(registry);
-    METRICS.add(mqttPublishSentMetrics);
+    MqttSessionMetrics mqttSessionMetrics = new MqttSessionMetrics(vertx);
+    mqttSessionMetrics.bindTo(registry);
+    METRICS.add(mqttSessionMetrics);
+
+    MqttClientVerticleMetrics mqttClientVerticleMetrics = new MqttClientVerticleMetrics(vertx);
+    mqttClientVerticleMetrics.bindTo(registry);
+    METRICS.add(mqttClientVerticleMetrics);
   }
 
   public static void clean() {
@@ -84,15 +89,15 @@ public class MetricsFactory {
 
   public static Counter getMqttPublishReceivedCounter() {
     return METRICS.stream()
-      .filter(meterBinder -> meterBinder instanceof MqttPublishReceivedMetrics)
-      .map(meterBinder -> ((MqttPublishReceivedMetrics) meterBinder).getCounter())
+      .filter(meterBinder -> meterBinder instanceof MqttPublishMetrics)
+      .map(meterBinder -> ((MqttPublishMetrics) meterBinder).getMqttPublishReceivedCounter())
       .findAny().orElseThrow(() -> new IllegalStateException("Mqtt PUBLISH received counter not found"));
   }
 
   public static Counter getMqttPublishSentCounter() {
     return METRICS.stream()
-      .filter(meterBinder -> meterBinder instanceof MqttPublishSentMetrics)
-      .map(meterBinder -> ((MqttPublishSentMetrics) meterBinder).getCounter())
+      .filter(meterBinder -> meterBinder instanceof MqttPublishMetrics)
+      .map(meterBinder -> ((MqttPublishMetrics) meterBinder).getMqttPublishSentCounter())
       .findAny().orElseThrow(() -> new IllegalStateException("Mqtt PUBLISH sent counter not found"));
   }
 

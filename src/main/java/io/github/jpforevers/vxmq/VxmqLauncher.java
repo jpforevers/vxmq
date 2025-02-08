@@ -119,7 +119,7 @@ public class VxmqLauncher {
       .onItem().invoke(vtx -> this.vertx = vtx)
       .onItem().invoke(() -> {
         if (Config.getMetricsEnable()) {
-          MetricsFactory.init(BackendRegistries.getDefaultNow());
+          MetricsFactory.init(vertx, BackendRegistries.getDefaultNow());
         }
       })
       .replaceWithVoid();
