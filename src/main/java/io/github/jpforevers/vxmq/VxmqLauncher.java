@@ -19,6 +19,7 @@ package io.github.jpforevers.vxmq;
 
 import io.github.jpforevers.vxmq.assist.Config;
 import io.github.jpforevers.vxmq.assist.ConsumerUtil;
+import io.github.jpforevers.vxmq.assist.EBFactory;
 import io.github.jpforevers.vxmq.metrics.MetricsFactory;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.DeploymentOptions;
@@ -67,6 +68,7 @@ public class VxmqLauncher {
     Instant start = Instant.now();
     return Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> initVertx())
+      .onItem().invoke(v -> EBFactory.init(vertx))
       .onItem().transformToUni(v -> vertx.deployVerticle(MainVerticle.class.getName(), new DeploymentOptions()))
       .onItem().invoke(id -> this.mainVerticleId = id)
       .replaceWithVoid()

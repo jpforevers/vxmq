@@ -17,7 +17,7 @@
 
 package io.github.jpforevers.vxmq.service;
 
-import io.github.jpforevers.vxmq.assist.EBServices;
+import io.github.jpforevers.vxmq.assist.EBFactory;
 import io.github.jpforevers.vxmq.service.authentication.mutiny.AuthenticationService;
 import io.github.jpforevers.vxmq.service.sub.mutiny.SubService;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -27,7 +27,7 @@ class VertxServiceProxyBuilder {
 
   static SubService buildSubService(Vertx vertx) {
     io.vertx.serviceproxy.ServiceProxyBuilder builder = new io.vertx.serviceproxy.ServiceProxyBuilder(vertx.getDelegate())
-      .setAddress(EBServices.SUB_SERVICE.getEbAddress())
+      .setAddress(EBFactory.EBServices.SUB_SERVICE.getEbAddress())
       .setOptions(new DeliveryOptions().setLocalOnly(true));
     io.github.jpforevers.vxmq.service.sub.SubService subService = builder.build(io.github.jpforevers.vxmq.service.sub.SubService.class);
     return SubService.newInstance(subService);
@@ -35,7 +35,7 @@ class VertxServiceProxyBuilder {
 
   static AuthenticationService buildAuthenticationService(Vertx vertx){
     io.vertx.serviceproxy.ServiceProxyBuilder builder = new io.vertx.serviceproxy.ServiceProxyBuilder(vertx.getDelegate())
-      .setAddress(EBServices.AUTHENTICATION_SERVICE.getEbAddress())
+      .setAddress(EBFactory.EBServices.AUTHENTICATION_SERVICE.getEbAddress())
       .setOptions(new DeliveryOptions().setLocalOnly(true));
     io.github.jpforevers.vxmq.service.authentication.AuthenticationService subService = builder.build(io.github.jpforevers.vxmq.service.authentication.AuthenticationService.class);
     return AuthenticationService.newInstance(subService);

@@ -18,7 +18,7 @@
 package io.github.jpforevers.vxmq.service.authentication;
 
 import io.github.jpforevers.vxmq.assist.Config;
-import io.github.jpforevers.vxmq.assist.EBServices;
+import io.github.jpforevers.vxmq.assist.EBFactory;
 import io.github.jpforevers.vxmq.service.authentication.impl.AuthenticationServiceNoneImpl;
 import io.github.jpforevers.vxmq.service.authentication.impl.AuthenticationServiceWebHookImpl;
 import io.smallrye.mutiny.Uni;
@@ -41,7 +41,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
       case WEBHOOK -> authenticationService = AuthenticationServiceWebHookImpl.getInstance(vertx, Config.getMqttAuthWebhookUrl());
       default -> authenticationService = AuthenticationServiceNoneImpl.getInstance(vertx);
     }
-    new ServiceBinder(vertx.getDelegate()).setAddress(EBServices.AUTHENTICATION_SERVICE.getEbAddress())
+    new ServiceBinder(vertx.getDelegate()).setAddress(EBFactory.EBServices.AUTHENTICATION_SERVICE.getEbAddress())
       .registerLocal(AuthenticationService.class, authenticationService);
     return Uni.createFrom().voidItem();
   }

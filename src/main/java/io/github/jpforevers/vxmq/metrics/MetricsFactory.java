@@ -81,7 +81,7 @@ public class MetricsFactory {
         try {
           ((AutoCloseable) meterBinder).close();
         } catch (Exception e) {
-          throw new RuntimeException(e);
+          throw new RuntimeException("Error occurred when closing MeterBinder", e);
         }
       }
     }
