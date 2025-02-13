@@ -26,14 +26,16 @@ public class Retain {
   private final String topicName;  // don't contain wildcard
   private final int qos;
   private final Buffer payload;
+  private final Integer messageExpiryInterval;
   private final Integer payloadFormatIndicator;
   private final String contentType;
   private final long createdTime;
 
-  public Retain(String topicName, int qos, Buffer payload, Integer payloadFormatIndicator, String contentType, long createdTime) {
+  public Retain(String topicName, int qos, Buffer payload, Integer messageExpiryInterval, Integer payloadFormatIndicator, String contentType, long createdTime) {
     this.topicName = topicName;
     this.qos = qos;
     this.payload = payload;
+    this.messageExpiryInterval = messageExpiryInterval;
     this.payloadFormatIndicator = payloadFormatIndicator;
     this.contentType = contentType;
     this.createdTime = createdTime;
@@ -43,6 +45,7 @@ public class Retain {
     this.topicName = jsonObject.getString(ModelConstants.FIELD_NAME_TOPIC_NAME);
     this.qos = jsonObject.getInteger(ModelConstants.FIELD_NAME_QOS);
     this.payload = jsonObject.getBuffer(ModelConstants.FIELD_NAME_PAYLOAD);
+    this.messageExpiryInterval = jsonObject.getInteger(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL);
     this.payloadFormatIndicator = jsonObject.getInteger(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR);
     this.contentType = jsonObject.getString(ModelConstants.FIELD_NAME_CONTENT_TYPE);
     this.createdTime = jsonObject.getLong(ModelConstants.FIELD_NAME_CREATED_TIME);
@@ -53,6 +56,7 @@ public class Retain {
     jsonObject.put(ModelConstants.FIELD_NAME_TOPIC_NAME, this.topicName);
     jsonObject.put(ModelConstants.FIELD_NAME_QOS, this.qos);
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD, this.payload);
+    jsonObject.put(ModelConstants.FIELD_NAME_MESSAGE_EXPIRY_INTERVAL, this.messageExpiryInterval);
     jsonObject.put(ModelConstants.FIELD_NAME_PAYLOAD_FORMAT_INDICATOR, this.payloadFormatIndicator);
     jsonObject.put(ModelConstants.FIELD_NAME_CONTENT_TYPE, this.contentType);
     jsonObject.put(ModelConstants.FIELD_NAME_CREATED_TIME, this.createdTime);
@@ -74,6 +78,10 @@ public class Retain {
 
   public Buffer getPayload() {
     return payload;
+  }
+
+  public Integer getMessageExpiryInterval() {
+    return messageExpiryInterval;
   }
 
   public Integer getPayloadFormatIndicator() {

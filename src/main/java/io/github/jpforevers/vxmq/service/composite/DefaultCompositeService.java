@@ -117,7 +117,7 @@ public class DefaultCompositeService implements CompositeService {
             .onItem().transformToUni(v -> {
               if (will.isWillRetain()) {
                 if (will.getWillMessage() != null && will.getWillMessage().length() > 0) {
-                  Retain retain = new Retain(will.getWillTopicName(), will.getWillQos(), will.getWillMessage(), will.getPayloadFormatIndicator(), will.getContentType(), Instant.now().toEpochMilli());
+                  Retain retain = new Retain(will.getWillTopicName(), will.getWillQos(), will.getWillMessage(), will.getMessageExpiryInterval(), will.getPayloadFormatIndicator(), will.getContentType(), Instant.now().toEpochMilli());
                   return retainService.saveOrUpdateRetain(retain);
                 } else {
                   return retainService.removeRetain(will.getWillTopicName());

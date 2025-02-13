@@ -261,29 +261,36 @@ public class MqttSubscribeHandler implements Consumer<MqttSubscribeMessage> {
           .onItem().transformToUni(retains -> {
             List<Uni<Void>> unis = new ArrayList<>();
             for (Retain retain : retains) {
-              // Bits 4 and 5 of the Subscription Options represent the Retain Handling option. This option specifies whether retained messages are sent when the subscription is established. This does not affect the sending of retained messages at any point after the subscribe. If there are no retained messages matching the Topic Filter, all of these values act the same. The values are:
-              // 0 = Send retained messages at the time of the subscribe
-              // 1 = Send retained messages at subscribe only if the subscription does not currently exist
-              // 2 = Do not send retained messages at the time of the subscribe
-              switch (retainedHandlingPolicy) {
-                case SEND_AT_SUBSCRIBE:
-                  unis.add(compositeService.sendToClient(session, new MsgToClient()
-                    .setSessionId(session.getSessionId()).setClientId(clientId).setTopic(retain.getTopicName())
-                    .setQos(retain.getQos()).setPayload(retain.getPayload()).setDup(false).setRetain(true)
-                    .setPayloadFormatIndicator(retain.getPayloadFormatIndicator()).setContentType(retain.getContentType())
-                    .setCreatedTime(Instant.now().toEpochMilli())));
-                  break;
-                case SEND_AT_SUBSCRIBE_IF_NOT_YET_EXISTS:
-                  if (!ifSubscriptionAlreadyExist) {
+              if (retain.getMessageExpiryInterval() != null && retain.getMessageExpiryInterval() != 0
+                && retain.getCreatedTime() + retain.getMessageExpiryInterval() * 1000 < Instant.now().toEpochMilli()) {
+                // Message expiry interval exist and already expired, skip this message.
+                LOGGER.warn("Retain message expired: {}", retain);
+                unis.add(retainService.removeRetain(retain.getTopicName()));
+              } else {
+                // Bits 4 and 5 of the Subscription Options represent the Retain Handling option. This option specifies whether retained messages are sent when the subscription is established. This does not affect the sending of retained messages at any point after the subscribe. If there are no retained messages matching the Topic Filter, all of these values act the same. The values are:
+                // 0 = Send retained messages at the time of the subscribe
+                // 1 = Send retained messages at subscribe only if the subscription does not currently exist
+                // 2 = Do not send retained messages at the time of the subscribe
+                switch (retainedHandlingPolicy) {
+                  case SEND_AT_SUBSCRIBE:
                     unis.add(compositeService.sendToClient(session, new MsgToClient()
                       .setSessionId(session.getSessionId()).setClientId(clientId).setTopic(retain.getTopicName())
                       .setQos(retain.getQos()).setPayload(retain.getPayload()).setDup(false).setRetain(true)
                       .setPayloadFormatIndicator(retain.getPayloadFormatIndicator()).setContentType(retain.getContentType())
                       .setCreatedTime(Instant.now().toEpochMilli())));
-                  }
-                  break;
-                case DONT_SEND_AT_SUBSCRIBE:
-                  // Nothing to do.
+                    break;
+                  case SEND_AT_SUBSCRIBE_IF_NOT_YET_EXISTS:
+                    if (!ifSubscriptionAlreadyExist) {
+                      unis.add(compositeService.sendToClient(session, new MsgToClient()
+                        .setSessionId(session.getSessionId()).setClientId(clientId).setTopic(retain.getTopicName())
+                        .setQos(retain.getQos()).setPayload(retain.getPayload()).setDup(false).setRetain(true)
+                        .setPayloadFormatIndicator(retain.getPayloadFormatIndicator()).setContentType(retain.getContentType())
+                        .setCreatedTime(Instant.now().toEpochMilli())));
+                    }
+                    break;
+                  case DONT_SEND_AT_SUBSCRIBE:
+                    // Nothing to do.
+                }
               }
             }
             return unis.size() > 0 ? Uni.combine().all().unis(unis).collectFailures().discardItems() : Uni.createFrom().voidItem();

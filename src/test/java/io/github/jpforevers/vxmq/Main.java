@@ -17,10 +17,39 @@
 
 package io.github.jpforevers.vxmq;
 
-public class Main {
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.mutiny.core.Vertx;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class Main extends AbstractVerticle {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
+  private static int count = 0;
+
+  @Override
+  public Uni<Void> asyncStart() {
+    LOGGER.info("Starting...");
+    return vertx.createHttpServer()
+      .requestHandler(req -> {
+        count++;
+        LOGGER.info("count: " + count);
+        req.response()
+          .putHeader("content-type", "text/plain")
+          .end("Hello from Vert.x!")
+          .subscribe().with(v -> {}, Throwable::printStackTrace);
+      })
+      .listen(8080)
+      .replaceWithVoid();
+  }
 
   public static void main(String[] args) {
-
+    Vertx vertx = Vertx.vertx();
+    vertx.deployVerticle(Main.class.getName(), new DeploymentOptions().setInstances(2))
+      .subscribe().with(v -> {}, Throwable::printStackTrace);
   }
 
 }

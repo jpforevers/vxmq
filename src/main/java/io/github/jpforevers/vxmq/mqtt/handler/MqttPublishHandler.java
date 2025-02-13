@@ -327,17 +327,16 @@ public class MqttPublishHandler implements Consumer<MqttPublishMessage> {
   private Uni<Void> handleRetain(MqttPublishMessage mqttPublishMessage) {
     if (mqttPublishMessage.isRetain()) {
       if (mqttPublishMessage.payload() != null && mqttPublishMessage.payload().length() > 0) {
-        Integer payloadFormatIndicator;
-        String contentType;
+        Integer messageExpiryInterval = null;
+        Integer payloadFormatIndicator = null;
+        String contentType = null;
         if (mqttEndpoint.protocolVersion() > MqttVersion.MQTT_3_1_1.protocolLevel()) {
+          messageExpiryInterval = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PUBLICATION_EXPIRY_INTERVAL, MqttProperties.IntegerProperty.class);
           payloadFormatIndicator = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.PAYLOAD_FORMAT_INDICATOR, MqttProperties.IntegerProperty.class);
           contentType = MqttPropertiesUtil.getValue(mqttPublishMessage.properties(), MqttProperties.MqttPropertyType.CONTENT_TYPE, MqttProperties.StringProperty.class);
-        } else {
-          payloadFormatIndicator = null;
-          contentType = null;
         }
         Retain retainMessage = new Retain(mqttPublishMessage.topicName(), mqttPublishMessage.qosLevel().value(),
-          mqttPublishMessage.payload().getDelegate(), payloadFormatIndicator, contentType, Instant.now().toEpochMilli());
+          mqttPublishMessage.payload().getDelegate(), messageExpiryInterval, payloadFormatIndicator, contentType, Instant.now().toEpochMilli());
         return retainService.saveOrUpdateRetain(retainMessage);
       } else {
         return retainService.removeRetain(mqttPublishMessage.topicName());
