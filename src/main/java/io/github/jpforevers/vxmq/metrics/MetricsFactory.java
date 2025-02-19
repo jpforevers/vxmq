@@ -87,18 +87,26 @@ public class MetricsFactory {
     }
   }
 
+  /**
+   * Get MQTT PUBLISH received counter
+   * @return may be null if metrics not enable
+   */
   public static Counter getMqttPublishReceivedCounter() {
     return METRICS.stream()
       .filter(meterBinder -> meterBinder instanceof MqttPublishMetrics)
       .map(meterBinder -> ((MqttPublishMetrics) meterBinder).getMqttPublishReceivedCounter())
-      .findAny().orElseThrow(() -> new IllegalStateException("Mqtt PUBLISH received counter not found"));
+      .findAny().orElse(null);
   }
 
+  /**
+   * Get MQTT PUBLISH sent counter
+   * @return may be null if metrics not enable
+   */
   public static Counter getMqttPublishSentCounter() {
     return METRICS.stream()
       .filter(meterBinder -> meterBinder instanceof MqttPublishMetrics)
       .map(meterBinder -> ((MqttPublishMetrics) meterBinder).getMqttPublishSentCounter())
-      .findAny().orElseThrow(() -> new IllegalStateException("Mqtt PUBLISH sent counter not found"));
+      .findAny().orElse(null);
   }
 
 }
