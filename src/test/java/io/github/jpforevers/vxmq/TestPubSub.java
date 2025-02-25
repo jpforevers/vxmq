@@ -33,8 +33,8 @@ public class TestPubSub extends BaseTest {
   public void testMqtt311PubSubSuccess(Vertx vertx, VertxTestContext testContext) {
     Checkpoint checkpoint = testContext.checkpoint(3);
     AtomicInteger publishReceivedCounter = new AtomicInteger();
-    Mqtt3AsyncClient mqtt3SubAsyncClient = Mqtt3Client.builder().identifier("subClient").buildAsync();
-    Mqtt3AsyncClient mqtt3PubAsyncClient = Mqtt3Client.builder().identifier("pubClient").buildAsync();
+    Mqtt3AsyncClient mqtt3SubAsyncClient = Mqtt3Client.builder().identifier("testMqtt311PubSubSuccessSubClient").buildAsync();
+    Mqtt3AsyncClient mqtt3PubAsyncClient = Mqtt3Client.builder().identifier("testMqtt311PubSubSuccessPubClient").buildAsync();
     mqtt3SubAsyncClient.connect()
       .thenCompose(v -> {
         Mqtt3Subscribe mqtt3Subscribe = Mqtt3Subscribe.builder().topicFilter("abc/def/123").qos(MqttQos.AT_LEAST_ONCE).build();
@@ -71,9 +71,9 @@ public class TestPubSub extends BaseTest {
     AtomicInteger publishReceivedCounter1 = new AtomicInteger();
     AtomicInteger publishReceivedCounter2 = new AtomicInteger();
     AtomicInteger publishReceivedCounter3 = new AtomicInteger();
-    Mqtt3AsyncClient mqtt3SubAsyncClient1 = Mqtt3Client.builder().identifier("subClient1").buildAsync();
-    Mqtt3AsyncClient mqtt3SubAsyncClient2 = Mqtt3Client.builder().identifier("subClient2").buildAsync();
-    Mqtt3AsyncClient mqtt3SubAsyncClient3 = Mqtt3Client.builder().identifier("subClient3").buildAsync();
+    Mqtt3AsyncClient mqtt3SubAsyncClient1 = Mqtt3Client.builder().identifier("testMqtt311PubSubSingleLevelWildcardSubClient1").buildAsync();
+    Mqtt3AsyncClient mqtt3SubAsyncClient2 = Mqtt3Client.builder().identifier("testMqtt311PubSubSingleLevelWildcardSubClient2").buildAsync();
+    Mqtt3AsyncClient mqtt3SubAsyncClient3 = Mqtt3Client.builder().identifier("testMqtt311PubSubSingleLevelWildcardSubClient3").buildAsync();
     Mqtt3AsyncClient mqtt3PubAsyncClient = Mqtt3Client.builder().identifier("pubClient").buildAsync();
     mqtt3SubAsyncClient1.connect()
       .thenCompose(v -> {
@@ -126,8 +126,8 @@ public class TestPubSub extends BaseTest {
   public void testMqtt311PubSubMultiLevelWildcard(Vertx vertx, VertxTestContext testContext) {
     Checkpoint checkpoint = testContext.checkpoint(3);
     AtomicInteger publishReceivedCounter = new AtomicInteger();
-    Mqtt3AsyncClient mqtt3SubAsyncClient = Mqtt3Client.builder().identifier("subClient").buildAsync();
-    Mqtt3AsyncClient mqtt3PubAsyncClient = Mqtt3Client.builder().identifier("pubClient").buildAsync();
+    Mqtt3AsyncClient mqtt3SubAsyncClient = Mqtt3Client.builder().identifier("testMqtt311PubSubMultiLevelWildcardSubClient").buildAsync();
+    Mqtt3AsyncClient mqtt3PubAsyncClient = Mqtt3Client.builder().identifier("testMqtt311PubSubMultiLevelWildcardPubClient").buildAsync();
     mqtt3SubAsyncClient.connect()
       .thenCompose(v -> {
         Mqtt3Subscribe mqtt3Subscribe = Mqtt3Subscribe.builder().topicFilter("abc/#").qos(MqttQos.AT_LEAST_ONCE).build();

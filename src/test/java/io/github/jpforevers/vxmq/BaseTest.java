@@ -22,7 +22,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.buffer.Buffer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -46,13 +45,6 @@ public class BaseTest {
       vxmqLauncher.start().subscribe().with(v -> testContext.completeNow(), testContext::failNow);
     } else {
       testContext.completeNow();
-    }
-  }
-
-  @AfterAll
-  static void stopServer(Vertx vertx, VertxTestContext testContext) throws Throwable {
-    if (vxmqLauncher != null) {
-      vxmqLauncher.stop().subscribe().with(v -> testContext.completeNow(), testContext::failNow);
     }
   }
 

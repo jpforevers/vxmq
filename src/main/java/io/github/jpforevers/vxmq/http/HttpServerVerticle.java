@@ -48,8 +48,10 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     HttpServerOptions httpServerOptions = new HttpServerOptions();
     httpServerOptions.setLogActivity(Config.getHttpServerLogActivity());
-    return vertx.createHttpServer(httpServerOptions).requestHandler(rootRouter)
+    return vertx.createHttpServer(httpServerOptions)
+      .requestHandler(rootRouter)
       .exceptionHandler(t -> LOGGER.error("Error occurred at http server layer", t))
+      .invalidRequestHandler(httpServerRequest -> LOGGER.error("Invalid request, method: {}, uri: {}", httpServerRequest.method(), httpServerRequest.uri()))
       .listen(Config.getHttpServerPort())
       .replaceWithVoid();
   }
