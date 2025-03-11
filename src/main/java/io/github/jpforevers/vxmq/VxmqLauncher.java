@@ -60,7 +60,7 @@ public class VxmqLauncher {
     VxmqLauncher vxmqLauncher = new VxmqLauncher();
     Uni.createFrom().voidItem()
       .onItem().transformToUni(v -> vxmqLauncher.start())
-      .onItem().invoke(() -> Runtime.getRuntime().addShutdownHook(new Thread(vxmqLauncher::stop)))
+      .onItem().invoke(() -> Runtime.getRuntime().addShutdownHook(new Thread(() -> vxmqLauncher.stop().subscribe().with(ConsumerUtil.nothingToDo(), Throwable::printStackTrace))))
       .subscribe().with(ConsumerUtil.nothingToDo(), ConsumerUtil.nothingToDo());
   }
 
