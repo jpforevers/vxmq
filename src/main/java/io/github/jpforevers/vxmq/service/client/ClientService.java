@@ -25,17 +25,17 @@ public interface ClientService {
 
   /**
    * Get client distributed lock
-   * @param clientId clientId
+   * @param key key
    * @param timeout timeout
    * @return Void
    */
-  Uni<Void> obtainClientLock(String clientId, long timeout);
+  Uni<Void> obtainClientLock(String key, long timeout);
 
   /**
    * Release client lock
-   * @param clientId clientId
+   * @param key key
    */
-  void releaseClientLock(String clientId);
+  void releaseClientLock(String key);
 
   /**
    * Close {@link io.vertx.mqtt.MqttEndpoint}.
