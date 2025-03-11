@@ -77,11 +77,12 @@ import java.util.regex.Pattern;
  */
 public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
+  private final static Logger LOGGER = LoggerFactory.getLogger(MqttEndpointHandler.class);
+
   private final static String CONTEXT_KEY_SESSION_PRESENT = "sessionPresent";
   private final static String CONTEXT_KEY_SESSION_TAKEN_OVER = "sessionTakenOver";
   private final static String CONTEXT_KEY_SESSION_TAKEN_OVER_OLD_SESSION = "sessionTakenOverOldSession";
-
-  private final static Logger LOGGER = LoggerFactory.getLogger(MqttEndpointHandler.class);
+  private final static String CLIENT_LOCK_KEY_PREFIX_CONNECT = "connecting_";
 
   private final Vertx vertx;
   private final SessionService sessionService;
@@ -159,7 +160,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
 
     Context context = Context.empty();
     Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> clientService.obtainClientLock(mqttEndpoint.clientIdentifier(), 2000))
+      .onItem().transformToUni(v -> clientService.obtainClientLock(CLIENT_LOCK_KEY_PREFIX_CONNECT + mqttEndpoint.clientIdentifier(), 2000))
       .onItem().transformToUni(v -> checkClientId(mqttEndpoint.clientIdentifier()))
       .onItem().transformToUni(v -> authenticate(mqttEndpoint))
       .onItem().transformToUni(v -> kickOffExistingConnection(mqttEndpoint, context))
@@ -171,7 +172,7 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
       .onItem().transformToUni(session -> handleWill(mqttEndpoint, session))
       // Publish EVENT_MQTT_CONNECTED_EVENT
       .onItem().call(v -> publishMqttConnectedEvent(mqttEndpoint))
-      .eventually(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
+      .eventually(() -> clientService.releaseClientLock(CLIENT_LOCK_KEY_PREFIX_CONNECT + mqttEndpoint.clientIdentifier()))
       .subscribe().with(context, v -> {
         boolean sessionPresent = getSessionPresentFromContext(context);
         if (mqttEndpoint.protocolVersion() <= MqttVersion.MQTT_3_1_1.protocolLevel()) {
@@ -289,7 +290,6 @@ public class MqttEndpointHandler implements Consumer<MqttEndpoint> {
             long timerId = vertx.setTimer(3000, l -> uniEmitter.complete(null));
             AtomicReference<MessageConsumer<JsonObject>> messageConsumer = new AtomicReference<>();
             return Uni.createFrom().voidItem()
-              .onItem().invoke(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
               .onItem().transformToUni(v -> eventService
                 .consumeEvent(EventType.EVENT_MQTT_ENDPOINT_CLOSED, data -> {
                   if (LOGGER.isDebugEnabled()) {

@@ -58,26 +58,26 @@ public class DefaultClientService implements ClientService {
   }
 
   @Override
-  public Uni<Void> obtainClientLock(String clientId, long timeout) {
-    return vertx.sharedData().getLockWithTimeout(clientId, timeout)
-      .onItem().invoke(lock -> clientLockMap.put(clientId, lock))
+  public Uni<Void> obtainClientLock(String key, long timeout) {
+    return vertx.sharedData().getLockWithTimeout(key, timeout)
+      .onItem().invoke(lock -> clientLockMap.put(key, lock))
       .onItem().invoke(lock -> {
         if (LOGGER.isDebugEnabled()) {
-          LOGGER.debug("Client lock obtained for {}", clientId);
+          LOGGER.debug("Client lock obtained for {}", key);
         }
       })
       .replaceWithVoid();
   }
 
   @Override
-  public void releaseClientLock(String clientId) {
-    Lock lock = clientLockMap.get(clientId);
+  public void releaseClientLock(String key) {
+    Lock lock = clientLockMap.get(key);
     if (lock != null) {
       lock.release();
-      clientLockMap.remove(clientId);
+      clientLockMap.remove(key);
     }
     if (LOGGER.isDebugEnabled()) {
-      LOGGER.debug("Client lock released for {}", clientId);
+      LOGGER.debug("Client lock released for {}", key);
     }
   }
 

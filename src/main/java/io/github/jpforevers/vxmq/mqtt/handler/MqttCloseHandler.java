@@ -47,6 +47,8 @@ public class MqttCloseHandler implements Runnable {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(MqttCloseHandler.class);
 
+  private final static String CLIENT_LOCK_KEY_PREFIX_CLOSE = "closing_";
+
   private final MqttEndpoint mqttEndpoint;
   private final Vertx vertx;
   private final ClientService clientService;
@@ -84,7 +86,7 @@ public class MqttCloseHandler implements Runnable {
     }
 
     Uni.createFrom().voidItem()
-      .onItem().transformToUni(v -> clientService.obtainClientLock(mqttEndpoint.clientIdentifier(), 2000))
+      .onItem().transformToUni(v -> clientService.obtainClientLock(CLIENT_LOCK_KEY_PREFIX_CLOSE + mqttEndpoint.clientIdentifier(), 2000))
       .onItem().transformToUni(v -> sessionService.getSession(mqttEndpoint.clientIdentifier()))
       .onItem().transformToUni(session -> {
         if (session != null) {
@@ -104,7 +106,7 @@ public class MqttCloseHandler implements Runnable {
       })
       .onItem().invoke(() -> inboundTopicAliasService.clearTopicAlias(mqttEndpoint.clientIdentifier()))
       .onItem().invoke(() -> outboundTopicAliasService.clearTopicAlias(mqttEndpoint.clientIdentifier()))
-      .eventually(() -> clientService.releaseClientLock(mqttEndpoint.clientIdentifier()))
+      .eventually(() -> clientService.releaseClientLock(CLIENT_LOCK_KEY_PREFIX_CLOSE + mqttEndpoint.clientIdentifier()))
       .subscribe().with(ConsumerUtil.nothingToDo(), t -> LOGGER.error("Error occurred when processing MQTT endpoint close", t));
   }
 
