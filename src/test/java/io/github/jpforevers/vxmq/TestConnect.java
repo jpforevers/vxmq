@@ -18,6 +18,7 @@
 package io.github.jpforevers.vxmq;
 
 import io.github.jpforevers.vxmq.assist.Config;
+import io.smallrye.mutiny.Uni;
 import com.hivemq.client.mqtt.lifecycle.MqttDisconnectSource;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
@@ -28,6 +29,8 @@ import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5ConnAckException;
 import com.hivemq.client.mqtt.mqtt5.exceptions.Mqtt5DisconnectException;
 import com.hivemq.client.mqtt.mqtt5.message.connect.connack.Mqtt5ConnAckReasonCode;
 import com.hivemq.client.mqtt.mqtt5.message.disconnect.Mqtt5DisconnectReasonCode;
+import io.vertx.junit5.Checkpoint;
+import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.buffer.Buffer;
@@ -37,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -158,6 +163,64 @@ public class TestConnect extends BaseTest {
       .thenAccept(mqtt5ConnAck -> assertEquals(Mqtt5ConnAckReasonCode.SUCCESS, mqtt5ConnAck.getReasonCode()))
       .thenCompose(v -> disconnectFuture)
       .whenComplete(whenCompleteBiConsumer(testContext));
+  }
+
+  @Test
+  @Timeout(value = 5000)
+  void testMqtt311SameClientIdConcurrentConn(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    int clientNum = 3;
+    Checkpoint checkpointConnSuccess = testContext.checkpoint(clientNum);
+    Checkpoint checkpointClose = testContext.checkpoint(clientNum - 1);
+    List<Uni<Void>> unis = new ArrayList<>();
+    for (int i = 0; i < clientNum; i++) {
+      Mqtt3AsyncClient mqtt3AsyncClient = Mqtt3Client.builder()
+        .addDisconnectedListener(mqttClientDisconnectedContext -> checkpointClose.flag())
+        .identifier("testMqtt311SameClientIdConcurrentConn")
+        .buildAsync();
+      Uni<Void> uni = Uni.createFrom().completionStage(mqtt3AsyncClient.connect())
+        .onItem().invoke(mqtt3ConnAck -> {
+          LOGGER.info("Connected, code: {}", mqtt3ConnAck.getReturnCode());
+          if (!mqtt3ConnAck.getReturnCode().isError()) {
+            checkpointConnSuccess.flag();
+          }
+        })
+        .replaceWithVoid();
+      unis.add(uni);
+    }
+    Uni.combine().all().unis(unis).collectFailures().discardItems()
+      .subscribe().with(v -> {}, testContext::failNow);
+  }
+
+  @Test
+  @Timeout(value = 5000)
+  void testMqtt5SameClientIdConcurrentConn(Vertx vertx, VertxTestContext testContext) throws Throwable {
+    int clientNum = 3;
+    Checkpoint checkpointConnSuccess = testContext.checkpoint(clientNum);
+    Checkpoint checkpointClose = testContext.checkpoint(clientNum - 1);
+    List<Uni<Void>> unis = new ArrayList<>();
+    for (int i = 0; i < clientNum; i++) {
+      Mqtt5AsyncClient mqtt5AsyncClient = Mqtt5Client.builder()
+        .addDisconnectedListener(mqttClientDisconnectedContext -> {
+          if (mqttClientDisconnectedContext.getSource().equals(MqttDisconnectSource.SERVER)
+            && mqttClientDisconnectedContext.getCause() instanceof Mqtt5DisconnectException
+            && ((Mqtt5DisconnectException) mqttClientDisconnectedContext.getCause()).getMqttMessage().getReasonCode().equals(Mqtt5DisconnectReasonCode.SESSION_TAKEN_OVER)) {
+            checkpointClose.flag();
+          }
+        })
+        .identifier("testMqtt5SameClientIdConcurrentConn")
+        .buildAsync();
+      Uni<Void> uni = Uni.createFrom().completionStage(mqtt5AsyncClient.connect())
+        .onItem().invoke(mqtt5ConnAck -> {
+          LOGGER.info("Connected, code: {}", mqtt5ConnAck.getReasonCode());
+          if (!mqtt5ConnAck.getReasonCode().isError()) {
+            checkpointConnSuccess.flag();
+          }
+        })
+        .replaceWithVoid();
+      unis.add(uni);
+    }
+    Uni.combine().all().unis(unis).collectFailures().discardItems()
+      .subscribe().with(v -> {}, testContext::failNow);
   }
 
 }
