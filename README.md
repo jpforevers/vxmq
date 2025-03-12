@@ -43,3 +43,13 @@ docker run -d --name vxmq --network host -e VXMQ_HTTP_SERVER_PORT=8060 -e VXMQ_M
 ```
 
 ## kubernetes
+
+VXMQ should be deployed as a Kubernetes StatefulSet.
+
+VXMQ has built-in support for Kubernetes, and you only need to configure the following three environment variables to build a cluster:
+
+* VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_TYPE, value is `kubernetes`.
+
+* VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_NAMESPACE, value is your Kubernetes namespace.
+
+* VXMQ_IGNITE_DISCOVERY_TCP_IP_FINDER_KUBERNETES_SERVICENAME, value is your Kubernetes Headless service name.
