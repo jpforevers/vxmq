@@ -124,6 +124,13 @@ public class VxmqLauncher {
           MetricsFactory.init(vertx, BackendRegistries.getDefaultNow());
         }
       })
+      .onItem().invoke(() -> {
+        boolean isNativeTransportEnabled = vertx.isNativeTransportEnabled();
+        LOGGER.info("Is native transport enabled: " + isNativeTransportEnabled);
+        if (!isNativeTransportEnabled && vertx.unavailableNativeTransportCause() != null) {
+          LOGGER.error("Unavailable native transport cause: ", vertx.unavailableNativeTransportCause());
+        }
+      })
       .replaceWithVoid();
   }
 
@@ -145,6 +152,7 @@ public class VxmqLauncher {
     Config.getVertxEventbusPublicHost().ifPresent(eventBusOptions::setClusterPublicHost);
     eventBusOptions.setClusterPublicPort(Config.getVertxEventbusPublicPort());
     vertxOptions.setEventBusOptions(eventBusOptions);
+    vertxOptions.setPreferNativeTransport(true);
     return vertxOptions;
   }
 

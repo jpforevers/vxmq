@@ -198,6 +198,13 @@
     </dependency>
 
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <classifier>linux-x86_64</classifier>
+      <!--<version>Should align with netty version that Vert.x uses</version>-->
+    </dependency>
+
+    <dependency>
       <groupId>com.hivemq</groupId>
       <artifactId>hivemq-mqtt-client</artifactId>
       <version>${hivemq.client.version}</version>
