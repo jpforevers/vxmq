@@ -25,7 +25,6 @@ import io.github.jpforevers.vxmq.mqtt.MqttServerVerticle;
 import io.github.jpforevers.vxmq.service.authentication.AuthenticationVerticle;
 import io.github.jpforevers.vxmq.service.sub.SubVerticle;
 import io.github.jpforevers.vxmq.rule.RuleVerticle;
-import io.github.jpforevers.vxmq.shell.ShellServerVerticle;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
@@ -79,9 +78,6 @@ public class MainVerticle extends AbstractVerticle {
 
       .onItem().transformToUni(s -> vertx.deployVerticle(DirtyClientVerticleCleaner::new, new DeploymentOptions()))
       .onItem().invoke(s -> LOGGER.info("{} deployed", DirtyClientVerticleCleaner.class.getSimpleName()))
-
-      .onItem().transformToUni(s -> vertx.deployVerticle(ShellServerVerticle::new, new DeploymentOptions()))
-      .onItem().invoke(s -> LOGGER.info("{} deployed", ShellServerVerticle.class.getSimpleName()))
 
       .onItem().transformToUni(s -> vertx.deployVerticle(HttpServerVerticle::new, new DeploymentOptions().setInstances(Config.AVAILABLE_CPU_CORE_SENSORS)))
       .onItem().invoke(s -> LOGGER.info("{} deployed", HttpServerVerticle.class.getSimpleName()))

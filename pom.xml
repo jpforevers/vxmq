@@ -191,13 +191,6 @@
       <version>${java-uuid-generator.version}</version>
     </dependency>
 
-    <!-- asciitable -->
-    <dependency>
-      <groupId>de.vandermeer</groupId>
-      <artifactId>asciitable</artifactId>
-      <version>${asciitable.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-codec-haproxy</artifactId>
