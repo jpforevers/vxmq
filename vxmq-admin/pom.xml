@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.github.jpforevers</groupId>
+  <artifactId>vxmq-admin</artifactId>
+  <version>999-SNAPSHOT</version>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.12.1</version>
+        
+        <!-- 阶段1: 安装Node环境 -->
+        <executions>
+          <execution>
+            <id>install-node-and-npm</id>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+            <configuration>
+              <nodeVersion>v20.19.0</nodeVersion>
+              <npmVersion>10.8.2</npmVersion>
+            </configuration>
+          </execution>
+
+          <!-- 阶段2: 安装前端依赖 -->
+          <execution>
+            <id>npm-install</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>install</arguments>
+            </configuration>
+          </execution>
+
+          <!-- 阶段3: 执行前端构建 -->
+          <execution>
+            <id>npm-build</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>run build</arguments>
+            </configuration>
+          </execution>
+        </executions>
+
+        <!-- 指定前端工程路径 -->
+        <configuration>
+          <installDirectory>target</installDirectory>
+          <workingDirectory>${basedir}</workingDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>  
+
+</project>
