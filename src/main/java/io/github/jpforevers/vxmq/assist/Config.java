@@ -60,9 +60,6 @@ public class Config {
   public static final String KEY_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX = "vxmq.mqtt.client-id.length.max";
   public static final int DEFAULT_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX = 1024;
 
-  public static final String KEY_VXMQ_SHELL_SERVER_PORT = "vxmq.shell.server.port";
-  public static final int DEFAULT_VXMQ_SHELL_SERVER_PORT = 10022;
-
   public static final String KEY_VXMQ_SESSION_QUEUED_MESSAGE_MAX = "vxmq.session.queued-message.max";
   public static final int DEFAULT_VXMQ_SESSION_QUEUED_MESSAGE_MAX = 1000;
 
@@ -172,10 +169,6 @@ public class Config {
 
   public static int getMqttClientIdLengthMax() {
     return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX, Integer.class).orElse(DEFAULT_VXMQ_MQTT_CLIENT_ID_LENGTH_MAX);
-  }
-
-  public static int getShellServerPort() {
-    return SMALL_RYE_CONFIG.getOptionalValue(KEY_VXMQ_SHELL_SERVER_PORT, Integer.class).orElse(DEFAULT_VXMQ_SHELL_SERVER_PORT);
   }
 
   public static int getSessionQueuedMessageMax() {

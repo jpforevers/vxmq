@@ -51,9 +51,6 @@ vxmq:
     # Max offline message amount, 0 for no limit.
     queued-message:
       max: 1000
-  shell:
-    server:
-      port: 10022
   mqtt:
     auth:
       # Auth white list, client ids separated by commas, client id can be regex

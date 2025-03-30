@@ -61,7 +61,6 @@ services:
       - "9999:9999"
       - "1883:1883"
       - "8060:8060"
-      - "10022:10022"
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
