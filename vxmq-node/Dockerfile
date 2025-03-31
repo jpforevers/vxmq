@@ -3,24 +3,14 @@ FROM maven:3.9.6-eclipse-temurin-17 AS vxmq-build
 WORKDIR /vxmq
 # 复制源代码并打包
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -B
 COPY src/ src/
 RUN mvn clean package -DskipTests
 
-# 通过jlink生成自定义JRE
-FROM eclipse-temurin:17-alpine AS jre-build
-ENV JAVA_HOME=/opt/java/openjdk
-RUN $JAVA_HOME/bin/jlink \
-         --add-modules java.base \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
-         --output /javaruntime
-
-
 # 创建运行时镜像
-FROM alpine:3.21
+FROM eclipse-temurin:17-alpine
+
+RUN apk add --no-cache ca-certificates
 
 ARG APPLICATION_USER=vxmq
 
@@ -35,15 +25,8 @@ RUN mkdir -p /vxmq && \
 USER $APPLICATION_USER
 WORKDIR /vxmq
 
-RUN apk add --no-cache ca-certificates
-
-# 复制jlink生成的JRE
-ENV JAVA_HOME=/opt/java/openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
-COPY --from=jre-build --chown=vxmq:vxmq /javaruntime $JAVA_HOME
-
 # 从构建阶段复制打包好的 JAR 文件
-COPY --from=vxmq-build --chown=vxmq:vxmq /vxmq/target/*-fat.jar ./vxmq.jar
+COPY --from=vxmq-build --chown=$APPLICATION_USER:$APPLICATION_USER /vxmq/target/*-fat.jar ./vxmq.jar
 
 ENV IGNITE_HOME=/vxmq/ignite
 ENV VXMQ_LOGS_DIR=/vxmq/logs
@@ -51,19 +34,29 @@ ENV VXMQ_LOGS_DIR=/vxmq/logs
 # 暴露端口
 EXPOSE 8060 1883
 
+ENV JAVA_OPTS="--add-opens java.base/jdk.internal.access=ALL-UNNAMED \
+               --add-opens java.base/jdk.internal.misc=ALL-UNNAMED \
+               --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
+               --add-opens java.base/sun.util.calendar=ALL-UNNAMED \
+               --add-opens java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED \
+               --add-opens jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED \
+               --add-opens java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED \
+               --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED \
+               --add-opens java.base/java.io=ALL-UNNAMED \
+               --add-opens java.base/java.nio=ALL-UNNAMED \
+               --add-opens java.base/java.net=ALL-UNNAMED \
+               --add-opens java.base/java.util=ALL-UNNAME \
+               --add-opens java.base/java.util.concurrent=ALL-UNNAME \
+               --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED \
+               --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED \
+               --add-opens java.base/java.lang=ALL-UNNAMED \
+               --add-opens java.base/java.lang.invoke=ALL-UNNAMED \
+               --add-opens java.base/java.math=ALL-UNNAMED \
+               --add-opens java.sql/java.sql=ALL-UNNAMED \
+               --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+               --add-opens java.base/java.time=ALL-UNNAMED \
+               --add-opens java.base/java.text=ALL-UNNAMED \
+               --add-opens java.management/sun.management=ALL-UNNAMED \
+               --add-opens java.desktop/java.awt.font=ALL-UNNAMED"
 # 启动命令
-CMD ["java", \
-    # 模块开放参数
-    "--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED", \
-    "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED", \
-    "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED", \
-    "--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED", \
-    "--add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED", \
-    "--add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED", \
-    "--add-opens=java.base/java.io=ALL-UNNAMED", \
-    "--add-opens=java.base/java.nio=ALL-UNNAMED", \
-    "--add-opens=java.base/java.util=ALL-UNNAMED", \
-    "--add-opens=java.base/java.lang=ALL-UNNAMED", \
-    "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED", \
-    # 应用启动参数
-    "-jar", "vxmq.jar"]
+CMD ["sh", "-c", "java $JAVA_OPTS -jar vxmq.jar"]
