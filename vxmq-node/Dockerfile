@@ -9,31 +9,23 @@ RUN mvn clean package -DskipTests
 
 # 创建运行时镜像
 FROM eclipse-temurin:17-alpine
-
 RUN apk add --no-cache ca-certificates
-
 ARG APPLICATION_USER=vxmq
-
 # 创建用户组和用户（推荐指定UID/GID以便于宿主机权限对齐）
 RUN addgroup --system $APPLICATION_USER && adduser --system $APPLICATION_USER --ingroup $APPLICATION_USER
-
 # 创建目录并修改权限
 RUN mkdir -p /vxmq && \
     chown -R $APPLICATION_USER:$APPLICATION_USER /vxmq && \
-    chmod 755 /vxmq
-
+    chmod 750 /vxmq
 USER $APPLICATION_USER
 WORKDIR /vxmq
-
 # 从构建阶段复制打包好的 JAR 文件
-COPY --from=vxmq-build --chown=$APPLICATION_USER:$APPLICATION_USER /vxmq/target/*-fat.jar ./vxmq.jar
-
-ENV IGNITE_HOME=/vxmq/ignite
-ENV VXMQ_LOGS_DIR=/vxmq/logs
-
+COPY --from=vxmq-build --chown=$APPLICATION_USER:$APPLICATION_USER /vxmq/target/vxmq-node-*-fat.jar ./vxmq.jar
 # 暴露端口
 EXPOSE 8060 1883
-
+# 环境变量
+ENV IGNITE_HOME=/vxmq/ignite
+ENV VXMQ_LOGS_DIR=/vxmq/logs
 ENV JAVA_OPTS="--add-opens java.base/jdk.internal.access=ALL-UNNAMED \
                --add-opens java.base/jdk.internal.misc=ALL-UNNAMED \
                --add-opens java.base/sun.nio.ch=ALL-UNNAMED \
@@ -45,8 +37,8 @@ ENV JAVA_OPTS="--add-opens java.base/jdk.internal.access=ALL-UNNAMED \
                --add-opens java.base/java.io=ALL-UNNAMED \
                --add-opens java.base/java.nio=ALL-UNNAMED \
                --add-opens java.base/java.net=ALL-UNNAMED \
-               --add-opens java.base/java.util=ALL-UNNAME \
-               --add-opens java.base/java.util.concurrent=ALL-UNNAME \
+               --add-opens java.base/java.util=ALL-UNNAMED \
+               --add-opens java.base/java.util.concurrent=ALL-UNNAMED \
                --add-opens java.base/java.util.concurrent.locks=ALL-UNNAMED \
                --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED \
                --add-opens java.base/java.lang=ALL-UNNAMED \
