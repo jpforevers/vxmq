@@ -7,13 +7,29 @@
   <groupId>io.github.jpforevers</groupId>
   <artifactId>vxmq-admin</artifactId>
   <version>999-SNAPSHOT</version>
+  <packaging>pom</packaging>
 
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.3.2</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>dist</directory> <!-- 前端构建产物目录 -->
+            </fileset>
+            <fileset>
+              <directory>node_modules</directory> <!-- 可选：同时清理node依赖 -->
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>1.12.1</version>
+        <version>1.15.1</version>
         
         <!-- 阶段1: 安装Node环境 -->
         <executions>
@@ -22,6 +38,7 @@
             <goals>
               <goal>install-node-and-npm</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <nodeVersion>v20.19.0</nodeVersion>
               <npmVersion>10.8.2</npmVersion>
@@ -34,6 +51,7 @@
             <goals>
               <goal>npm</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <arguments>install</arguments>
             </configuration>
@@ -55,7 +73,18 @@
         <!-- 指定前端工程路径 -->
         <configuration>
           <installDirectory>target</installDirectory>
-          <workingDirectory>${basedir}</workingDirectory>
+          <workingDirectory>${project.basedir}</workingDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <configuration>
+          <images>
+            <image>
+              <name>jpforevers/${project.artifactId}:${project.version}</name>
+            </image>
+          </images>
         </configuration>
       </plugin>
     </plugins>

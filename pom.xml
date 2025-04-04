@@ -10,8 +10,33 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>vxmq-node</module>
     <module>vxmq-admin</module>
+    <module>vxmq-node</module>
   </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>0.45.1</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <configuration>
+          <images>
+            <image>
+              <name>jpforevers/${project.artifactId}:${project.version}</name>
+            </image>
+          </images>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
