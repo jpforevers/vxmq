@@ -1,0 +1,20 @@
+# Common
+README.md
+Dockerfile
+
+# git
+.git/
+.gitignore
+
+# JetBrains
+.idea/
+
+# Java
+target/
+
+# Node
+dist/
+node_modules/
+
+# Apache Ignite
+ignite/
