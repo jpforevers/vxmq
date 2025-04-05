@@ -1,12 +1,3 @@
-# 使用 Maven 进行构建
-FROM maven:3.9.6-eclipse-temurin-17 AS vxmq-build
-WORKDIR /vxmq
-# 复制源代码并打包
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
-COPY src/ src/
-RUN mvn clean package -DskipTests
-
 # 创建运行时镜像
 FROM eclipse-temurin:17-alpine
 RUN apk add --no-cache ca-certificates
@@ -20,7 +11,7 @@ RUN mkdir -p /vxmq && \
 USER $APPLICATION_USER
 WORKDIR /vxmq
 # 从构建阶段复制打包好的 JAR 文件
-COPY --from=vxmq-build --chown=$APPLICATION_USER:$APPLICATION_USER /vxmq/target/vxmq-node-*-fat.jar ./vxmq.jar
+COPY --chown=$APPLICATION_USER:$APPLICATION_USER vxmq-node/target/vxmq-node-*-fat.jar ./vxmq.jar
 # 暴露端口
 EXPOSE 8060 1883
 # 环境变量
