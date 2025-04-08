@@ -14,44 +14,4 @@
     <module>vxmq-node</module>
   </modules>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.3.1</version>
-        <executions>
-          <execution>
-            <id>copy-frontend-resources</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.basedir}/vxmq-node/target/classes/webroot</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${project.basedir}/vxmq-admin/dist</directory>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-        <version>0.45.1</version>
-        <configuration>
-          <images>
-            <image>
-              <name>jpforevers/${project.artifactId}:${project.version}</name>
-            </image>
-          </images>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>

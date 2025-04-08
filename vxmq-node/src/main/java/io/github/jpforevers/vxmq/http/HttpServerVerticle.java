@@ -27,6 +27,7 @@ import io.smallrye.mutiny.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.AllowForwardHeaders;
 import io.vertx.mutiny.ext.web.Router;
+import io.vertx.mutiny.ext.web.handler.ResponseTimeHandler;
 import io.vertx.mutiny.ext.web.handler.StaticHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ public class HttpServerVerticle extends AbstractVerticle {
   public Uni<Void> asyncStart() {
     Router rootRouter = Router.router(vertx);
     rootRouter.allowForward(AllowForwardHeaders.ALL);
+    rootRouter.route().handler(ResponseTimeHandler.create());
 
     rootRouter.route(ApiConstants.Q_URL_PREFIX + "/*")
       .subRouter(QRouterFactory.router(vertx));
@@ -47,23 +49,23 @@ public class HttpServerVerticle extends AbstractVerticle {
       .failureHandler(new ApiFailureHandler())
       .subRouter(ApiRouterFactory.router(vertx));
 
-    // 处理静态资源
-    StaticHandler staticHandler = StaticHandler.create()
-        .setCachingEnabled(true) // 可选：启用缓存
-        .setDefaultContentEncoding("utf-8"); // 可选：防止乱码
-
-    rootRouter.route().handler(staticHandler);
-
     // 处理前端路由（SPA），仅在请求的资源不存在时，才重定向到 index.html
-    rootRouter.route().handler(ctx -> {
+    rootRouter.get().handler(ctx -> {
         if (ctx.normalizedPath().contains(".")) {
             // 说明是静态资源（例如 .js, .css, .png, .jpg 等），放行
             ctx.next();
         } else {
             // 说明是前端路由（如 /about, /dashboard），重定向到 index.html
-            ctx.reroute("/index.html");
+            ctx.reroute("/index.html");;
         }
     });
+
+    // 处理静态资源
+    StaticHandler staticHandler = StaticHandler.create()
+      .setCachingEnabled(true) // 可选：启用缓存
+      .setDefaultContentEncoding("utf-8"); // 可选：防止乱码
+
+    rootRouter.get().handler(staticHandler);
 
     HttpServerOptions httpServerOptions = new HttpServerOptions();
     httpServerOptions.setLogActivity(Config.getHttpServerLogActivity());
