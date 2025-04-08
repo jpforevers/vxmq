@@ -10,7 +10,7 @@ import { NavUl, NavLi, NavCollapse } from '../components';
 
 // ----------------------------------------------------------------------
 
-export function NavList({ data, depth, render, slotProps, currentRole, enabledRootRedirect }) {
+export function NavList({ data, depth, render, slotProps, checkPermissions, enabledRootRedirect }) {
   const pathname = usePathname();
   const navItemRef = useRef(null);
 
@@ -65,14 +65,14 @@ export function NavList({ data, depth, render, slotProps, currentRole, enabledRo
           render={render}
           depth={depth}
           slotProps={slotProps}
-          currentRole={currentRole}
+          checkPermissions={checkPermissions}
           enabledRootRedirect={enabledRootRedirect}
         />
       </NavCollapse>
     );
 
   // Hidden item by role
-  if (data.roles && currentRole && !data.roles.includes(currentRole)) {
+  if (data.allowedRoles && checkPermissions && checkPermissions(data.allowedRoles)) {
     return null;
   }
 
@@ -93,7 +93,7 @@ export function NavList({ data, depth, render, slotProps, currentRole, enabledRo
 
 // ----------------------------------------------------------------------
 
-function NavSubList({ data, render, depth = 0, slotProps, currentRole, enabledRootRedirect }) {
+function NavSubList({ data, render, depth = 0, slotProps, checkPermissions, enabledRootRedirect }) {
   return (
     <NavUl sx={{ gap: 'var(--nav-item-gap)' }}>
       {data.map((list) => (
@@ -103,7 +103,7 @@ function NavSubList({ data, render, depth = 0, slotProps, currentRole, enabledRo
           render={render}
           depth={depth + 1}
           slotProps={slotProps}
-          currentRole={currentRole}
+          checkPermissions={checkPermissions}
           enabledRootRedirect={enabledRootRedirect}
         />
       ))}

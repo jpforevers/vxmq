@@ -1,59 +1,86 @@
+import { useIsClient } from 'minimal-shared/hooks';
+
+import Tabs from '@mui/material/Tabs';
+import { styled } from '@mui/material/styles';
 import { tabClasses } from '@mui/material/Tab';
-import Tabs, { tabsClasses } from '@mui/material/Tabs';
 
 // ----------------------------------------------------------------------
 
+const customTabsStyles = {
+  root: {
+    flexShrink: 0,
+    bgcolor: 'background.neutral',
+  },
+  list: {
+    p: 1,
+    height: 1,
+    gap: { xs: 0 },
+  },
+  indicator: {
+    py: 1,
+    height: 1,
+    bgcolor: 'transparent',
+  },
+  tabItem: {
+    px: 2,
+    zIndex: 1,
+    minHeight: 'auto',
+  },
+};
+
 export function CustomTabs({ children, slotProps, sx, ...other }) {
+  const isClient = useIsClient();
+
   return (
     <Tabs
       sx={[
-        (theme) => ({
-          gap: { sm: 0 },
-          minHeight: 38,
-          flexShrink: 0,
-          alignItems: 'center',
-          bgcolor: 'background.neutral',
-          [`& .${tabsClasses.scroller}`]: { p: 1, ...slotProps?.scroller },
-          [`& .${tabsClasses.flexContainer}`]: { gap: 0, ...slotProps?.flexContainer },
-          [`& .${tabsClasses.scrollButtons}`]: {
-            borderRadius: 1,
-            minHeight: 'inherit',
-            ...slotProps?.scrollButtons,
-          },
-          [`& .${tabsClasses.indicator}`]: {
-            py: 1,
-            height: 1,
-            bgcolor: 'transparent',
-            '& > span': {
-              width: 1,
-              height: 1,
-              borderRadius: 1,
-              display: 'block',
-              bgcolor: 'common.white',
-              boxShadow: theme.vars.customShadows.z1,
-              ...theme.applyStyles('dark', {
-                bgcolor: 'grey.900',
-              }),
-              ...slotProps?.indicator,
-            },
-          },
+        customTabsStyles.root,
+        {
           [`& .${tabClasses.root}`]: {
-            py: 1,
-            px: 2,
-            zIndex: 1,
-            minHeight: 'auto',
-            ...slotProps?.tab,
-            [`&.${tabClasses.selected}`]: { ...slotProps?.selected },
+            ...customTabsStyles.tabItem,
+            ...slotProps?.tab?.sx,
           },
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
-      {...other}
-      TabIndicatorProps={{
-        children: <span />,
+      slotProps={{
+        ...slotProps,
+        indicator: {
+          ...slotProps?.indicator,
+          children: isClient && <IndicatorContent sx={slotProps?.indicatorContent?.sx} />,
+          sx: [
+            customTabsStyles.indicator,
+            ...(Array.isArray(slotProps?.indicator?.sx)
+              ? slotProps.indicator.sx
+              : [slotProps?.indicator?.sx]),
+          ],
+        },
+        list: {
+          ...slotProps?.list,
+          sx: [
+            customTabsStyles.list,
+            ...(Array.isArray(slotProps?.list?.sx) ? slotProps.list.sx : [slotProps?.list?.sx]),
+          ],
+        },
       }}
+      {...other}
     >
       {children}
     </Tabs>
   );
 }
+
+// ----------------------------------------------------------------------
+
+const IndicatorContent = styled('span')(({ theme }) => ({
+  zIndex: 1,
+  width: '100%',
+  height: '100%',
+  display: 'block',
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.vars.customShadows.z1,
+  backgroundColor: theme.vars.palette.common.white,
+  ...theme.applyStyles('dark', {
+    backgroundColor: theme.vars.palette.grey['900'],
+  }),
+}));

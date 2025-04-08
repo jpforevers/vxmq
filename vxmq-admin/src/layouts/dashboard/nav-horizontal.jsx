@@ -9,7 +9,14 @@ import { layoutClasses } from '../core/classes';
 
 // ----------------------------------------------------------------------
 
-export function NavHorizontal({ sx, data, className, layoutQuery = 'md', ...other }) {
+export function NavHorizontal({
+  sx,
+  data,
+  className,
+  checkPermissions,
+  layoutQuery = 'md',
+  ...other
+}) {
   return (
     <Box
       className={mergeClasses([layoutClasses.nav.root, layoutClasses.nav.horizontal, className])}
@@ -44,7 +51,7 @@ export function NavHorizontal({ sx, data, className, layoutQuery = 'md', ...othe
           WebkitBackdropFilter: `blur(var(--layout-header-blur))`,
         }}
       >
-        <NavSectionHorizontal data={data} {...other} />
+        <NavSectionHorizontal data={data} checkPermissions={checkPermissions} {...other} />
       </Box>
     </Box>
   );

@@ -1,4 +1,4 @@
-import { memo, forwardRef } from 'react';
+import { memo } from 'react';
 
 import SvgIcon from '@mui/material/SvgIcon';
 
@@ -6,12 +6,20 @@ import { CONFIG } from 'src/global-config';
 
 import { BackgroundShape } from './background-shape';
 
-const ForbiddenIllustration = forwardRef((props, ref) => {
-  const { hideBackground, sx, ...other } = props;
+// ----------------------------------------------------------------------
+
+function ForbiddenIllustration({ hideBackground, sx, ...other }) {
+  const renderCharacterImage = () => (
+    <image
+      href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-reject.webp`}
+      height="280"
+      x="220"
+      y="40"
+    />
+  );
 
   return (
     <SvgIcon
-      ref={ref}
       viewBox="0 0 480 360"
       xmlns="http://www.w3.org/2000/svg"
       sx={[
@@ -31,12 +39,7 @@ const ForbiddenIllustration = forwardRef((props, ref) => {
     >
       {!hideBackground && <BackgroundShape />}
 
-      <image
-        href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-4.webp`}
-        height="300"
-        x="220"
-        y="30"
-      />
+      {renderCharacterImage()}
 
       <path
         fill="var(--primary-main)"
@@ -90,6 +93,6 @@ const ForbiddenIllustration = forwardRef((props, ref) => {
       </defs>
     </SvgIcon>
   );
-});
+}
 
 export default memo(ForbiddenIllustration);

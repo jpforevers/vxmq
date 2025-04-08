@@ -19,7 +19,7 @@ export function NavList({
   render,
   cssVars,
   slotProps,
-  currentRole,
+  checkPermissions,
   enabledRootRedirect,
 }) {
   const theme = useTheme();
@@ -114,7 +114,7 @@ export function NavList({
             render={render}
             cssVars={cssVars}
             slotProps={slotProps}
-            currentRole={currentRole}
+            checkPermissions={checkPermissions}
             enabledRootRedirect={enabledRootRedirect}
           />
         </NavDropdownPaper>
@@ -122,7 +122,7 @@ export function NavList({
     );
 
   // Hidden item by role
-  if (data.roles && currentRole && !data.roles.includes(currentRole)) {
+  if (data.allowedRoles && checkPermissions && checkPermissions(data.allowedRoles)) {
     return null;
   }
 
@@ -147,7 +147,7 @@ function NavSubList({
   cssVars,
   depth = 0,
   slotProps,
-  currentRole,
+  checkPermissions,
   enabledRootRedirect,
 }) {
   return (
@@ -160,7 +160,7 @@ function NavSubList({
           depth={depth + 1}
           cssVars={cssVars}
           slotProps={slotProps}
-          currentRole={currentRole}
+          checkPermissions={checkPermissions}
           enabledRootRedirect={enabledRootRedirect}
         />
       ))}

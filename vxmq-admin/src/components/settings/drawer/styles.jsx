@@ -5,7 +5,6 @@ import { styled } from '@mui/material/styles';
 import ButtonBase from '@mui/material/ButtonBase';
 
 import { Iconify } from '../../iconify';
-import { svgColorClasses } from '../../svg-color';
 
 // ----------------------------------------------------------------------
 
@@ -66,7 +65,7 @@ export function LargeBlock({ sx, title, tooltip, children, canReset, onReset, ..
 const SmallBlockRoot = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: theme.spacing(1.25),
+  gap: theme.spacing(1.5),
 }));
 
 const SmallLabel = styled(ButtonBase, {
@@ -132,8 +131,8 @@ export function OptionButton({ selected, sx, children, ...other }) {
             ...theme.applyStyles('dark', {
               boxShadow: `-8px 8px 20px -4px ${varAlpha(theme.vars.palette.common.blackChannel, 0.12)}`,
             }),
-            [`& .${svgColorClasses.root}`]: {
-              background: `linear-gradient(135deg, ${theme.vars.palette.primary.light}, ${theme.vars.palette.primary.main})`,
+            '& svg': {
+              color: 'primary.main',
             },
           }),
         }),

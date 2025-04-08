@@ -7,7 +7,7 @@ import { dialogActionsClasses } from '@mui/material/DialogActions';
 /**
  * Icons
  */
-/* https://icon-sets.iconify.design/eva/chevron-down-fill */
+/** https://icon-sets.iconify.design/eva/chevron-down-fill/ */
 const PickerSwitchIcon = (props) => (
   <SvgIcon {...props}>
     <path
@@ -17,7 +17,7 @@ const PickerSwitchIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/eva/arrow-ios-back-fill */
+/** https://icon-sets.iconify.design/eva/arrow-ios-back-fill/ */
 const PickerLeftIcon = (props) => (
   <SvgIcon {...props}>
     <path
@@ -27,7 +27,7 @@ const PickerLeftIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/eva/arrow-ios-forward-fill */
+/** https://icon-sets.iconify.design/eva/arrow-ios-forward-fill/ */
 const PickerRightIcon = (props) => (
   <SvgIcon {...props}>
     <path
@@ -37,7 +37,7 @@ const PickerRightIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/calendar-mark-bold-duotone */
+/** https://icon-sets.iconify.design/solar/calendar-mark-bold-duotone/ */
 const PickerCalendarIcon = (props) => (
   <SvgIcon {...props}>
     <path
@@ -53,7 +53,7 @@ const PickerCalendarIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/clock-circle-outline */
+/** https://icon-sets.iconify.design/solar/clock-circle-outline/ */
 const PickerClockIcon = (props) => (
   <SvgIcon {...props}>
     <path

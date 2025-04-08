@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { mergeClasses } from 'minimal-shared/utils';
 
 import Tooltip from '@mui/material/Tooltip';
@@ -11,28 +10,26 @@ import { navItemStyles, navSectionClasses } from '../styles';
 
 // ----------------------------------------------------------------------
 
-export const NavItem = forwardRef((props, ref) => {
-  const {
-    path,
-    icon,
-    info,
-    title,
-    caption,
-    /********/
-    open,
-    active,
-    disabled,
-    /********/
-    depth,
-    render,
-    hasChild,
-    slotProps,
-    className,
-    externalLink,
-    enabledRootRedirect,
-    ...other
-  } = props;
-
+export function NavItem({
+  path,
+  icon,
+  info,
+  title,
+  caption,
+  /********/
+  open,
+  active,
+  disabled,
+  /********/
+  depth,
+  render,
+  hasChild,
+  slotProps,
+  className,
+  externalLink,
+  enabledRootRedirect,
+  ...other
+}) {
   const navItem = createNavItem({
     path,
     icon,
@@ -53,7 +50,6 @@ export const NavItem = forwardRef((props, ref) => {
 
   return (
     <ItemRoot
-      ref={ref}
       aria-label={title}
       {...ownerState}
       {...navItem.baseProps}
@@ -107,7 +103,7 @@ export const NavItem = forwardRef((props, ref) => {
       )}
     </ItemRoot>
   );
-});
+}
 
 // ----------------------------------------------------------------------
 

@@ -9,8 +9,14 @@ import { varBounce, MotionContainer } from 'src/components/animate';
 
 // ----------------------------------------------------------------------
 
-export function RoleBasedGuard({ sx, children, hasContent, currentRole, acceptRoles }) {
-  if (typeof acceptRoles !== 'undefined' && !acceptRoles.includes(currentRole)) {
+/**
+ * NOTE:
+ * This component is for reference only.
+ * You can customize the logic and conditions to better suit your application's requirements.
+ */
+
+export function RoleBasedGuard({ sx, children, hasContent, currentRole, allowedRoles }) {
+  if (currentRole && allowedRoles && !allowedRoles.includes(currentRole)) {
     return hasContent ? (
       <Container
         component={MotionContainer}

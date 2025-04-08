@@ -2,10 +2,7 @@ import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
 
-import { CONFIG } from 'src/global-config';
-
 import { OptionButton } from './styles';
-import { SvgColor } from '../../svg-color';
 
 // ----------------------------------------------------------------------
 
@@ -13,23 +10,23 @@ export function NavLayoutOptions({ sx, value, options, onChangeOption, ...other 
   return (
     <Box
       sx={[
-        () => ({
+        {
           gap: 1.5,
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       {...other}
     >
       {options.map((option) => {
-        const selected = value === option;
+        const selected = value === option.value;
 
         return (
           <OptionButton
-            key={option}
+            key={option.value}
             selected={selected}
-            onClick={() => onChangeOption(option)}
+            onClick={() => onChangeOption(option.value)}
             sx={[
               (theme) => ({
                 height: 64,
@@ -37,10 +34,7 @@ export function NavLayoutOptions({ sx, value, options, onChangeOption, ...other 
               }),
             ]}
           >
-            <SvgColor
-              src={`${CONFIG.assetsDir}/assets/icons/settings/ic-nav-${option}.svg`}
-              sx={{ width: 1, height: 1, color: 'currentColor' }}
-            />
+            {option.icon}
           </OptionButton>
         );
       })}
@@ -54,29 +48,27 @@ export function NavColorOptions({ sx, value, options, onChangeOption, ...other }
   return (
     <Box
       sx={[
-        () => ({
+        {
           gap: 1.5,
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       {...other}
     >
       {options.map((option) => {
-        const selected = value === option;
+        const selected = value === option.value;
 
         return (
           <OptionButton
-            key={option}
+            key={option.value}
             selected={selected}
-            onClick={() => onChangeOption(option)}
-            sx={{ gap: 1.5, height: 56, textTransform: 'capitalize' }}
+            onClick={() => onChangeOption(option.value)}
+            sx={{ gap: 1.5, height: 56 }}
           >
-            <SvgColor
-              src={`${CONFIG.assetsDir}/assets/icons/settings/ic-sidebar-${option === 'integrate' ? 'outline' : 'filled'}.svg`}
-            />
-            {option}
+            {option.icon}
+            {option.label}
           </OptionButton>
         );
       })}

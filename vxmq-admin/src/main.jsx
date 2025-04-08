@@ -1,6 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { HelmetProvider } from 'react-helmet-async';
 import { Outlet, RouterProvider, createBrowserRouter } from 'react-router';
 
 import App from './app';
@@ -25,8 +24,6 @@ const root = createRoot(document.getElementById('root'));
 
 root.render(
   <StrictMode>
-    <HelmetProvider>
-      <RouterProvider router={router} />
-    </HelmetProvider>
+    <RouterProvider router={router} />
   </StrictMode>
 );

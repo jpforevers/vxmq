@@ -3,14 +3,15 @@ import { usePopover } from 'minimal-shared/hooks';
 
 import Badge from '@mui/material/Badge';
 import Avatar from '@mui/material/Avatar';
-import SvgIcon from '@mui/material/SvgIcon';
 import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 
 import { fToNow } from 'src/utils/format-time';
 
+import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { CustomPopover } from 'src/components/custom-popover';
 import { varTap, varHover, transitionTap } from 'src/components/animate';
@@ -32,23 +33,25 @@ export function ContactsPopover({ data = [], sx, ...other }) {
       </Typography>
 
       <Scrollbar sx={{ height: 320, width: 320 }}>
-        {data.map((contact) => (
-          <MenuItem key={contact.id} sx={{ p: 1 }}>
-            <Badge variant={contact.status} badgeContent="">
-              <Avatar alt={contact.name} src={contact.avatarUrl} />
-            </Badge>
+        <MenuList>
+          {data.map((contact) => (
+            <MenuItem key={contact.id} sx={{ p: 1 }}>
+              <Badge variant={contact.status} badgeContent="">
+                <Avatar alt={contact.name} src={contact.avatarUrl} />
+              </Badge>
 
-            <ListItemText
-              primary={contact.name}
-              secondary={contact.status === 'offline' ? fToNow(contact.lastActivity) : ''}
-              slotProps={{
-                secondary: {
-                  sx: { typography: 'caption', color: 'text.disabled' },
-                },
-              }}
-            />
-          </MenuItem>
-        ))}
+              <ListItemText
+                primary={contact.name}
+                secondary={contact.status === 'offline' ? fToNow(contact.lastActivity) : ''}
+                slotProps={{
+                  secondary: {
+                    sx: { typography: 'caption', color: 'text.disabled' },
+                  },
+                }}
+              />
+            </MenuItem>
+          ))}
+        </MenuList>
       </Scrollbar>
     </CustomPopover>
   );
@@ -68,13 +71,7 @@ export function ContactsPopover({ data = [], sx, ...other }) {
         ]}
         {...other}
       >
-        <SvgIcon>
-          {/* https://icon-sets.iconify.design/solar/users-group-rounded-bold-duotone/  */}
-          <circle cx="15" cy="6" r="3" fill="currentColor" opacity="0.4" />
-          <ellipse cx="16" cy="17" fill="currentColor" opacity="0.4" rx="5" ry="3" />
-          <circle cx="9.001" cy="6" r="4" fill="currentColor" />
-          <ellipse cx="9.001" cy="17.001" fill="currentColor" rx="7" ry="4" />
-        </SvgIcon>
+        <Iconify icon="solar:users-group-rounded-bold-duotone" width={24} />
       </IconButton>
 
       {renderMenuList()}

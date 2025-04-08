@@ -1,4 +1,4 @@
-import { memo, forwardRef } from 'react';
+import { memo } from 'react';
 
 import SvgIcon from '@mui/material/SvgIcon';
 
@@ -6,12 +6,20 @@ import { CONFIG } from 'src/global-config';
 
 import { BackgroundShape } from './background-shape';
 
-const ComingSoonIllustration = forwardRef((props, ref) => {
-  const { hideBackground, sx, ...other } = props;
+// ----------------------------------------------------------------------
+
+function ComingSoonIllustration({ hideBackground, sx, ...other }) {
+  const renderCharacterImage = () => (
+    <image
+      href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-notification.webp`}
+      height="280"
+      x="290"
+      y="40"
+    />
+  );
 
   return (
     <SvgIcon
-      ref={ref}
       viewBox="0 0 480 360"
       xmlns="http://www.w3.org/2000/svg"
       sx={[
@@ -30,13 +38,6 @@ const ComingSoonIllustration = forwardRef((props, ref) => {
       {...other}
     >
       {!hideBackground && <BackgroundShape />}
-
-      <image
-        href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-1.webp`}
-        height="300"
-        x="320"
-        y="30"
-      />
 
       <path
         fill="url(#paint0_linear_1_79)"
@@ -118,8 +119,10 @@ const ComingSoonIllustration = forwardRef((props, ref) => {
           <stop offset="1" stopColor="var(--primary-dark)" />
         </linearGradient>
       </defs>
+
+      {renderCharacterImage()}
     </SvgIcon>
   );
-});
+}
 
 export default memo(ComingSoonIllustration);

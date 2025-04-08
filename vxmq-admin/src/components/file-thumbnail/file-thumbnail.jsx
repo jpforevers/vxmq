@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { mergeClasses } from 'minimal-shared/utils';
 
 import Tooltip from '@mui/material/Tooltip';
@@ -10,10 +9,17 @@ import { RemoveButton, DownloadButton } from './action-buttons';
 
 // ----------------------------------------------------------------------
 
-export const FileThumbnail = forwardRef((props, ref) => {
-  const { file, tooltip, onRemove, imageView, slotProps, onDownload, className, sx, ...other } =
-    props;
-
+export function FileThumbnail({
+  sx,
+  file,
+  tooltip,
+  onRemove,
+  imageView,
+  slotProps,
+  onDownload,
+  className,
+  ...other
+}) {
   const { icon, removeBtn, downloadBtn, tooltip: tooltipProps } = slotProps ?? {};
 
   const { name, path } = fileData(file);
@@ -23,12 +29,7 @@ export const FileThumbnail = forwardRef((props, ref) => {
   const format = fileFormat(path ?? previewUrl);
 
   const renderItem = () => (
-    <ItemRoot
-      ref={ref}
-      className={mergeClasses([fileThumbnailClasses.root, className])}
-      sx={sx}
-      {...other}
-    >
+    <ItemRoot className={mergeClasses([fileThumbnailClasses.root, className])} sx={sx} {...other}>
       {format === 'image' && imageView ? (
         <ItemImg src={previewUrl} className={fileThumbnailClasses.img} {...slotProps?.img} />
       ) : (
@@ -78,7 +79,7 @@ export const FileThumbnail = forwardRef((props, ref) => {
   }
 
   return renderItem();
-});
+}
 
 // ----------------------------------------------------------------------
 

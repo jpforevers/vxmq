@@ -1,4 +1,4 @@
-import { memo, forwardRef } from 'react';
+import { memo } from 'react';
 
 import SvgIcon from '@mui/material/SvgIcon';
 
@@ -6,12 +6,20 @@ import { CONFIG } from 'src/global-config';
 
 import { BackgroundShape } from './background-shape';
 
-const ServerErrorIllustration = forwardRef((props, ref) => {
-  const { hideBackground, sx, ...other } = props;
+// ----------------------------------------------------------------------
+
+function ServerErrorIllustration({ hideBackground, sx, ...other }) {
+  const renderCharacterImage = () => (
+    <image
+      href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-study.webp`}
+      height="240"
+      x="320"
+      y="60"
+    />
+  );
 
   return (
     <SvgIcon
-      ref={ref}
       viewBox="0 0 480 360"
       xmlns="http://www.w3.org/2000/svg"
       sx={[
@@ -31,13 +39,6 @@ const ServerErrorIllustration = forwardRef((props, ref) => {
       {...other}
     >
       {!hideBackground && <BackgroundShape />}
-
-      <image
-        href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-8.webp`}
-        height="300"
-        x="340"
-        y="30"
-      />
 
       <path
         fill="var(--primary-main)"
@@ -147,8 +148,10 @@ const ServerErrorIllustration = forwardRef((props, ref) => {
           <stop offset="1" stopColor="var(--primary-dark)" />
         </linearGradient>
       </defs>
+
+      {renderCharacterImage()}
     </SvgIcon>
   );
-});
+}
 
 export default memo(ServerErrorIllustration);

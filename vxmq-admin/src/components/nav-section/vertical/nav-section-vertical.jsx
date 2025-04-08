@@ -16,7 +16,7 @@ export function NavSectionVertical({
   render,
   className,
   slotProps,
-  currentRole,
+  checkPermissions,
   enabledRootRedirect,
   cssVars: overridesVars,
   ...other
@@ -39,7 +39,7 @@ export function NavSectionVertical({
             items={group.items}
             render={render}
             slotProps={slotProps}
-            currentRole={currentRole}
+            checkPermissions={checkPermissions}
             enabledRootRedirect={enabledRootRedirect}
           />
         ))}
@@ -50,7 +50,7 @@ export function NavSectionVertical({
 
 // ----------------------------------------------------------------------
 
-function Group({ items, render, subheader, slotProps, currentRole, enabledRootRedirect }) {
+function Group({ items, render, subheader, slotProps, checkPermissions, enabledRootRedirect }) {
   const groupOpen = useBoolean(true);
 
   const renderContent = () => (
@@ -62,7 +62,7 @@ function Group({ items, render, subheader, slotProps, currentRole, enabledRootRe
           render={render}
           depth={1}
           slotProps={slotProps}
-          currentRole={currentRole}
+          checkPermissions={checkPermissions}
           enabledRootRedirect={enabledRootRedirect}
         />
       ))}

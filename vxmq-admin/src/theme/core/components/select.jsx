@@ -4,8 +4,8 @@ import SvgIcon from '@mui/material/SvgIcon';
 
 /**
  * Icons
- * https://icon-sets.iconify.design/eva/arrow-ios-downward-fill/
  */
+/** https://icon-sets.iconify.design/eva/arrow-ios-downward-fill/ */
 const ArrowDownIcon = (props) => (
   <SvgIcon {...props}>
     <path

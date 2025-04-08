@@ -7,8 +7,8 @@ import { chipClasses } from '@mui/material/Chip';
 
 /**
  * Icons
- * https://icon-sets.iconify.design/solar/close-circle-bold
  */
+/** https://icon-sets.iconify.design/solar/close-circle-bold/ */
 const ChipDeleteIcon = (props) => (
   <SvgIcon {...props}>
     <path

@@ -1,15 +1,12 @@
-import { memo, forwardRef } from 'react';
+import { memo } from 'react';
 
 import SvgIcon from '@mui/material/SvgIcon';
 
 // ----------------------------------------------------------------------
 
-const NewPasswordIcon = forwardRef((props, ref) => {
-  const { sx, ...other } = props;
-
+function NewPasswordIcon({ sx, ...other }) {
   return (
     <SvgIcon
-      ref={ref}
       fill="none"
       viewBox="0 0 96 96"
       xmlns="http://www.w3.org/2000/svg"
@@ -105,6 +102,6 @@ const NewPasswordIcon = forwardRef((props, ref) => {
       </defs>
     </SvgIcon>
   );
-});
+}
 
 export default memo(NewPasswordIcon);

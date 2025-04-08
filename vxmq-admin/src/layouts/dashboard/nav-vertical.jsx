@@ -21,6 +21,7 @@ export function NavVertical({
   className,
   isNavMini,
   onToggleNav,
+  checkPermissions,
   layoutQuery = 'md',
   ...other
 }) {
@@ -33,7 +34,12 @@ export function NavVertical({
       )}
 
       <Scrollbar fillContent>
-        <NavSectionVertical data={data} cssVars={cssVars} sx={{ px: 2, flex: '1 1 auto' }} />
+        <NavSectionVertical
+          data={data}
+          cssVars={cssVars}
+          checkPermissions={checkPermissions}
+          sx={{ px: 2, flex: '1 1 auto' }}
+        />
 
         {slots?.bottomArea ?? <NavUpgrade />}
       </Scrollbar>
@@ -51,6 +57,7 @@ export function NavVertical({
       <NavSectionMini
         data={data}
         cssVars={cssVars}
+        checkPermissions={checkPermissions}
         sx={[
           (theme) => ({
             ...theme.mixins.hideScrollY,

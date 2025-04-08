@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { mergeClasses } from 'minimal-shared/utils';
 
 import { styled } from '@mui/material/styles';
@@ -7,20 +6,13 @@ import { flagIconClasses } from './classes';
 
 // ----------------------------------------------------------------------
 
-export const FlagIcon = forwardRef((props, ref) => {
-  const { code, className, sx, ...other } = props;
-
+export function FlagIcon({ code, className, sx, ...other }) {
   if (!code) {
     return null;
   }
 
   return (
-    <FlagRoot
-      ref={ref}
-      className={mergeClasses([flagIconClasses.root, className])}
-      sx={sx}
-      {...other}
-    >
+    <FlagRoot className={mergeClasses([flagIconClasses.root, className])} sx={sx} {...other}>
       <FlagImg
         loading="lazy"
         alt={code}
@@ -29,7 +21,7 @@ export const FlagIcon = forwardRef((props, ref) => {
       />
     </FlagRoot>
   );
-});
+}
 
 // ----------------------------------------------------------------------
 

@@ -4,6 +4,7 @@ import { hasKeys, varAlpha } from 'minimal-shared/utils';
 import Box from '@mui/material/Box';
 import Badge from '@mui/material/Badge';
 import Drawer from '@mui/material/Drawer';
+import SvgIcon from '@mui/material/SvgIcon';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -12,6 +13,7 @@ import { useColorScheme } from '@mui/material/styles';
 import { themeConfig } from 'src/theme/theme-config';
 import { primaryColorPresets } from 'src/theme/with-settings';
 
+import { settingIcons } from './icons';
 import { Iconify } from '../../iconify';
 import { BaseOption } from './base-option';
 import { Scrollbar } from '../../scrollbar';
@@ -87,8 +89,8 @@ export function SettingsDrawer({ sx, defaultSettings }) {
   const renderMode = () => (
     <BaseOption
       label="Dark mode"
-      icon="moon"
       selected={settings.state.colorScheme === 'dark'}
+      icon={<SvgIcon>{settingIcons.moon}</SvgIcon>}
       onChangeOption={() => {
         setMode(mode === 'light' ? 'dark' : 'light');
         settings.setState({ colorScheme: mode === 'light' ? 'dark' : 'light' });
@@ -99,8 +101,8 @@ export function SettingsDrawer({ sx, defaultSettings }) {
   const renderContrast = () => (
     <BaseOption
       label="Contrast"
-      icon="contrast"
       selected={settings.state.contrast === 'hight'}
+      icon={<SvgIcon>{settingIcons.contrast}</SvgIcon>}
       onChangeOption={() =>
         settings.setState({
           contrast: settings.state.contrast === 'default' ? 'hight' : 'default',
@@ -112,8 +114,8 @@ export function SettingsDrawer({ sx, defaultSettings }) {
   const renderRtl = () => (
     <BaseOption
       label="Right to left"
-      icon="align-right"
       selected={settings.state.direction === 'rtl'}
+      icon={<SvgIcon>{settingIcons.alignRight}</SvgIcon>}
       onChangeOption={() =>
         settings.setState({
           direction: settings.state.direction === 'ltr' ? 'rtl' : 'ltr',
@@ -126,8 +128,8 @@ export function SettingsDrawer({ sx, defaultSettings }) {
     <BaseOption
       tooltip="Dashboard only and available at large resolutions > 1600px (xl)"
       label="Compact"
-      icon="autofit-width"
       selected={!!settings.state.compactLayout}
+      icon={<SvgIcon>{settingIcons.autofitWidth}</SvgIcon>}
       onChangeOption={() => settings.setState({ compactLayout: !settings.state.compactLayout })}
     />
   );
@@ -139,6 +141,7 @@ export function SettingsDrawer({ sx, defaultSettings }) {
       onReset={() => settings.setState({ primaryColor: defaultSettings.primaryColor })}
     >
       <PresetsOptions
+        icon={<SvgIcon sx={{ width: 28, height: 28 }}>{settingIcons.siderbarDuotone}</SvgIcon>}
         options={Object.keys(primaryColorPresets).map((key) => ({
           name: key,
           value: primaryColorPresets[key].main,
@@ -158,9 +161,26 @@ export function SettingsDrawer({ sx, defaultSettings }) {
           onReset={() => settings.setState({ navLayout: defaultSettings.navLayout })}
         >
           <NavLayoutOptions
-            options={['vertical', 'horizontal', 'mini']}
             value={settings.state.navLayout}
             onChangeOption={(newOption) => settings.setState({ navLayout: newOption })}
+            options={[
+              {
+                value: 'vertical',
+                icon: (
+                  <SvgIcon sx={{ width: 1, height: 'auto' }}>{settingIcons.navVertical}</SvgIcon>
+                ),
+              },
+              {
+                value: 'horizontal',
+                icon: (
+                  <SvgIcon sx={{ width: 1, height: 'auto' }}>{settingIcons.navHorizontal}</SvgIcon>
+                ),
+              },
+              {
+                value: 'mini',
+                icon: <SvgIcon sx={{ width: 1, height: 'auto' }}>{settingIcons.navMini}</SvgIcon>,
+              },
+            ]}
           />
         </SmallBlock>
       )}
@@ -171,9 +191,20 @@ export function SettingsDrawer({ sx, defaultSettings }) {
           onReset={() => settings.setState({ navColor: defaultSettings.navColor })}
         >
           <NavColorOptions
-            options={['integrate', 'apparent']}
             value={settings.state.navColor}
             onChangeOption={(newOption) => settings.setState({ navColor: newOption })}
+            options={[
+              {
+                label: 'Integrate',
+                value: 'integrate',
+                icon: <SvgIcon>{settingIcons.sidebarOutline}</SvgIcon>,
+              },
+              {
+                label: 'Apparent',
+                value: 'apparent',
+                icon: <SvgIcon>{settingIcons.sidebarFill}</SvgIcon>,
+              },
+            ]}
           />
         </SmallBlock>
       )}
@@ -189,14 +220,15 @@ export function SettingsDrawer({ sx, defaultSettings }) {
           onReset={() => settings.setState({ fontFamily: defaultSettings.fontFamily })}
         >
           <FontFamilyOptions
+            value={settings.state.fontFamily}
+            onChangeOption={(newOption) => settings.setState({ fontFamily: newOption })}
             options={[
               themeConfig.fontFamily.primary,
               'Inter Variable',
               'DM Sans Variable',
               'Nunito Sans Variable',
             ]}
-            value={settings.state.fontFamily}
-            onChangeOption={(newOption) => settings.setState({ fontFamily: newOption })}
+            icon={<SvgIcon sx={{ width: 28, height: 28 }}>{settingIcons.font}</SvgIcon>}
           />
         </SmallBlock>
       )}
@@ -222,17 +254,19 @@ export function SettingsDrawer({ sx, defaultSettings }) {
       anchor="right"
       open={settings.openDrawer}
       onClose={settings.onCloseDrawer}
-      slotProps={{ backdrop: { invisible: true } }}
-      PaperProps={{
-        sx: [
-          (theme) => ({
-            ...theme.mixins.paperStyles(theme, {
-              color: varAlpha(theme.vars.palette.background.defaultChannel, 0.9),
+      slotProps={{
+        backdrop: { invisible: true },
+        paper: {
+          sx: [
+            (theme) => ({
+              ...theme.mixins.paperStyles(theme, {
+                color: varAlpha(theme.vars.palette.background.defaultChannel, 0.9),
+              }),
+              width: 360,
             }),
-            width: 360,
-          }),
-          ...(Array.isArray(sx) ? sx : [sx]),
-        ],
+            ...(Array.isArray(sx) ? sx : [sx]),
+          ],
+        },
       }}
     >
       {renderHead()}

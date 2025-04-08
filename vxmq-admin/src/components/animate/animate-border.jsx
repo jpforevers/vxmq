@@ -1,5 +1,5 @@
 import { mergeClasses } from 'minimal-shared/utils';
-import { useRef, useState, useEffect, forwardRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import {
   m,
   useTransform,
@@ -133,9 +133,9 @@ export function AnimateBorder({ sx, children, duration, slotProps, className, ..
   );
 }
 
-const MovingBorder = forwardRef((props, ref) => {
-  const { sx, rx = '30%', ry = '30%', size, duration = 8, isHidden, ...other } = props;
+// ----------------------------------------------------------------------
 
+function MovingBorder({ sx, size, isHidden, rx = '30%', ry = '30%', duration = 8, ...other }) {
   const svgRectRef = useRef(null);
   const progress = useMotionValue(0);
 
@@ -169,7 +169,6 @@ const MovingBorder = forwardRef((props, ref) => {
   return (
     <Box
       component="span"
-      ref={ref}
       sx={[{ textAlign: 'initial' }, ...(Array.isArray(sx) ? sx : [sx])]}
       {...other}
     >
@@ -198,7 +197,7 @@ const MovingBorder = forwardRef((props, ref) => {
       />
     </Box>
   );
-});
+}
 
 // ----------------------------------------------------------------------
 

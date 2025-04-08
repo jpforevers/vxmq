@@ -86,6 +86,7 @@ export const LabelRoot = styled('span', {
     height: 24,
     minWidth: 24,
     lineHeight: 0,
+    flexShrink: 0,
     cursor: 'default',
     alignItems: 'center',
     whiteSpace: 'nowrap',

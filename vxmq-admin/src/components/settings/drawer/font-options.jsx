@@ -3,22 +3,19 @@ import { setFont } from 'minimal-shared/utils';
 import Box from '@mui/material/Box';
 import Slider, { sliderClasses } from '@mui/material/Slider';
 
-import { CONFIG } from 'src/global-config';
-
 import { OptionButton } from './styles';
-import { SvgColor } from '../../svg-color';
 
 // ----------------------------------------------------------------------
 
-export function FontFamilyOptions({ sx, value, options, onChangeOption, ...other }) {
+export function FontFamilyOptions({ sx, icon, value, options, onChangeOption, ...other }) {
   return (
     <Box
       sx={[
-        () => ({
+        {
           gap: 1.5,
           display: 'grid',
           gridTemplateColumns: 'repeat(2, 1fr)',
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       {...other}
@@ -39,11 +36,7 @@ export function FontFamilyOptions({ sx, value, options, onChangeOption, ...other
               fontSize: theme.typography.pxToRem(12),
             })}
           >
-            <SvgColor
-              src={`${CONFIG.assetsDir}/assets/icons/settings/ic-font.svg`}
-              sx={{ width: 28, height: 28, color: 'currentColor' }}
-            />
-
+            {icon}
             {option.endsWith('Variable') ? option.replace(' Variable', '') : option}
           </OptionButton>
         );

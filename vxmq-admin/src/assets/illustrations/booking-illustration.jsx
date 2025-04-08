@@ -1,15 +1,12 @@
-import { memo, forwardRef } from 'react';
+import { memo } from 'react';
 
 import SvgIcon from '@mui/material/SvgIcon';
 
 // ----------------------------------------------------------------------
 
-const BookingIllustration = forwardRef((props, ref) => {
-  const { sx, ...other } = props;
-
+function BookingIllustration({ sx, ...other }) {
   return (
     <SvgIcon
-      ref={ref}
       viewBox="0 0 200 200"
       xmlns="http://www.w3.org/2000/svg"
       sx={[
@@ -303,6 +300,6 @@ const BookingIllustration = forwardRef((props, ref) => {
       </g>
     </SvgIcon>
   );
-});
+}
 
 export default memo(BookingIllustration);

@@ -1,4 +1,4 @@
-import { memo, forwardRef } from 'react';
+import { memo } from 'react';
 
 import SvgIcon from '@mui/material/SvgIcon';
 
@@ -6,12 +6,20 @@ import { CONFIG } from 'src/global-config';
 
 import { BackgroundShape } from './background-shape';
 
-const MaintenanceIllustration = forwardRef((props, ref) => {
-  const { hideBackground, sx, ...other } = props;
+// ----------------------------------------------------------------------
+
+function MaintenanceIllustration({ hideBackground, sx, ...other }) {
+  const renderCharacterImage = () => (
+    <image
+      href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-maintenance.webp`}
+      height="280"
+      x="290"
+      y="40"
+    />
+  );
 
   return (
     <SvgIcon
-      ref={ref}
       viewBox="0 0 480 360"
       xmlns="http://www.w3.org/2000/svg"
       sx={[
@@ -209,14 +217,9 @@ const MaintenanceIllustration = forwardRef((props, ref) => {
         </linearGradient>
       </defs>
 
-      <image
-        href={`${CONFIG.assetsDir}/assets/illustrations/characters/character-5.webp`}
-        height="300"
-        x="245"
-        y="30"
-      />
+      {renderCharacterImage()}
     </SvgIcon>
   );
-});
+}
 
 export default memo(MaintenanceIllustration);

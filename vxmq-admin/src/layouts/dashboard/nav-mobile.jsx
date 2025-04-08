@@ -15,7 +15,16 @@ import { NavUpgrade } from '../components/nav-upgrade';
 
 // ----------------------------------------------------------------------
 
-export function NavMobile({ data, open, onClose, slots, sx, className, ...other }) {
+export function NavMobile({
+  sx,
+  data,
+  open,
+  slots,
+  onClose,
+  className,
+  checkPermissions,
+  ...other
+}) {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -29,16 +38,18 @@ export function NavMobile({ data, open, onClose, slots, sx, className, ...other 
     <Drawer
       open={open}
       onClose={onClose}
-      PaperProps={{
-        className: mergeClasses([layoutClasses.nav.root, layoutClasses.nav.vertical, className]),
-        sx: [
-          (theme) => ({
-            overflow: 'unset',
-            bgcolor: 'var(--layout-nav-bg)',
-            width: 'var(--layout-nav-mobile-width)',
-          }),
-          ...(Array.isArray(sx) ? sx : [sx]),
-        ],
+      slotProps={{
+        paper: {
+          className: mergeClasses([layoutClasses.nav.root, layoutClasses.nav.vertical, className]),
+          sx: [
+            {
+              overflow: 'unset',
+              bgcolor: 'var(--layout-nav-bg)',
+              width: 'var(--layout-nav-mobile-width)',
+            },
+            ...(Array.isArray(sx) ? sx : [sx]),
+          ],
+        },
       }}
     >
       {slots?.topArea ?? (
@@ -48,7 +59,12 @@ export function NavMobile({ data, open, onClose, slots, sx, className, ...other 
       )}
 
       <Scrollbar fillContent>
-        <NavSectionVertical data={data} sx={{ px: 2, flex: '1 1 auto' }} {...other} />
+        <NavSectionVertical
+          data={data}
+          checkPermissions={checkPermissions}
+          sx={{ px: 2, flex: '1 1 auto' }}
+          {...other}
+        />
         <NavUpgrade />
       </Scrollbar>
 

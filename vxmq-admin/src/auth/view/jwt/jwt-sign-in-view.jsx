@@ -7,8 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
@@ -112,7 +112,7 @@ export function JwtSignInView() {
         />
       </Box>
 
-      <LoadingButton
+      <Button
         fullWidth
         color="inherit"
         size="large"
@@ -122,7 +122,7 @@ export function JwtSignInView() {
         loadingIndicator="Sign in..."
       >
         Sign in
-      </LoadingButton>
+      </Button>
     </Box>
   );
 

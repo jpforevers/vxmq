@@ -21,9 +21,8 @@ export default function App({ children }) {
     <AuthProvider>
       <SettingsProvider defaultSettings={defaultSettings}>
         <ThemeProvider
-          noSsr
-          defaultMode={themeConfig.defaultMode}
           modeStorageKey={themeConfig.modeStorageKey}
+          defaultMode={themeConfig.enableSystemMode ? 'system' : themeConfig.defaultMode}
         >
           <MotionLazy>
             <ProgressBar />

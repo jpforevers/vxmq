@@ -12,7 +12,7 @@ const MuiTabs = {
    * STYLE
    *************************************** */
   styleOverrides: {
-    flexContainer: ({ ownerState, theme }) => ({
+    list: ({ ownerState, theme }) => ({
       ...(ownerState.variant !== 'fullWidth' && {
         gap: '24px',
         [theme.breakpoints.up('sm')]: { gap: '40px' },

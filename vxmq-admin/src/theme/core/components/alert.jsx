@@ -8,7 +8,7 @@ import { alertClasses } from '@mui/material/Alert';
 /**
  * Icons
  */
-/* https://icon-sets.iconify.design/solar/info-circle-bold/ */
+/** https://icon-sets.iconify.design/solar/info-circle-bold/ */
 const AlertInfoIcon = (props) => (
   <SvgIcon {...props}>
     <path
@@ -20,7 +20,7 @@ const AlertInfoIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/check-circle-bold/ */
+/** https://icon-sets.iconify.design/solar/check-circle-bold/ */
 const AlertSuccessIcon = (props) => (
   <SvgIcon {...props}>
     <path
@@ -32,7 +32,7 @@ const AlertSuccessIcon = (props) => (
   </SvgIcon>
 );
 
-/* https:// icon-sets.iconify.design/solar/danger-triangle-bold/ */
+/** https://icon-sets.iconify.design/solar/danger-triangle-bold/ */
 const AlertWarningIcon = (props) => (
   <SvgIcon {...props}>
     <path
@@ -44,7 +44,7 @@ const AlertWarningIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/danger-bold/ */
+/** https://icon-sets.iconify.design/solar/danger-bold/ */
 const AlertErrorIcon = (props) => (
   <SvgIcon {...props}>
     <path

@@ -1,19 +1,14 @@
 import { m } from 'framer-motion';
-import { forwardRef } from 'react';
 
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 import { varContainer } from './variants';
 
 // ----------------------------------------------------------------------
 
-export const MotionViewport = forwardRef((props, ref) => {
-  const { children, viewport, disableAnimate = true, ...other } = props;
-
-  const theme = useTheme();
-  const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+export function MotionViewport({ children, viewport, disableAnimate = true, ...other }) {
+  const smDown = useMediaQuery((theme) => theme.breakpoints.down('sm'));
 
   const disabled = smDown && disableAnimate;
 
@@ -28,8 +23,8 @@ export const MotionViewport = forwardRef((props, ref) => {
       };
 
   return (
-    <Box ref={ref} {...baseProps} {...other}>
+    <Box {...baseProps} {...other}>
       {children}
     </Box>
   );
-});
+}

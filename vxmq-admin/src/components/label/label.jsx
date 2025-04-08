@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { upperFirst } from 'es-toolkit';
 import { mergeClasses } from 'minimal-shared/utils';
 
@@ -7,22 +6,19 @@ import { LabelRoot, LabelIcon } from './styles';
 
 // ----------------------------------------------------------------------
 
-export const Label = forwardRef((props, ref) => {
-  const {
-    endIcon,
-    children,
-    startIcon,
-    className,
-    disabled,
-    variant = 'soft',
-    color = 'default',
-    sx,
-    ...other
-  } = props;
-
+export function Label({
+  sx,
+  endIcon,
+  children,
+  startIcon,
+  className,
+  disabled,
+  variant = 'soft',
+  color = 'default',
+  ...other
+}) {
   return (
     <LabelRoot
-      ref={ref}
       color={color}
       variant={variant}
       disabled={disabled}
@@ -37,4 +33,4 @@ export const Label = forwardRef((props, ref) => {
       {endIcon && <LabelIcon className={labelClasses.icon}>{endIcon}</LabelIcon>}
     </LabelRoot>
   );
-});
+}

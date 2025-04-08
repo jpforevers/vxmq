@@ -118,8 +118,10 @@ export function AccountDrawer({ data = [], sx, ...other }) {
         open={open}
         onClose={onClose}
         anchor="right"
-        slotProps={{ backdrop: { invisible: true } }}
-        PaperProps={{ sx: { width: 320 } }}
+        slotProps={{
+          backdrop: { invisible: true },
+          paper: { sx: { width: 320 } },
+        }}
       >
         <IconButton
           onClick={onClose}

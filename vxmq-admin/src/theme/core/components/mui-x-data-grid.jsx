@@ -99,7 +99,10 @@ const MuiDataGrid = {
         '--unstable_DataGrid-headWeight': theme.typography.fontWeightSemiBold,
         borderWidth: 0,
         scrollbarWidth: 'thin',
-        scrollbarColor: `${varAlpha(theme.vars.palette.text.disabledChannel, 0.4)} ${varAlpha(theme.vars.palette.text.disabledChannel, 0.08)}`,
+        scrollbarColor: `${varAlpha(
+          theme.vars.palette.text.disabledChannel,
+          0.4
+        )} ${varAlpha(theme.vars.palette.text.disabledChannel, 0.08)}`,
         '& .MuiDataGrid-filler > div': { borderTopStyle: 'dashed' },
         '& .MuiDataGrid-topContainer::after': { height: 0 },
         '& .MuiDataGrid-virtualScrollerContent': {
@@ -168,7 +171,10 @@ const MuiDataGrid = {
     /**
      * Paper
      */
-    paper: ({ theme }) => ({ ...theme.mixins.paperStyles(theme, { dropdown: true }), padding: 0 }),
+    paper: ({ theme }) => ({
+      ...theme.mixins.paperStyles(theme, { dropdown: true }),
+      padding: 0,
+    }),
     menu: ({ theme }) => ({
       [`& .${paperClasses.root}`]: {
         ...theme.mixins.paperStyles(theme, { dropdown: true }),
@@ -176,7 +182,10 @@ const MuiDataGrid = {
       },
       [`& .${listClasses.root}`]: {
         padding: 0,
-        [`& .${listItemIconClasses.root}`]: { minWidth: 0, marginRight: theme.spacing(2) },
+        [`& .${listItemIconClasses.root}`]: {
+          minWidth: 0,
+          marginRight: theme.spacing(2),
+        },
       },
     }),
     /**
@@ -200,7 +209,9 @@ const MuiDataGrid = {
     footerContainer: { minHeight: 'auto', borderTopStyle: 'dashed' },
     selectedRowCount: { display: 'none', whiteSpace: 'nowrap' },
     overlay: ({ theme }) => ({
-      [`& .${circularProgressClasses.root}`]: { color: theme.vars.palette.text.primary },
+      [`& .${circularProgressClasses.root}`]: {
+        color: theme.vars.palette.text.primary,
+      },
     }),
     /**
      * Column panel
@@ -230,7 +241,9 @@ const MuiDataGrid = {
       gap: theme.spacing(1.5),
       padding: theme.spacing(2),
       /* Fix label with input variant === 'outlined' */
-      [`& .${inputLabelClasses.shrink}`]: { transform: 'translate(14px, -9px) scale(0.75)' },
+      [`& .${inputLabelClasses.shrink}`]: {
+        transform: 'translate(14px, -9px) scale(0.75)',
+      },
     }),
     filterFormDeleteIcon: ({ theme }) => ({
       [`& .${iconButtonClasses.root}`]: {
@@ -254,7 +267,7 @@ const svgIconProps = (props) => ({
 /**
  * Icons
  */
-/* https://icon-sets.iconify.design/solar/alt-arrow-up-bold-duotone */
+/** https://icon-sets.iconify.design/solar/alt-arrow-up-bold-duotone/ */
 const DataGridArrowUpIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -269,7 +282,7 @@ const DataGridArrowUpIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/alt-arrow-down-bold-duotone */
+/** https://icon-sets.iconify.design/solar/alt-arrow-down-bold-duotone/ */
 const DataGridArrowDownIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -284,7 +297,7 @@ const DataGridArrowDownIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/filter-bold */
+/** https://icon-sets.iconify.design/solar/filter-bold/ */
 const DataGridFilterIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -294,7 +307,7 @@ const DataGridFilterIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/export-bold */
+/** https://icon-sets.iconify.design/solar/export-bold/ */
 const DataGridExportIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -310,7 +323,7 @@ const DataGridExportIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/solar/eye-bold */
+/** https://icon-sets.iconify.design/solar/eye-bold/ */
 const DataGridEyeIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path fill="currentColor" d="M9.75 12a2.25 2.25 0 1 1 4.5 0a2.25 2.25 0 0 1-4.5 0" />
@@ -323,7 +336,7 @@ const DataGridEyeIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/ph/eye-closed-bold */
+/** https://icon-sets.iconify.design/ph/eye-closed-bold/ */
 const DataGridEyeCloseIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -335,7 +348,7 @@ const DataGridEyeCloseIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/eva/search-fill */
+/** https://icon-sets.iconify.design/eva/search-fill/ */
 const DataGridSearchIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -345,7 +358,7 @@ const DataGridSearchIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/eva/close-fill */
+/** https://icon-sets.iconify.design/eva/close-fill/ */
 const DataGridCloseIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -355,7 +368,7 @@ const DataGridCloseIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/mingcute/more-1-fill */
+/** https://icon-sets.iconify.design/mingcute/more-1-fill/ */
 const DataGridMoreIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <g fill="none">
@@ -368,7 +381,7 @@ const DataGridMoreIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/material-symbols/table-rows-narrow-rounded */
+/** https://icon-sets.iconify.design/material-symbols/table-rows-narrow-rounded/ */
 const DataGridDensityCompactIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <path
@@ -378,7 +391,7 @@ const DataGridDensityCompactIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/mingcute/rows-2-fill */
+/** https://icon-sets.iconify.design/mingcute/rows-2-fill/ */
 const DataGridDensityComfortableIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <g fill="none" fillRule="evenodd">
@@ -391,7 +404,7 @@ const DataGridDensityComfortableIcon = (props) => (
   </SvgIcon>
 );
 
-/* https://icon-sets.iconify.design/mingcute/rows-4-fill */
+/** https://icon-sets.iconify.design/mingcute/rows-4-fill/ */
 const DataGridDensityStandardIcon = (props) => (
   <SvgIcon {...svgIconProps(props)}>
     <g fill="none">

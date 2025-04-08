@@ -1,4 +1,5 @@
 import Box from '@mui/material/Box';
+import { SvgIcon } from '@mui/material';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import ListItemText from '@mui/material/ListItemText';
@@ -7,10 +8,10 @@ import ListItemButton from '@mui/material/ListItemButton';
 
 import { fToNow } from 'src/utils/format-time';
 
-import { CONFIG } from 'src/global-config';
-
 import { Label } from 'src/components/label';
 import { FileThumbnail } from 'src/components/file-thumbnail';
+
+import { notificationIcons } from './icons';
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +25,14 @@ const readerContent = (data) => (
     }}
   />
 );
+
+const renderIcon = (type) =>
+  ({
+    order: notificationIcons.order,
+    chat: notificationIcons.chat,
+    mail: notificationIcons.mail,
+    delivery: notificationIcons.delivery,
+  })[type];
 
 export function NotificationItem({ notification }) {
   const renderAvatar = () => (
@@ -42,11 +51,7 @@ export function NotificationItem({ notification }) {
             bgcolor: 'background.neutral',
           }}
         >
-          <Box
-            component="img"
-            src={`${CONFIG.assetsDir}/assets/icons/notification/${(notification.type === 'order' && 'ic-order') || (notification.type === 'chat' && 'ic-chat') || (notification.type === 'mail' && 'ic-mail') || (notification.type === 'delivery' && 'ic-delivery')}.svg`}
-            sx={{ width: 24, height: 24 }}
-          />
+          <SvgIcon sx={{ width: 24, height: 24 }}>{renderIcon(notification.type)}</SvgIcon>
         </Box>
       )}
     </ListItemAvatar>
@@ -60,7 +65,12 @@ export function NotificationItem({ notification }) {
           {fToNow(notification.createdAt)}
           <Box
             component="span"
-            sx={{ width: 2, height: 2, borderRadius: '50%', bgcolor: 'currentColor' }}
+            sx={{
+              width: 2,
+              height: 2,
+              borderRadius: '50%',
+              bgcolor: 'currentColor',
+            }}
           />
           {notification.category}
         </>

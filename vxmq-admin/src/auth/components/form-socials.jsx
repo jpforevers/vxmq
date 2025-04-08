@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 
-import { GithubIcon, GoogleIcon, TwitterIcon } from 'src/assets/icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -15,23 +15,23 @@ export function FormSocials({
   return (
     <Box
       sx={[
-        () => ({
+        {
           gap: 1.5,
           display: 'flex',
           justifyContent: 'center',
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       {...other}
     >
       <IconButton color="inherit" onClick={signInWithGoogle}>
-        <GoogleIcon width={22} />
+        <Iconify width={22} icon="socials:google" />
       </IconButton>
       <IconButton color="inherit" onClick={singInWithGithub}>
-        <GithubIcon width={22} />
+        <Iconify width={22} icon="socials:github" />
       </IconButton>
       <IconButton color="inherit" onClick={signInWithTwitter}>
-        <TwitterIcon width={22} />
+        <Iconify width={22} icon="socials:twitter" />
       </IconButton>
     </Box>
   );

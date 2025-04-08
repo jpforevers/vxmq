@@ -1,22 +1,19 @@
 import Box from '@mui/material/Box';
 import { alpha as hexAlpha } from '@mui/material/styles';
 
-import { CONFIG } from 'src/global-config';
-
 import { OptionButton } from './styles';
-import { SvgColor } from '../../svg-color';
 
 // ----------------------------------------------------------------------
 
-export function PresetsOptions({ sx, value, options, onChangeOption, ...other }) {
+export function PresetsOptions({ sx, icon, value, options, onChangeOption, ...other }) {
   return (
     <Box
       sx={[
-        () => ({
+        {
           gap: 1.5,
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       {...other}
@@ -36,10 +33,7 @@ export function PresetsOptions({ sx, value, options, onChangeOption, ...other })
               }),
             }}
           >
-            <SvgColor
-              src={`${CONFIG.assetsDir}/assets/icons/settings/ic-siderbar-duotone.svg`}
-              sx={{ width: 28, height: 28, color: 'currentColor' }}
-            />
+            {icon}
           </OptionButton>
         );
       })}

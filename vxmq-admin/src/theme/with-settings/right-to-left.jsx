@@ -5,13 +5,13 @@ import { CacheProvider } from '@emotion/react';
 
 // ----------------------------------------------------------------------
 
-export function Rtl({ children, direction }) {
-  const cacheRtl = createCache({
-    key: 'rtl',
-    prepend: true,
-    stylisPlugins: [rtlPlugin],
-  });
+const cacheRtl = createCache({
+  key: 'rtl',
+  prepend: true,
+  stylisPlugins: [rtlPlugin],
+});
 
+export function Rtl({ children, direction }) {
   useEffect(() => {
     document.dir = direction;
   }, [direction]);

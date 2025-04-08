@@ -1,4 +1,4 @@
-import { useId, forwardRef } from 'react';
+import { useId } from 'react';
 import { mergeClasses } from 'minimal-shared/utils';
 
 import Link from '@mui/material/Link';
@@ -10,9 +10,7 @@ import { logoClasses } from './classes';
 
 // ----------------------------------------------------------------------
 
-export const Logo = forwardRef((props, ref) => {
-  const { className, href = '/', isSingle = true, disabled, sx, ...other } = props;
-
+export function Logo({ sx, disabled, className, href = '/', isSingle = true, ...other }) {
   const theme = useTheme();
 
   const gradientId = useId();
@@ -177,19 +175,18 @@ export const Logo = forwardRef((props, ref) => {
 
   return (
     <LogoRoot
-      ref={ref}
       component={RouterLink}
       href={href}
       aria-label="Logo"
       underline="none"
       className={mergeClasses([logoClasses.root, className])}
       sx={[
-        () => ({
+        {
           width: 40,
           height: 40,
           ...(!isSingle && { width: 102, height: 36 }),
           ...(disabled && { pointerEvents: 'none' }),
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       {...other}
@@ -197,7 +194,7 @@ export const Logo = forwardRef((props, ref) => {
       {isSingle ? singleLogo : fullLogo}
     </LogoRoot>
   );
-});
+}
 
 // ----------------------------------------------------------------------
 

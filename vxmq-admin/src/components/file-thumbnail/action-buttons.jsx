@@ -34,7 +34,7 @@ export function DownloadButton({ sx, ...other }) {
       ]}
       {...other}
     >
-      <Iconify icon="eva:arrow-circle-down-fill" width={24} />
+      <Iconify width={24} icon="eva:cloud-download-fill" />
     </ButtonBase>
   );
 }

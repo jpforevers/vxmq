@@ -1,12 +1,9 @@
-# EditorConfig is awesome: https://EditorConfig.org
-# https://github.com/vert-x3/wiki/wiki/Vert.x-code-style-guidelines
-
 root = true
 
 [*]
 charset = utf-8
-indent_style = space
 indent_size = 2
-trim_trailing_whitespace = true
 end_of_line = lf
+indent_style = space
 insert_final_newline = true
+trim_trailing_whitespace = true

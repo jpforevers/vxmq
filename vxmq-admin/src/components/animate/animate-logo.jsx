@@ -1,5 +1,4 @@
 import { m } from 'framer-motion';
-import { forwardRef } from 'react';
 import { varAlpha } from 'minimal-shared/utils';
 
 import { styled } from '@mui/material/styles';
@@ -8,11 +7,9 @@ import { Logo } from '../logo';
 
 // ----------------------------------------------------------------------
 
-export const AnimateLogoZoom = forwardRef((props, ref) => {
-  const { logo, slotProps, sx, ...other } = props;
-
+export function AnimateLogoZoom({ logo, slotProps, sx, ...other }) {
   return (
-    <LogoZoomRoot ref={ref} sx={sx} {...other}>
+    <LogoZoomRoot sx={sx} {...other}>
       <m.span
         animate={{ scale: [1, 0.9, 0.9, 1, 1], opacity: [1, 0.48, 0.48, 1, 1] }}
         transition={{
@@ -57,7 +54,7 @@ export const AnimateLogoZoom = forwardRef((props, ref) => {
       />
     </LogoZoomRoot>
   );
-});
+}
 
 const LogoZoomRoot = styled('div')(() => ({
   width: 120,
@@ -84,11 +81,9 @@ const LogoZoomSecondaryOutline = styled(m.span)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export const AnimateLogoRotate = forwardRef((props, ref) => {
-  const { logo, sx, slotProps, ...other } = props;
-
+export function AnimateLogoRotate({ logo, sx, slotProps, ...other }) {
   return (
-    <LogoRotateRoot ref={ref} sx={sx} {...other}>
+    <LogoRotateRoot sx={sx} {...other}>
       {logo ?? (
         <Logo
           {...slotProps?.logo}
@@ -107,7 +102,7 @@ export const AnimateLogoRotate = forwardRef((props, ref) => {
       />
     </LogoRotateRoot>
   );
-});
+}
 
 const LogoRotateRoot = styled('div')(() => ({
   width: 96,

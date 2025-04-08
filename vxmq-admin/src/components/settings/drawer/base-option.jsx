@@ -5,11 +5,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import ButtonBase from '@mui/material/ButtonBase';
 
-import { CONFIG } from 'src/global-config';
-
-import { Iconify } from 'src/components/iconify';
-
-import { SvgColor } from '../../svg-color';
+import { Iconify } from '../../iconify';
 
 // ----------------------------------------------------------------------
 
@@ -17,7 +13,7 @@ export function BaseOption({ sx, icon, label, tooltip, selected, onChangeOption,
   return (
     <ItemRoot disableRipple selected={selected} onClick={onChangeOption} sx={sx} {...other}>
       <TopContainer>
-        <SvgColor src={`${CONFIG.assetsDir}/assets/icons/settings/ic-${icon}.svg`} />
+        {icon}
         <Switch name={label} size="small" color="default" checked={selected} sx={{ mr: -0.75 }} />
       </TopContainer>
 

@@ -1,24 +1,21 @@
-import { memo, forwardRef } from 'react';
+import { memo } from 'react';
 
 import SvgIcon from '@mui/material/SvgIcon';
 
 // ----------------------------------------------------------------------
 
-const AvatarShape = forwardRef((props, ref) => {
-  const { sx, ...other } = props;
-
+function AvatarShape({ sx, ...other }) {
   return (
     <SvgIcon
-      ref={ref}
       fill="none"
       viewBox="0 0 144 62"
       xmlns="http://www.w3.org/2000/svg"
       sx={[
-        () => ({
+        {
           width: 144,
           height: 62,
           color: 'background.paper',
-        }),
+        },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       {...other}
@@ -30,6 +27,6 @@ const AvatarShape = forwardRef((props, ref) => {
       />
     </SvgIcon>
   );
-});
+}
 
 export default memo(AvatarShape);

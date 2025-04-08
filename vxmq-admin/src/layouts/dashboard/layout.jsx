@@ -11,6 +11,8 @@ import { _contacts, _notifications } from 'src/_mock';
 import { Logo } from 'src/components/logo';
 import { useSettingsContext } from 'src/components/settings';
 
+import { useMockedUser } from 'src/auth/hooks';
+
 import { NavMobile } from './nav-mobile';
 import { VerticalDivider } from './content';
 import { NavVertical } from './nav-vertical';
@@ -37,6 +39,8 @@ import { NotificationsDrawer } from '../components/notifications-drawer';
 export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery = 'lg' }) {
   const theme = useTheme();
 
+  const { user } = useMockedUser();
+
   const settings = useSettingsContext();
 
   const navVars = dashboardNavColorVars(theme, settings.state.navColor, settings.state.navLayout);
@@ -48,6 +52,8 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
   const isNavMini = settings.state.navLayout === 'mini';
   const isNavHorizontal = settings.state.navLayout === 'horizontal';
   const isNavVertical = isNavMini || settings.state.navLayout === 'vertical';
+
+  const canDisplayItemByRole = (allowedRoles) => !allowedRoles?.includes(user?.role);
 
   const renderHeader = () => {
     const headerSlotProps = {
@@ -71,7 +77,12 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
         </Alert>
       ),
       bottomArea: isNavHorizontal ? (
-        <NavHorizontal data={navData} layoutQuery={layoutQuery} cssVars={navVars.section} />
+        <NavHorizontal
+          data={navData}
+          layoutQuery={layoutQuery}
+          cssVars={navVars.section}
+          checkPermissions={canDisplayItemByRole}
+        />
       ) : null,
       leftArea: (
         <>
@@ -80,7 +91,13 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
             onClick={onOpen}
             sx={{ mr: 1, ml: -1, [theme.breakpoints.up(layoutQuery)]: { display: 'none' } }}
           />
-          <NavMobile data={navData} open={open} onClose={onClose} cssVars={navVars.section} />
+          <NavMobile
+            data={navData}
+            open={open}
+            onClose={onClose}
+            cssVars={navVars.section}
+            checkPermissions={canDisplayItemByRole}
+          />
 
           {/** @slot Logo */}
           {isNavHorizontal && (
@@ -100,7 +117,7 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
           {/** @slot Workspace popover */}
           <WorkspacesPopover
             data={_workspaces}
-            sx={{ color: 'var(--layout-nav-text-primary-color)' }}
+            sx={{ ...(isNavHorizontal && { color: 'var(--layout-nav-text-primary-color)' }) }}
           />
         </>
       ),
@@ -153,6 +170,7 @@ export function DashboardLayout({ sx, cssVars, children, slotProps, layoutQuery 
       isNavMini={isNavMini}
       layoutQuery={layoutQuery}
       cssVars={navVars.section}
+      checkPermissions={canDisplayItemByRole}
       onToggleNav={() =>
         settings.setField(
           'navLayout',
