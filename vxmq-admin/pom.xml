@@ -38,7 +38,7 @@
             <goals>
               <goal>install-node-and-npm</goal>
             </goals>
-            <phase>generate-resources</phase>
+            <phase>initialize</phase>
             <configuration>
               <nodeVersion>v20.19.0</nodeVersion>
               <npmVersion>10.8.2</npmVersion>
@@ -63,7 +63,7 @@
             <goals>
               <goal>npm</goal>
             </goals>
-            <phase>generate-resources</phase>
+            <phase>prepare-package</phase>
             <configuration>
               <arguments>run build</arguments>
             </configuration>
