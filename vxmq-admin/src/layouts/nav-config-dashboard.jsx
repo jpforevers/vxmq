@@ -36,6 +36,10 @@ const ICONS = {
   analytics: icon('ic-analytics'),
   dashboard: icon('ic-dashboard'),
   parameter: icon('ic-parameter'),
+  tokenbrandediotaevm: icon('ic-token-branded--iota-evm'),
+  carbonibmcloudeventnotification: icon('ic-carbon--ibm-cloud-event-notification'),
+  carboniotconnect: icon('ic-carbon--iot-connect'),
+  gameiconsgearhammer: icon('ic-game-icons--gear-hammer'),
 };
 
 // ----------------------------------------------------------------------
@@ -53,9 +57,9 @@ export const navData = [
         icon: ICONS.dashboard,
         info: <Label>v{CONFIG.appVersion}</Label>,
       },
-      { title: 'Clients', path: paths.dashboard.clients, icon: ICONS.menuItem },
-      { title: 'Topics', path: paths.dashboard.topics, icon: ICONS.blog },
-      { title: 'Subscriptions', path: paths.dashboard.subscriptions, icon: ICONS.label },
+      { title: 'Clients', path: paths.dashboard.clients, icon: ICONS.carboniotconnect },
+      { title: 'Topics', path: paths.dashboard.topics, icon: ICONS.carbonibmcloudeventnotification },
+      { title: 'Subscriptions', path: paths.dashboard.subscriptions, icon: ICONS.tokenbrandediotaevm },
     ],
   },
   /**
@@ -67,7 +71,7 @@ export const navData = [
       {
         title: 'Rule Engine',
         path: paths.dashboard.ruleEngine.root,
-        icon: ICONS.course,
+        icon: ICONS.gameiconsgearhammer,
         children: [
           { title: 'Statistics', path: paths.dashboard.ruleEngine.root },
           { title: 'Rules', path: paths.dashboard.ruleEngine.rules },
