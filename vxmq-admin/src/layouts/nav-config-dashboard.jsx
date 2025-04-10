@@ -48,13 +48,14 @@ export const navData = [
     subheader: 'Overview',
     items: [
       {
-        title: 'One',
+        title: 'Monitor',
         path: paths.dashboard.root,
         icon: ICONS.dashboard,
         info: <Label>v{CONFIG.appVersion}</Label>,
       },
-      { title: 'Two', path: paths.dashboard.two, icon: ICONS.ecommerce },
-      { title: 'Three', path: paths.dashboard.three, icon: ICONS.analytics },
+      { title: 'Clients', path: paths.dashboard.clients, icon: ICONS.menuItem },
+      { title: 'Topics', path: paths.dashboard.topics, icon: ICONS.blog },
+      { title: 'Subscriptions', path: paths.dashboard.subscriptions, icon: ICONS.label },
     ],
   },
   /**
@@ -64,13 +65,12 @@ export const navData = [
     subheader: 'Management',
     items: [
       {
-        title: 'Group',
-        path: paths.dashboard.group.root,
-        icon: ICONS.user,
+        title: 'Rule Engine',
+        path: paths.dashboard.ruleEngine.root,
+        icon: ICONS.course,
         children: [
-          { title: 'Four', path: paths.dashboard.group.root },
-          { title: 'Five', path: paths.dashboard.group.five },
-          { title: 'Six', path: paths.dashboard.group.six },
+          { title: 'Statistics', path: paths.dashboard.ruleEngine.root },
+          { title: 'Rules', path: paths.dashboard.ruleEngine.rules },
         ],
       },
     ],

@@ -12,12 +12,12 @@ import { usePathname } from '../hooks';
 
 // ----------------------------------------------------------------------
 
-const IndexPage = lazy(() => import('src/pages/dashboard/one'));
-const PageTwo = lazy(() => import('src/pages/dashboard/two'));
-const PageThree = lazy(() => import('src/pages/dashboard/three'));
-const PageFour = lazy(() => import('src/pages/dashboard/four'));
-const PageFive = lazy(() => import('src/pages/dashboard/five'));
-const PageSix = lazy(() => import('src/pages/dashboard/six'));
+const IndexPage = lazy(() => import('src/pages/dashboard/monitor'));
+const PageClients = lazy(() => import('src/pages/dashboard/clients'));
+const PageTopics = lazy(() => import('src/pages/dashboard/topics'));
+const PageSubscriptions = lazy(() => import('src/pages/dashboard/subscriptions'));
+const PageRuleEngineStatistics = lazy(() => import('src/pages/dashboard/rule-engine/statistics'));
+const PageRuleEngineRules = lazy(() => import('src/pages/dashboard/rule-engine/rules'));
 
 // ----------------------------------------------------------------------
 
@@ -42,14 +42,14 @@ export const dashboardRoutes = [
     element: CONFIG.auth.skip ? dashboardLayout() : <AuthGuard>{dashboardLayout()}</AuthGuard>,
     children: [
       { element: <IndexPage />, index: true },
-      { path: 'two', element: <PageTwo /> },
-      { path: 'three', element: <PageThree /> },
+      { path: 'clients', element: <PageClients /> },
+      { path: 'topics', element: <PageTopics /> },
+      { path: 'subscriptions', element: <PageSubscriptions /> },
       {
-        path: 'group',
+        path: 'rule-engine',
         children: [
-          { element: <PageFour />, index: true },
-          { path: 'five', element: <PageFive /> },
-          { path: 'six', element: <PageSix /> },
+          { element: <PageRuleEngineStatistics />, index: true },
+          { path: 'rules', element: <PageRuleEngineRules /> }
         ],
       },
     ],

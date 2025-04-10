@@ -4,14 +4,14 @@ import { BlankView } from 'src/sections/blank/view';
 
 // ----------------------------------------------------------------------
 
-const metadata = { title: `Page two | Dashboard - ${CONFIG.appName}` };
+const metadata = { title: `Subscriptions | Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
   return (
     <>
       <title>{metadata.title}</title>
 
-      <BlankView title="Page two" />
+      <BlankView title="Subscriptions" />
     </>
   );
 }
