@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.jpforevers.vxmq.http.api.test;
+package io.github.jpforevers.vxmq.http.api.v1.test;
 
 import io.github.jpforevers.vxmq.http.api.AbstractApiJsonResultHandler;
 import io.github.jpforevers.vxmq.http.api.ApiErrorCode;

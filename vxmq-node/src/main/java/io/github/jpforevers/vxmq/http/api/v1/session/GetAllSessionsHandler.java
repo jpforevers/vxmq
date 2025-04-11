@@ -15,29 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.jpforevers.vxmq.http.api.session;
+package io.github.jpforevers.vxmq.http.api.v1.session;
 
-import io.github.jpforevers.vxmq.assist.ModelConstants;
 import io.github.jpforevers.vxmq.http.api.AbstractApiJsonResultHandler;
-import io.github.jpforevers.vxmq.service.composite.CompositeService;
+import io.github.jpforevers.vxmq.service.session.SessionService;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.RoutingContext;
 
-public class DeleteSessionByClientIdHandler extends AbstractApiJsonResultHandler {
+public class GetAllSessionsHandler extends AbstractApiJsonResultHandler {
 
-  private final CompositeService compositeService;
+  private final SessionService sessionService;
 
-  public DeleteSessionByClientIdHandler(Vertx vertx, CompositeService compositeService) {
+  public GetAllSessionsHandler(Vertx vertx, SessionService sessionService) {
     super(vertx);
-    this.compositeService = compositeService;
+    this.sessionService = sessionService;
   }
 
   @Override
   public Uni<Object> computeJsonResult(RoutingContext routingContext) {
-    String clientId = routingContext.pathParam(ModelConstants.FIELD_NAME_CLIENT_ID);
-    return compositeService.deleteSession(clientId).replaceWith(new JsonObject());
+
+    return sessionService.allSessions().onItem().transform(sessions -> sessions);
   }
 
 }

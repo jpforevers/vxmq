@@ -18,28 +18,37 @@
 package io.github.jpforevers.vxmq.http.api;
 
 import io.github.jpforevers.vxmq.assist.ModelConstants;
-import io.github.jpforevers.vxmq.http.api.session.GetAllSessionsHandler;
+import io.github.jpforevers.vxmq.http.api.v1.session.GetAllSessionsHandler;
 import io.github.jpforevers.vxmq.service.ServiceFactory;
-import io.github.jpforevers.vxmq.http.api.session.DeleteSessionByClientIdHandler;
-import io.github.jpforevers.vxmq.http.api.test.TestHandler;
+import io.github.jpforevers.vxmq.http.api.v1.session.DeleteSessionByClientIdHandler;
+import io.github.jpforevers.vxmq.http.api.v1.test.TestHandler;
+import io.github.jpforevers.vxmq.http.api.v2.AuthHandler;
+import io.github.jpforevers.vxmq.http.api.v2.session.GetSessionsHandler;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.Router;
 
 public class ApiRouterFactory {
 
-  public static Router router(Vertx vertx) {
-    Router apiRouter = Router.router(vertx);
+  public static Router v1Router(Vertx vertx) {
+    Router apiV1Router = Router.router(vertx);
 
-    apiRouter.get(ApiConstants.API_PREFIX_TEST)
+    apiV1Router.get(ApiConstants.API_PREFIX_TEST)
       .handler(new TestHandler(vertx));
 
-    apiRouter.delete(ApiConstants.API_PREFIX_SESSION + "/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
+    apiV1Router.delete(ApiConstants.API_PREFIX_SESSION + "/:" + ModelConstants.FIELD_NAME_CLIENT_ID)
       .handler(new DeleteSessionByClientIdHandler(vertx, ServiceFactory.compositeService(vertx)));
 
-    apiRouter.get(ApiConstants.API_PREFIX_SESSION)
+    apiV1Router.get(ApiConstants.API_PREFIX_SESSION)
       .handler(new GetAllSessionsHandler(vertx, ServiceFactory.sessionService(vertx)));
 
-    return apiRouter;
+    return apiV1Router;
+  }
+
+  public static Router v2Router(Vertx vertx) {
+    Router apiV2Router = Router.router(vertx);
+    apiV2Router.route().handler(new AuthHandler(vertx));
+    apiV2Router.route(ApiConstants.API_PREFIX_SESSIONS).handler(new GetSessionsHandler(vertx, ServiceFactory.sessionService(vertx)));
+    return apiV2Router;
   }
 
 }

@@ -47,7 +47,11 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     rootRouter.route(ApiConstants.API_URL_PREFIX_V1 + "/*")
       .failureHandler(new ApiFailureHandler())
-      .subRouter(ApiRouterFactory.router(vertx));
+      .subRouter(ApiRouterFactory.v1Router(vertx));
+
+    rootRouter.route(ApiConstants.API_URL_PREFIX_V2 + "/*")
+      .failureHandler(new ApiFailureHandler())
+      .subRouter(ApiRouterFactory.v2Router(vertx));
 
     // 处理前端路由（SPA），仅在请求的资源不存在时，才重定向到 index.html
     rootRouter.get().handler(ctx -> {
