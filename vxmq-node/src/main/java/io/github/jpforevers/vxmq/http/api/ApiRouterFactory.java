@@ -47,7 +47,9 @@ public class ApiRouterFactory {
   public static Router v2Router(Vertx vertx) {
     Router apiV2Router = Router.router(vertx);
     apiV2Router.route().handler(new AuthHandler(vertx));
+
     apiV2Router.route(ApiConstants.API_PREFIX_SESSIONS).handler(new GetSessionsHandler(vertx, ServiceFactory.sessionService(vertx)));
+
     return apiV2Router;
   }
 

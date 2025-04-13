@@ -18,9 +18,7 @@
 package io.github.jpforevers.vxmq.http;
 
 import io.github.jpforevers.vxmq.assist.Config;
-import io.github.jpforevers.vxmq.http.api.ApiConstants;
-import io.github.jpforevers.vxmq.http.api.ApiFailureHandler;
-import io.github.jpforevers.vxmq.http.api.ApiRouterFactory;
+import io.github.jpforevers.vxmq.http.api.*;
 import io.github.jpforevers.vxmq.http.q.QRouterFactory;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.vertx.core.AbstractVerticle;
@@ -52,6 +50,14 @@ public class HttpServerVerticle extends AbstractVerticle {
     rootRouter.route(ApiConstants.API_URL_PREFIX_V2 + "/*")
       .failureHandler(new ApiFailureHandler())
       .subRouter(ApiRouterFactory.v2Router(vertx));
+
+    rootRouter.route(ApiConstants.API_URL_PREFIX_API + "/*").handler(routingContext -> {
+      if (!routingContext.response().ended()) {
+        routingContext.fail(new ApiException(ApiErrorCode.COMMON_NOT_FOUND));
+      } else {
+        routingContext.next();
+      }
+    });
 
     // 处理前端路由（SPA），仅在请求的资源不存在时，才重定向到 index.html
     rootRouter.get().handler(ctx -> {
