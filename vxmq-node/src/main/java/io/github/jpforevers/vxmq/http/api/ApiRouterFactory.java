@@ -22,14 +22,42 @@ import io.github.jpforevers.vxmq.http.api.v1.session.GetAllSessionsHandler;
 import io.github.jpforevers.vxmq.service.ServiceFactory;
 import io.github.jpforevers.vxmq.http.api.v1.session.DeleteSessionByClientIdHandler;
 import io.github.jpforevers.vxmq.http.api.v1.test.TestHandler;
-import io.github.jpforevers.vxmq.http.api.v2.AuthHandler;
+import io.github.jpforevers.vxmq.http.api.v2.ApiV2AuthHandler;
 import io.github.jpforevers.vxmq.http.api.v2.session.GetSessionsHandler;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.Router;
+import io.vertx.mutiny.ext.web.handler.BodyHandler;
 
 public class ApiRouterFactory {
 
-  public static Router v1Router(Vertx vertx) {
+  public static Router apiRouter(Vertx vertx) {
+    Router apiRouter = Router.router(vertx);
+
+    apiRouter.route()
+      .handler(BodyHandler.create()
+        .setBodyLimit(10 * 1024 * 1024)
+      )
+      .handler(new ApiV2AuthHandler(vertx));
+
+    apiRouter.route(ApiConstants.API_URL_PREFIX_VERSION_V1 + "/*")
+      .subRouter(apiV1Router(vertx));
+      
+    apiRouter.route(ApiConstants.API_URL_PREFIX_VERSION_V2 + "/*")
+      .subRouter(apiV2Router(vertx));
+
+    apiRouter.route()
+      .handler(routingContext -> {
+        if (!routingContext.response().ended()) {
+          routingContext.fail(new ApiException(ApiErrorCode.COMMON_NOT_FOUND));
+        } else {
+          routingContext.next();
+        }
+      });      
+      
+    return apiRouter;  
+  }
+
+  private static Router apiV1Router(Vertx vertx) {
     Router apiV1Router = Router.router(vertx);
 
     apiV1Router.get(ApiConstants.API_PREFIX_TEST)
@@ -44,11 +72,13 @@ public class ApiRouterFactory {
     return apiV1Router;
   }
 
-  public static Router v2Router(Vertx vertx) {
+  private static Router apiV2Router(Vertx vertx) {
     Router apiV2Router = Router.router(vertx);
-    apiV2Router.route().handler(new AuthHandler(vertx));
+    apiV2Router.route().handler(new ApiV2AuthHandler(vertx));
 
-    apiV2Router.route(ApiConstants.API_PREFIX_SESSIONS).handler(new GetSessionsHandler(vertx, ServiceFactory.sessionService(vertx)));
+    apiV2Router.route(ApiConstants.API_PREFIX_SESSIONS)
+      .handler(GetSessionsHandler.validationHandler(vertx))
+      .handler(new GetSessionsHandler(vertx, ServiceFactory.sessionService(vertx)));
 
     return apiV2Router;
   }

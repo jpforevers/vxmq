@@ -18,6 +18,7 @@
 package io.github.jpforevers.vxmq.service.session;
 
 import io.github.jpforevers.vxmq.assist.Nullable;
+import io.github.jpforevers.vxmq.http.api.SearchResult;
 import io.smallrye.mutiny.Uni;
 
 import java.util.List;
@@ -40,7 +41,7 @@ public interface SessionService {
 
   Uni<List<Session>> allSessions();
 
-  Uni<List<Session>> search(String nodeId);
+  Uni<SearchResult<Session>> search(Integer size, String nextCursor, String nodeId, Boolean online, Boolean cleanSession);
 
   Uni<Session> getSessionByVerticleId(String verticleId);
 

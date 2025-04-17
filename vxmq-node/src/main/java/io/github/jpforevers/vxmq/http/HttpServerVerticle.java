@@ -41,26 +41,15 @@ public class HttpServerVerticle extends AbstractVerticle {
     rootRouter.route().handler(ResponseTimeHandler.create());
 
     rootRouter.route(ApiConstants.Q_URL_PREFIX + "/*")
-      .subRouter(QRouterFactory.router(vertx));
+    .subRouter(QRouterFactory.router(vertx));
 
-    rootRouter.route(ApiConstants.API_URL_PREFIX_V1 + "/*")
+    rootRouter.route(ApiConstants.API_URL_PREFIX_API + "/*")
       .failureHandler(new ApiFailureHandler())
-      .subRouter(ApiRouterFactory.v1Router(vertx));
-
-    rootRouter.route(ApiConstants.API_URL_PREFIX_V2 + "/*")
-      .failureHandler(new ApiFailureHandler())
-      .subRouter(ApiRouterFactory.v2Router(vertx));
-
-    rootRouter.route(ApiConstants.API_URL_PREFIX_API + "/*").handler(routingContext -> {
-      if (!routingContext.response().ended()) {
-        routingContext.fail(new ApiException(ApiErrorCode.COMMON_NOT_FOUND));
-      } else {
-        routingContext.next();
-      }
-    });
+      .subRouter(ApiRouterFactory.apiRouter(vertx));
 
     // 处理前端路由（SPA），仅在请求的资源不存在时，才重定向到 index.html
-    rootRouter.get().handler(ctx -> {
+    rootRouter.get()
+      .handler(ctx -> {
         if (ctx.normalizedPath().contains(".")) {
             // 说明是静态资源（例如 .js, .css, .png, .jpg 等），放行
             ctx.next();
@@ -68,14 +57,11 @@ public class HttpServerVerticle extends AbstractVerticle {
             // 说明是前端路由（如 /about, /dashboard），重定向到 index.html
             ctx.reroute("/index.html");;
         }
-    });
-
-    // 处理静态资源
-    StaticHandler staticHandler = StaticHandler.create()
-      .setCachingEnabled(true) // 可选：启用缓存
-      .setDefaultContentEncoding("utf-8"); // 可选：防止乱码
-
-    rootRouter.get().handler(staticHandler);
+      })
+      .handler(StaticHandler.create()
+        .setCachingEnabled(true) // 可选：启用缓存
+        .setDefaultContentEncoding("utf-8") // 可选：防止乱码
+      );
 
     HttpServerOptions httpServerOptions = new HttpServerOptions();
     httpServerOptions.setLogActivity(Config.getHttpServerLogActivity());

@@ -82,6 +82,11 @@
       <artifactId>smallrye-mutiny-vertx-web-client</artifactId>
       <version>${smallrye-mutiny-vertx.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-web-validation</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
 
     <!-- Config -->
     <dependency>
@@ -110,6 +115,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-codegen</artifactId>
+      <classifier>processor</classifier>
       <scope>provided</scope>
     </dependency>
 

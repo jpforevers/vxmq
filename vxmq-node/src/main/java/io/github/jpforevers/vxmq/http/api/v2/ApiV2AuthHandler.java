@@ -5,9 +5,9 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.RoutingContext;
 
-public class AuthHandler extends AbstractApiHandler{
+public class ApiV2AuthHandler extends AbstractApiHandler{
 
-  public AuthHandler(Vertx vertx) {
+  public ApiV2AuthHandler(Vertx vertx) {
     super(vertx);
   }  
 

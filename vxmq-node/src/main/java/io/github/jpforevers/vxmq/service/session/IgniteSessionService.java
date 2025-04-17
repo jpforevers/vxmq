@@ -19,9 +19,13 @@ package io.github.jpforevers.vxmq.service.session;
 
 import io.github.jpforevers.vxmq.assist.IgniteAssist;
 import io.github.jpforevers.vxmq.assist.ModelConstants;
+import io.github.jpforevers.vxmq.http.api.CursorPagination;
+import io.github.jpforevers.vxmq.http.api.SearchResult;
 import io.github.jpforevers.vxmq.assist.IgniteUtil;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.binary.BinaryObject;
 import org.apache.ignite.binary.BinaryObjectBuilder;
@@ -30,9 +34,14 @@ import org.apache.ignite.cache.query.QueryCursor;
 import org.apache.ignite.cache.query.ScanQuery;
 
 import javax.cache.Cache;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class IgniteSessionService implements SessionService {
 
@@ -121,9 +130,66 @@ public class IgniteSessionService implements SessionService {
     return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).toList());
   }
 
-  public Uni<List<Session>> search(String nodeId) {
-    QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(new ScanQuery<>((k ,v) -> v.getNodeId().equals(nodeId)));
-    return Uni.createFrom().item(cursor.getAll().stream().map(Cache.Entry::getValue).toList());
+  public Uni<SearchResult<Session>> search(Integer size, String nextCursor, String nodeId, Boolean online, Boolean cleanSession) {
+    ScanQuery<String, Session> scanQuery = new ScanQuery<>((k ,v) -> {
+      Boolean predicate = true;
+      if (StringUtils.isNotBlank(nodeId)) {
+        predicate = predicate && v.getNodeId().equals(nodeId);
+      }
+      if (online != null) {
+        predicate = predicate && (v.isOnline() == online);
+      }
+      if (cleanSession != null) {
+        predicate = predicate && (v.isCleanSession() == cleanSession);
+      }
+      return predicate;
+    });
+    
+    if (size != null && size > 0) {
+      List<Session> sessions = new ArrayList<>();
+      try (QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(scanQuery)) {
+        for(Cache.Entry<String, Session> entry : cursor) {
+          Session value = entry.getValue(); 
+          if(sessions.size() == size) {
+            break;
+          }
+          if (StringUtils.isBlank(nextCursor)) {
+            if (sessions.size() < size) {
+              sessions.add(value);
+            }
+          } else {
+            if (UUID.fromString(value.getSessionId()).compareTo(cursorToTimeBasedUUID(nextCursor)) > 0) {
+              if (sessions.size() < size) {
+                sessions.add(value);
+              }
+            }
+          }
+        }
+      }
+      CursorPagination cursorPagination;
+      String newNextCursor = sessions.size() == size ? timeBasedUuidToCursor(UUID.fromString(sessions.get(sessions.size() - 1).getSessionId())) : null;
+      if (StringUtils.isBlank(nextCursor)) {
+        long totalItems = sessionCache.query(scanQuery, Cache.Entry::getKey).getAll().size();
+        cursorPagination = new CursorPagination(totalItems, newNextCursor, size);
+      } else {
+        cursorPagination = new CursorPagination(newNextCursor, size);
+      }
+      SearchResult<Session> searchResult = new SearchResult<>(sessions, cursorPagination);
+      return Uni.createFrom().item(searchResult);
+    } else {
+      QueryCursor<Cache.Entry<String, Session>> cursor = sessionCache.query(scanQuery);
+      List<Session> sessions = cursor.getAll().stream().map(Cache.Entry::getValue).toList();
+      SearchResult<Session> searchResult = new SearchResult<>(sessions);
+      return Uni.createFrom().item(searchResult);
+    }
+  }
+
+  private UUID cursorToTimeBasedUUID(String cursor) {
+    return UUID.fromString(new String(Base64.getDecoder().decode(cursor), StandardCharsets.UTF_8));
+  }
+
+  private String timeBasedUuidToCursor(UUID timeBasedUuid) {
+    return Base64.getUrlEncoder().encodeToString(timeBasedUuid.toString().getBytes(StandardCharsets.UTF_8));
   }
 
   @Override

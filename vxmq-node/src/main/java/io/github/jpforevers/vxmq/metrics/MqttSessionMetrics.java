@@ -19,7 +19,7 @@ public class MqttSessionMetrics implements MeterBinder {
 
   @Override
   public void bindTo(@NotNull MeterRegistry registry) {
-    Gauge.builder("mqtt.session.num", () -> ServiceFactory.sessionService(vertx).allSessions().await().atMost(Duration.ofSeconds(5)).size())
+    Gauge.builder("mqtt.session.num", () -> ServiceFactory.sessionService(vertx).count().await().atMost(Duration.ofSeconds(5)))
       .description("Number of MQTT sessions")
       .register(registry);
   }
