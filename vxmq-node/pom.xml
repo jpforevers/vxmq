@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.github.jpforevers</groupId>
+  <artifactId>vxmq-node</artifactId>
+  <version>999-SNAPSHOT</version>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+    <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+    <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+    <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+
+    <vertx.version>4.5.12</vertx.version>
+    <junit-jupiter.version>5.9.1</junit-jupiter.version>
+
+    <slf4j.version>2.0.13</slf4j.version>
+    <logback.version>1.5.6</logback.version>
+    <smallrye-mutiny-vertx.version>3.18.1</smallrye-mutiny-vertx.version>
+    <commons-lang3.version>3.14.0</commons-lang3.version>
+    <commons-collections4.version>4.4</commons-collections4.version>
+    <commons-codec.version>1.16.0</commons-codec.version>
+    <java-uuid-generator.version>5.1.0</java-uuid-generator.version>
+    <asciitable.version>0.3.2</asciitable.version>
+    <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+    <smallrye-config.version>3.9.0</smallrye-config.version>
+    <micrometer.version>1.12.9</micrometer.version>
+    <hivemq.client.version>1.3.3</hivemq.client.version>
+
+    <ignite.version>2.16.0</ignite.version>
+
+    <launcher.class>io.github.jpforevers.vxmq.VxmqLauncher</launcher.class>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-stack-depchain</artifactId>
+        <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Core -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-core</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
+    <!-- Log -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+
+    <!-- Web -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-web</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-web-client</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-web-validation</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
+    <!-- Config -->
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config</artifactId>
+      <version>${smallrye-config.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.config</groupId>
+      <artifactId>smallrye-config-source-yaml</artifactId>
+      <version>${smallrye-config.version}</version>
+    </dependency>
+
+    <!-- Health check -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-health-check</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
+    <!-- Service proxies -->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-service-proxy</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen</artifactId>
+      <classifier>processor</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Ignite -->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-ignite</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-slf4j</artifactId>
+      <version>${ignite.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ignite</groupId>
+      <artifactId>ignite-kubernetes</artifactId>
+      <version>${ignite.version}</version>
+    </dependency>
+
+    <!-- Mqtt -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-mqtt</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
+    <!-- Kafka -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-kafka-client</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
+    <!-- Devops -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-shell</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+
+    <!-- Metrics -->
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-micrometer-metrics</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>${micrometer.version}</version>
+    </dependency>
+
+    <!-- Apache Util -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${commons-collections4.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>${commons-codec.version}</version>
+    </dependency>
+
+    <!-- UUID -->
+    <dependency>
+      <groupId>com.fasterxml.uuid</groupId>
+      <artifactId>java-uuid-generator</artifactId>
+      <version>${java-uuid-generator.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-codec-haproxy</artifactId>
+      <!--<version>Should align with netty version that Vert.x uses</version>-->
+    </dependency>
+
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-transport-native-epoll</artifactId>
+      <classifier>linux-x86_64</classifier>
+      <!--<version>Should align with netty version that Vert.x uses</version>-->
+    </dependency>
+
+    <dependency>
+      <groupId>com.hivemq</groupId>
+      <artifactId>hivemq-mqtt-client</artifactId>
+      <version>${hivemq.client.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-mutiny-vertx-junit5</artifactId>
+      <version>${smallrye-mutiny-vertx.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>${os-maven-plugin.version}</version>
+      </extension>
+    </extensions>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <release>17</release>
+          <annotationProcessors>
+            <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+          </annotationProcessors>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven-shade-plugin.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class>${launcher.class}</Main-Class>
+                  </manifestEntries>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              </transformers>
+              <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-fat.jar
+              </outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <argLine>-Xlog:gc -Xms1024m -Xmx2048m --add-opens=java.base/jdk.internal.access=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED --add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED --add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.sql/java.sql=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.management/sun.management=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>${exec-maven-plugin.version}</version>
+        <configuration>
+          <mainClass>${launcher.class}</mainClass>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>${maven-resources-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>copy-frontend-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.basedir}/target/classes/webroot</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>../vxmq-admin/dist</directory>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <version>${jib-maven-plugin.version}</version>
+        <configuration>
+          <allowInsecureRegistries>true</allowInsecureRegistries>
+          <from>
+            <image>eclipse-temurin:17-alpine</image>
+          </from>
+          <to>
+            <image>jpforevers/vxmq</image>
+            <tags>
+              <tag>${project.version}</tag>
+            </tags>
+          </to>
+          <container>
+            <workingDirectory>/vxmq</workingDirectory>
+            <mainClass>${launcher.class}</mainClass>
+            <appRoot>/vxmq/app</appRoot>
+            <!-- From https://ignite.apache.org/docs/latest/quick-start/java#running-ignite-with-java-11-or-later -->
+            <jvmFlags>
+              <jvmFlag>--add-opens=java.base/jdk.internal.access=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/sun.util.calendar=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.io=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.net=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.lang=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.math=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.sql/java.sql=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.time=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.base/java.text=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.management/sun.management=ALL-UNNAMED</jvmFlag>
+              <jvmFlag>--add-opens=java.desktop/java.awt.font=ALL-UNNAMED</jvmFlag>
+            </jvmFlags>
+            <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+            <ports>
+              <port>8060/tcp</port>
+              <port>1883/tcp</port>
+              <port>47500/tcp</port>
+            </ports>
+            <environment>
+              <IGNITE_HOME>/vxmq/ignite</IGNITE_HOME>
+              <VXMQ_LOGS_DIR>/vxmq/logs</VXMQ_LOGS_DIR>
+            </environment>
+          </container>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
